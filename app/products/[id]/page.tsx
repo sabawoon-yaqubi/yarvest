@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Heart, ShoppingCart, Star, MapPin, Leaf, Truck, Shield, CheckCircle, Minus, Plus, Share2, Package } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 
@@ -192,6 +192,33 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [imgError, setImgError] = useState(false)
+  const [imgSrc, setImgSrc] = useState("/placeholder.svg")
+  const [producerImgError, setProducerImgError] = useState(false)
+  const [producerImgSrc, setProducerImgSrc] = useState("/placeholder.svg")
+
+  useEffect(() => {
+    if (product) {
+      setImgSrc(product.image || "/placeholder.svg")
+      setProducerImgSrc(product.producerImage || "/placeholder.svg")
+      setImgError(false)
+      setProducerImgError(false)
+    }
+  }, [product])
+
+  const handleImageError = () => {
+    if (!imgError) {
+      setImgError(true)
+      setImgSrc("/placeholder.svg")
+    }
+  }
+
+  const handleProducerImageError = () => {
+    if (!producerImgError) {
+      setProducerImgError(true)
+      setProducerImgSrc("/placeholder.svg")
+    }
+  }
 
   if (!product) {
     return (
@@ -234,9 +261,11 @@ export default function ProductDetailPage() {
             <div className="space-y-4">
               <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl">
                 <img
-                  src={product.image || "/placeholder.svg"}
+                  src={imgSrc}
                   alt={product.name}
                   className="w-full h-full object-cover"
+                  onError={handleImageError}
+                  loading="lazy"
                 />
                 <div className="absolute top-6 left-6 flex flex-col gap-3">
                   {product.badge && (
@@ -295,9 +324,11 @@ export default function ProductDetailPage() {
               <div className="mb-8 p-5 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-100">
                 <div className="flex items-center gap-4">
                   <img
-                    src={product.producerImage || "/placeholder.svg"}
+                    src={producerImgSrc}
                     alt={product.producer}
                     className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md"
+                    onError={handleProducerImageError}
+                    loading="lazy"
                   />
                   <div>
                     <p className="font-bold text-gray-900">{product.producer}</p>

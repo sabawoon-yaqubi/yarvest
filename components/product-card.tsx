@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart, Heart, Star } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
 
 interface ProductCardProps {
   id: number
@@ -43,6 +44,15 @@ export function ProductCard({
   className = "",
 }: ProductCardProps) {
   const priceDisplay = typeof price === "number" ? price.toFixed(2) : price
+  const [imgError, setImgError] = useState(false)
+  const [imgSrc, setImgSrc] = useState(image || "/placeholder.svg")
+
+  const handleImageError = () => {
+    if (!imgError) {
+      setImgError(true)
+      setImgSrc("/placeholder.svg")
+    }
+  }
 
   return (
     <Card
@@ -52,9 +62,11 @@ export function ProductCard({
             <div className="relative group overflow-hidden bg-secondary h-52">
               <div className="cursor-pointer" onClick={() => onClick?.(id)}>
                 <img
-                  src={image || "/placeholder.svg"}
+                  src={imgSrc}
                   alt={name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  onError={handleImageError}
+                  loading="lazy"
                 />
               </div>
         {badge && (

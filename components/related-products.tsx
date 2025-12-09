@@ -51,3 +51,5 @@ export function RelatedProducts({ products, favorites = [], onToggleFavorite }: 
 }
 
 
+
+

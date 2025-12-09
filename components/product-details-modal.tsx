@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Heart, ShoppingCart, Truck, Shield, Minus, Plus, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ProductCard } from "./product-card"
 import { ProductInfo } from "./product-info"
 import { ProductDetails } from "./product-details"
@@ -65,6 +65,15 @@ export function ProductDetailsModal({
 }: ProductDetailsModalProps) {
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
+  const [imgError, setImgError] = useState(false)
+  const [imgSrc, setImgSrc] = useState("/placeholder.svg")
+
+  useEffect(() => {
+    if (product) {
+      setImgSrc(product.image || "/placeholder.svg")
+      setImgError(false)
+    }
+  }, [product])
 
   if (!product) return null
 
@@ -77,6 +86,13 @@ export function ProductDetailsModal({
     onAddToCart?.(product.id, quantity)
   }
 
+  const handleImageError = () => {
+    if (!imgError) {
+      setImgError(true)
+      setImgSrc("/placeholder.svg")
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0">
@@ -84,9 +100,11 @@ export function ProductDetailsModal({
           {/* Left: Image */}
           <div className="relative bg-gray-50 lg:min-h-[600px]">
             <img
-              src={product.image || "/placeholder.svg"}
+              src={imgSrc}
               alt={product.name}
               className="w-full h-full object-cover"
+              onError={handleImageError}
+              loading="lazy"
             />
             {product.badge && (
               <Badge className="absolute top-4 left-4 bg-[#0A5D31] text-white px-3 py-1 rounded-full text-xs font-bold">

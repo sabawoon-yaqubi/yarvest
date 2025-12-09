@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Star, Leaf, CheckCircle, MessageSquare, Package, Calendar, Award, Shield, Truck, TrendingUp, Users, ArrowRight, Clock, Zap, Percent, Sparkles } from "lucide-react"
+import { Search, MapPin, Star, Leaf, CheckCircle, MessageSquare, Package, Calendar, Award, Shield, Truck, TrendingUp, Users, ArrowRight, Clock, Zap, Percent, Sparkles, Map } from "lucide-react"
 import { useState } from "react"
 import { ProductDetailsModal } from "@/components/product-details-modal"
 import Link from "next/link"
@@ -689,15 +689,23 @@ export default function ProducersPage() {
 
             {/* Search */}
             <div className="mb-10">
-              <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search producers, specialties, or locations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-14 h-14 text-base rounded-full border-2 border-gray-200 focus:border-[#0A5D31] focus:ring-2 focus:ring-[#0A5D31]/20"
-                />
+              <div className="flex items-center gap-4 max-w-2xl mx-auto">
+                <div className="relative flex-1">
+                  <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search producers, specialties, or locations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-14 h-14 text-base rounded-full border-2 border-gray-200 focus:border-[#0A5D31] focus:ring-2 focus:ring-[#0A5D31]/20"
+                  />
+                </div>
+                <Link href="/producers/map">
+                  <Button className="h-14 px-6 bg-[#0A5D31] hover:bg-[#0d7a3f] text-white rounded-full shadow-lg hover:shadow-xl transition-all">
+                    <Map className="w-5 h-5 mr-2" />
+                    Map View
+                  </Button>
+                </Link>
               </div>
             </div>
 

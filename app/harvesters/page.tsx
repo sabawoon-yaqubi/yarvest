@@ -6,8 +6,9 @@ import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, Star, MapPin, CheckCircle, Calendar, DollarSign, Clock, Award, TrendingUp, Shield, Phone, Mail } from "lucide-react"
+import { Users, Star, MapPin, CheckCircle, Calendar, DollarSign, Clock, Award, TrendingUp, Shield, Phone, Mail, Map } from "lucide-react"
 import { useState } from "react"
+import Link from "next/link"
 
 const harvesters = [
   {
@@ -183,7 +184,7 @@ export default function HarvestersPage() {
               <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
                 Connect with experienced harvesters to help with your farm operations
               </p>
-              <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-600 mb-6">
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-[#0A5D31]" />
                   <span>{harvesters.length} Verified Teams</span>
@@ -193,6 +194,12 @@ export default function HarvestersPage() {
                   <span>4.8+ Average Rating</span>
                 </div>
               </div>
+              <Link href="/harvesters/map">
+                <Button className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all">
+                  <Map className="w-5 h-5 mr-2" />
+                  View on Map
+                </Button>
+              </Link>
             </div>
 
             {/* How It Works */}
