@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import api from "@/lib/axios"
+import { getImageUrl } from "@/lib/utils"
 
 interface Category {
   id: number
@@ -26,38 +27,20 @@ export function FreshFoodCategories() {
         // Use /categories endpoint (baseURL already includes /api)
         const response = await api.get("/categories")
         
-        // Get API base URL for constructing image URLs
-        // Remove /api from baseURL for images since they're usually in storage/public
-        const apiBaseURL = process.env.NEXT_PUBLIC_API_URL || api.defaults.baseURL || 'https://violet-bison-661615.hostingersite.com/api'
-        const baseURLWithoutApi = apiBaseURL.replace(/\/api$/, '') // Remove trailing /api
-        
         // Map API response to component format
         const categoriesData = response.data.data || response.data || []
         const mappedCategories = categoriesData.map((cat: any) => {
-          // Construct full image URL if it's a relative path
-          let imageUrl = "/placeholder.svg"
-          if (cat.image) {
-            if (cat.image.startsWith("http://") || cat.image.startsWith("https://")) {
-              // Already a full URL
-              imageUrl = cat.image
-            } else if (cat.image.startsWith("/")) {
-              // Absolute path from root
-              imageUrl = `${baseURLWithoutApi}${cat.image}`
-            } else {
-              // Relative path - prepend base URL without /api
-              imageUrl = `${baseURLWithoutApi}/${cat.image}`
-            }
-          }
-          
           // Generate slug from name if not provided
           const slug = cat.slug || cat.name.toLowerCase().replace(/\s+/g, "-")
+          const uniqueId = cat.unique_id || cat.id?.toString() || ""
           
           return {
             id: cat.id,
             name: cat.name,
-            image: imageUrl,
-            href: `/category/${slug}`,
+            image: getImageUrl(cat.image),
+            href: `/categories/${uniqueId}/products`,
             slug: slug,
+            unique_id: uniqueId,
           }
         })
         
@@ -150,8 +133,16 @@ export function FreshFoodCategories() {
         </Link>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-4">
-        {categories.map((category) => (
-          <Link key={category.id || category.name} href={category.href || `/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}>
+        {categories.map((category) => {
+          const uniqueId = (category as any).unique_id || category.id?.toString() || ""
+          // Ensure we have a valid uniqueId before creating the link
+          if (!uniqueId) {
+            console.warn("Category missing unique_id:", category)
+            return null
+          }
+          const categoryUrl = `/categories/${uniqueId}/products`
+          return (
+          <Link key={category.id || category.name} href={categoryUrl}>
             <div className="group cursor-pointer text-center">
               <div className="relative overflow-hidden rounded-xl h-20 w-20 mx-auto mb-2 shadow-md hover:shadow-lg transition-all duration-300 border-2 border-gray-100 hover:border-[#0A5D31] hover:scale-105">
                 <img
@@ -165,7 +156,8 @@ export function FreshFoodCategories() {
               </h3>
             </div>
           </Link>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
