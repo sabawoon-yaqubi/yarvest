@@ -180,6 +180,9 @@ export default function ProfilePage() {
   }
   
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -195,7 +198,7 @@ export default function ProfilePage() {
       return
     }
 
-    // Create preview
+    // Create preview immediately
     const reader = new FileReader()
     reader.onloadend = () => {
       setImagePreview(reader.result as string)
@@ -214,9 +217,23 @@ export default function ProfilePage() {
         },
       })
 
+      // Update userData with the new image path from response
+      if (response.data?.data) {
+        setUserData({
+          ...userData,
+          profile_picture: response.data.data.profile_picture,
+          image: response.data.data.image,
+        })
+      }
+
       await refreshUser()
       await fetchUserData()
-      setImagePreview(null)
+      
+      // Keep preview until data is refreshed
+      setTimeout(() => {
+        setImagePreview(null)
+      }, 500)
+      
       toast.success('Profile picture updated successfully')
     } catch (error: any) {
       console.error('Error uploading image:', error)
@@ -224,6 +241,8 @@ export default function ProfilePage() {
       setImagePreview(null)
     } finally {
       setUploadingImage(false)
+      // Reset input value to allow re-uploading the same file
+      e.target.value = ''
     }
   }
   
@@ -498,13 +517,17 @@ export default function ProfilePage() {
                       )}
                     </div>
                     {isEditing && (
-                      <label className="absolute bottom-0 right-0 p-2 bg-[#0A5D31] text-white rounded-full shadow-lg hover:bg-[#0d7a3f] transition-colors cursor-pointer">
+                      <label 
+                        htmlFor="profile-image-upload"
+                        className="absolute bottom-0 right-0 p-2 bg-[#0A5D31] text-white rounded-full shadow-lg hover:bg-[#0d7a3f] transition-colors cursor-pointer z-10"
+                      >
                         {uploadingImage ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <Camera className="w-4 h-4" />
                         )}
                         <input
+                          id="profile-image-upload"
                           type="file"
                           accept="image/*"
                           onChange={handleImageUpload}
@@ -599,11 +622,11 @@ export default function ProfilePage() {
                 </div>
                 {userData?.roles && userData.roles.length > 0 && (
                   <div className="flex flex-wrap gap-3 mb-6">
-                    {userData.roles.map((role: any) => {
+                    {userData.roles.map((role: any, index: number) => {
                       const Icon = getRoleIcon(role.name)
                       return (
                         <div
-                          key={role.id}
+                          key={`role-${role.id}-${role.name}-${index}`}
                           className="flex items-center gap-2 px-4 py-2 bg-[#0A5D31]/10 border border-[#0A5D31]/20 rounded-lg"
                         >
                           <Icon className="w-4 h-4 text-[#0A5D31]" />
@@ -706,7 +729,7 @@ export default function ProfilePage() {
                       <div className="flex flex-wrap gap-2">
                         {daysOfWeek.map((day) => (
                           <button
-                            key={day.value}
+                            key={`helper-${day.value}`}
                             type="button"
                             onClick={() => toggleDayOfWeek(helperSettings, setHelperSettings, day.value)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -799,7 +822,7 @@ export default function ProfilePage() {
                       <div className="flex flex-wrap gap-2">
                         {daysOfWeek.map((day) => (
                           <button
-                            key={day.value}
+                            key={`courier-${day.value}`}
                             type="button"
                             onClick={() => toggleDayOfWeek(courierSettings, setCourierSettings, day.value)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
