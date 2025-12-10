@@ -34,7 +34,7 @@ export default function Home() {
             <FreshFoodCategories />
             <StatsSection />
             <DealsSection />
-            <ProductShowcase />
+            <ProductShowcase /> 
             <TrendingProducts />
             <HowItWorks />
             <HarvestingProductsSection />
