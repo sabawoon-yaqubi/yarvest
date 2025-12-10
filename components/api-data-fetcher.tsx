@@ -1,11 +1,13 @@
 "use client"
 
-import { ReactNode } from "react"
+import { useCallback, ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 
 interface ApiDataFetcherProps<T> {
   url: string
+  limit?: number
+  page?: number
   renderItem: (item: T, index: number) => ReactNode
   renderLoading?: () => ReactNode
   renderError?: (error: string, retry: () => void) => ReactNode
@@ -18,6 +20,8 @@ interface ApiDataFetcherProps<T> {
 
 export function ApiDataFetcher<T extends { id: number | string }>({
   url,
+  limit,
+  page = 1,
   renderItem,
   renderLoading,
   renderError,
@@ -27,7 +31,14 @@ export function ApiDataFetcher<T extends { id: number | string }>({
   onSuccess,
   onError,
 }: ApiDataFetcherProps<T>) {
-  const { data, loading, error, refetch } = useApiFetch<T[]>(url, {
+  // Build URL with query parameters
+  const params = new URLSearchParams()
+  if (limit) params.set('limit', limit.toString())
+  if (page) params.set('page', page.toString())
+  const queryString = params.toString()
+  const finalUrl = queryString ? `${url}?${queryString}` : url
+
+  const { data, loading, error, refetch } = useApiFetch<T[]>(finalUrl, {
     enabled,
     onSuccess,
     onError,
@@ -46,7 +57,7 @@ export function ApiDataFetcher<T extends { id: number | string }>({
   if (error) {
     return renderError ? (
       renderError(error, refetch)
-    ) : (
+  ) : (
       <div className="text-center py-12">
         <p className="text-red-500 mb-4">{error}</p>
         <Button

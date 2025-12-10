@@ -9,6 +9,7 @@ export type {
   Seller,
   ProductCategory,
   ProductType,
+  ProductReviews,
   ProductPriceInfo,
   ProductModalProps,
   ApiProductCardProps,

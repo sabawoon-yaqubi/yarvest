@@ -25,6 +25,12 @@ export interface ProductType {
   name: string
 }
 
+// Reviews interface
+export interface ProductReviews {
+  total: number
+  average_rating: number
+}
+
 // Main API Product interface
 export interface ApiProduct {
   id: number
@@ -38,6 +44,7 @@ export interface ApiProduct {
   seller: Seller
   product_category: ProductCategory
   product_type: ProductType
+  reviews?: ProductReviews
   status: number | boolean
   sku: string
   stock: number

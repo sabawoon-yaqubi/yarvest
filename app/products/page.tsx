@@ -715,13 +715,6 @@ export default function ProductsPage() {
                           src={product.image || "/placeholder.svg"}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            if (target.src !== "/placeholder.svg") {
-                              target.src = "/placeholder.svg"
-                            }
-                          }}
-                          loading="lazy"
                         />
                       </div>
                       {product.badge && (

@@ -3,7 +3,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Heart, ShoppingCart, Truck, Shield, Minus, Plus, X, Package, User, Tag } from "lucide-react"
+import { Heart, ShoppingCart, Truck, Shield, Minus, Plus, X, Package, User, Tag, Star } from "lucide-react"
 import { useState, useEffect } from "react"
 import { getImageUrl } from "@/lib/utils"
 import { calculateProductPrices } from "@/lib/product-utils"
@@ -96,7 +96,36 @@ export function ProductModal({
                   {product.seller.full_name}
                 </p>
                 <h2 className="text-3xl font-bold text-foreground mb-2">{product.name}</h2>
-                <p className="text-sm text-muted-foreground font-mono">SKU: {product.sku}</p>
+                <p className="text-sm text-muted-foreground font-mono mb-2">SKU: {product.sku}</p>
+                
+                {/* Reviews/Rating */}
+                {product.reviews && product.reviews.total > 0 && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-0.5">
+                      {[...Array(5)].map((_, i) => {
+                        const rating = product.reviews!.average_rating
+                        const filled = i < Math.floor(rating)
+                        const halfFilled = i === Math.floor(rating) && rating % 1 >= 0.5
+                        
+                        return (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              filled
+                                ? "fill-yellow-400 text-yellow-400"
+                                : halfFilled
+                                ? "fill-yellow-400/50 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        )
+                      })}
+                    </div>
+                    <span className="text-sm text-gray-600 font-medium">
+                      {product.reviews.average_rating.toFixed(1)} ({product.reviews.total} {product.reviews.total === 1 ? 'review' : 'reviews'})
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Category & Type */}

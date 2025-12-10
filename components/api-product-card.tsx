@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Sparkles } from "lucide-react"
+import { ShoppingCart, Sparkles, Star } from "lucide-react"
 import { getImageUrl } from "@/lib/utils"
 import { calculateProductPrices } from "@/lib/product-utils"
 import { ApiProduct, ApiProductCardProps } from "@/types/product"
@@ -132,6 +132,35 @@ export function ApiProductCard({
               {product.product_category.name}
             </span>
           </div>
+
+          {/* Reviews/Rating */}
+          {product.reviews && product.reviews.total > 0 && (
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => {
+                  const rating = product.reviews!.average_rating
+                  const filled = i < Math.floor(rating)
+                  const halfFilled = i === Math.floor(rating) && rating % 1 >= 0.5
+                  
+                  return (
+                    <Star
+                      key={i}
+                      className={`w-3.5 h-3.5 ${
+                        filled
+                          ? "fill-yellow-400 text-yellow-400"
+                          : halfFilled
+                          ? "fill-yellow-400/50 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  )
+                })}
+              </div>
+              <span className="text-xs text-gray-600 font-medium">
+                {product.reviews.average_rating.toFixed(1)} ({product.reviews.total} {product.reviews.total === 1 ? 'review' : 'reviews'})
+              </span>
+            </div>
+          )}
 
           {/* Price Section */}
           <div className="mt-auto pt-4 border-t border-gray-100">
