@@ -4,39 +4,9 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Users, Clock } from "lucide-react"
 import Link from "next/link"
-
-const events = [
-  {
-    id: 1,
-    title: "Farmers Market - Weekend",
-    date: "Saturday, Dec 14",
-    time: "8:00 AM - 2:00 PM",
-    location: "Ferry Building, San Francisco",
-    image: "https://images.pexels.com/photos/2449665/pexels-photo-2449665.jpeg?auto=compress&cs=tinysrgb&w=500",
-    attendees: 245,
-    category: "Market",
-  },
-  {
-    id: 2,
-    title: "Harvest Celebration Festival",
-    date: "Sunday, Dec 15",
-    time: "10:00 AM - 5:00 PM",
-    location: "Ferry Building, San Francisco",
-    image: "https://images.pexels.com/photos/5702870/pexels-photo-5702870.jpeg?auto=compress&cs=tinysrgb&w=500",
-    attendees: 389,
-    category: "Festival",
-  },
-  {
-    id: 3,
-    title: "Local Producers Meetup",
-    date: "Wednesday, Dec 18",
-    time: "6:00 PM - 8:00 PM",
-    location: "Community Center, Oakland",
-    image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=500",
-    attendees: 87,
-    category: "Workshop",
-  },
-]
+import { ApiEvent } from "@/types/event"
+import { ApiDataFetcher } from "./api-data-fetcher"
+import { EventCardSkeleton } from "./event-card-skeleton"
 
 export function EventsSection() {
   return (
@@ -50,8 +20,13 @@ export function EventsSection() {
           View All
         </Link>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => (
+      
+      <ApiDataFetcher<ApiEvent>
+        url="/events/upcoming"
+        limit={3}
+        page={1}
+        gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        renderItem={(event) => (
           <Card
             key={event.id}
             className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] flex flex-col bg-card border border-border rounded-2xl"
@@ -95,8 +70,14 @@ export function EventsSection() {
               </Link>
             </div>
           </Card>
-        ))}
-      </div>
+        )}
+        renderLoading={() => <EventCardSkeleton count={3} />}
+        renderEmpty={() => (
+          <div className="text-center py-12 col-span-full">
+            <p className="text-muted-foreground">No upcoming events available at the moment.</p>
+          </div>
+        )}
+      />
     </div>
   )
 }

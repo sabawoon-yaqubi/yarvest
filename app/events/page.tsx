@@ -6,83 +6,24 @@ import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Users, Clock } from "lucide-react"
-import { useState } from "react"
-
-const allEvents = [
-  {
-    id: 1,
-    title: "Farmers Market - Weekend",
-    date: "Saturday, Dec 14",
-    time: "8:00 AM - 2:00 PM",
-    location: "Ferry Building, San Francisco",
-    description: "Weekly farmers market featuring fresh local produce and artisan goods from over 50 vendors.",
-    image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=500&h=400&fit=crop",
-    attendees: 245,
-    category: "Market",
-  },
-  {
-    id: 2,
-    title: "Harvest Celebration Festival",
-    date: "Sunday, Dec 15",
-    time: "10:00 AM - 5:00 PM",
-    location: "Ferry Building, San Francisco",
-    description: "Annual harvest celebration with live music, cooking demonstrations, and local food tastings.",
-    image: "https://images.unsplash.com/photo-1533322088b9-8808f011e87b?w=500&h=400&fit=crop",
-    attendees: 389,
-    category: "Festival",
-  },
-  {
-    id: 3,
-    title: "Local Producers Meetup",
-    date: "Wednesday, Dec 18",
-    time: "6:00 PM - 8:00 PM",
-    location: "Community Center, Oakland",
-    description: "Networking event for local farmers, producers, and food enthusiasts to connect and collaborate.",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=400&fit=crop",
-    attendees: 87,
-    category: "Workshop",
-  },
-  {
-    id: 4,
-    title: "Organic Farming Workshop",
-    date: "Saturday, Dec 21",
-    time: "9:00 AM - 12:00 PM",
-    location: "Green Valley Farm, Marin County",
-    description: "Learn sustainable farming practices and organic certification from experienced local farmers.",
-    image: "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=500&h=400&fit=crop",
-    attendees: 52,
-    category: "Workshop",
-  },
-  {
-    id: 5,
-    title: "Farm to Table Dinner",
-    date: "Friday, Dec 20",
-    time: "6:00 PM - 9:00 PM",
-    location: "Local Restaurant, San Francisco",
-    description: "Exclusive farm-to-table dining experience featuring menu items exclusively from local producers.",
-    image: "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=400&fit=crop",
-    attendees: 156,
-    category: "Dinner",
-  },
-  {
-    id: 6,
-    title: "Cooking Demo: Seasonal Vegetables",
-    date: "Thursday, Dec 19",
-    time: "5:00 PM - 6:30 PM",
-    location: "Community Center, San Francisco",
-    description: "Professional chef demonstrates creative ways to prepare seasonal produce for maximum flavor.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=400&fit=crop",
-    attendees: 98,
-    category: "Workshop",
-  },
-]
+import { useState, useMemo } from "react"
+import { ApiEvent } from "@/types/event"
+import { InfiniteScrollFetcher } from "@/components/infinite-scroll-fetcher"
+import { EventCardSkeleton } from "@/components/event-card-skeleton"
 
 export default function EventsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const categories = ["Market", "Festival", "Workshop", "Dinner"]
-  const filteredEvents = selectedCategory ? allEvents.filter((event) => event.category === selectedCategory) : allEvents
+  
+  // Build API URL with category filter
+  const apiUrl = useMemo(() => {
+    if (selectedCategory) {
+      return `/events/upcoming?category=${selectedCategory}`
+    }
+    return "/events/upcoming"
+  }, [selectedCategory])
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -120,8 +61,12 @@ export default function EventsPage() {
             </div>
 
             {/* Events Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredEvents.map((event) => (
+            <InfiniteScrollFetcher<ApiEvent>
+              key={apiUrl}
+              url={apiUrl}
+              limit={12}
+              gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              renderItem={(event) => (
                 <Card
                   key={event.id}
                   className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-3xl border border-border bg-white flex flex-col h-full"
@@ -164,8 +109,14 @@ export default function EventsPage() {
                     </Button>
                   </div>
                 </Card>
-              ))}
-            </div>
+              )}
+              renderLoading={() => <EventCardSkeleton count={12} />}
+              renderEmpty={() => (
+                <div className="text-center py-12 col-span-full">
+                  <p className="text-muted-foreground">No upcoming events available at the moment.</p>
+                </div>
+              )}
+            />
           </div>
         </div>
         <Footer />

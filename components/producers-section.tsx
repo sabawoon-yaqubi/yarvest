@@ -4,49 +4,24 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { MapPin, Star, CheckCircle } from "lucide-react"
 import Link from "next/link"
+import { ApiProducer, Location } from "@/types/producer"
+import { ApiDataFetcher } from "./api-data-fetcher"
+import { ProducerCardSkeleton } from "./producer-card-skeleton"
 
-const producers = [
-  {
-    id: 1,
-    name: "Green Valley Farm",
-    location: "Marin County, CA",
-    specialty: "Organic Vegetables",
-    image: "https://images.pexels.com/photos/2132171/pexels-photo-2132171.jpeg?auto=compress&cs=tinysrgb&w=500",
-    rating: 4.9,
-    verified: true,
-    products: 45,
-  },
-  {
-    id: 2,
-    name: "Sunny Side Orchard",
-    location: "Sonoma County, CA",
-    specialty: "Fresh Fruits & Apples",
-    image: "https://images.pexels.com/photos/5529599/pexels-photo-5529599.jpeg?auto=compress&cs=tinysrgb&w=500",
-    rating: 4.8,
-    verified: true,
-    products: 32,
-  },
-  {
-    id: 3,
-    name: "Leaf & Root Collective",
-    location: "San Francisco, CA",
-    specialty: "Local Greens",
-    image: "https://images.pexels.com/photos/2518861/pexels-photo-2518861.jpeg?auto=compress&cs=tinysrgb&w=500",
-    rating: 4.7,
-    verified: true,
-    products: 28,
-  },
-  {
-    id: 4,
-    name: "Meadow Fresh Dairy",
-    location: "Petaluma, CA",
-    specialty: "Local Dairy Products",
-    image: "https://images.pexels.com/photos/422218/pexels-photo-422218.jpeg?auto=compress&cs=tinysrgb&w=500",
-    rating: 4.9,
-    verified: true,
-    products: 18,
-  },
-]
+// Helper function to format location
+const formatLocation = (location: string | Location | null | undefined): string => {
+  if (!location) return ''
+  if (typeof location === 'string') {
+    return location
+  }
+  // Handle location object
+  if (location.full_location) {
+    return location.full_location
+  }
+  // Build location from parts
+  const parts = [location.city, location.state, location.country].filter(Boolean)
+  return parts.join(', ')
+}
 
 export function ProducersSection() {
   return (
@@ -60,8 +35,13 @@ export function ProducersSection() {
           View All
         </Link>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {producers.map((producer) => (
+      
+      <ApiDataFetcher<ApiProducer>
+        url="/stores/producers"
+        limit={4}
+        page={1}
+        gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        renderItem={(producer) => (
           <Link key={producer.id} href={`/producers/${producer.id}`}>
             <Card className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] flex flex-col bg-card border border-border rounded-2xl cursor-pointer h-full">
               <div className="relative group overflow-hidden bg-secondary h-48">
@@ -82,7 +62,7 @@ export function ProducersSection() {
 
                 <div className="flex items-center gap-1 text-xs text-muted-foreground mb-4">
                   <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                  {producer.location}
+                  {formatLocation(producer.location)}
                 </div>
 
                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
@@ -99,8 +79,14 @@ export function ProducersSection() {
               </div>
             </Card>
           </Link>
-        ))}
-      </div>
+        )}
+        renderLoading={() => <ProducerCardSkeleton count={4} />}
+        renderEmpty={() => (
+          <div className="text-center py-12 col-span-full">
+            <p className="text-muted-foreground">No producers available at the moment.</p>
+          </div>
+        )}
+      />
     </div>
   )
 }

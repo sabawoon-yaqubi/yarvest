@@ -22,3 +22,20 @@ export type {
   UseApiFetchReturn,
 } from "./api"
 
+// Event types
+export type {
+  ApiEvent,
+} from "./event"
+
+// Producer/Shop types
+export type {
+  ApiProducer,
+  ApiShop,
+  Location,
+} from "./producer"
+
+// Testimonial types
+export type {
+  ApiTestimonial,
+} from "./testimonial"
+
