@@ -74,7 +74,7 @@ const HeatMapLayer = dynamic(
       const { useMap } = mod
       return function HeatMapLayerInner({ locations }: { locations: Location[] }) {
         const map = useMap()
-        const heatLayerRef = useRef<L.HeatLayer | null>(null)
+        const heatLayerRef = useRef<any>(null)
 
         useEffect(() => {
           if (!map || typeof window === "undefined") return

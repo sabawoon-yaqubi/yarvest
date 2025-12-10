@@ -3,13 +3,27 @@
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
-import { MapView } from "@/components/map-view"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { MapPin, List, ArrowLeft, CheckCircle, Users, Award, Star } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+
+const MapView = dynamic(() => import("@/components/map-view").then((mod) => ({ default: mod.MapView })), {
+  ssr: false,
+  loading: () => (
+    <Card className="overflow-hidden border-2 border-gray-200 shadow-xl rounded-2xl">
+      <div className="h-[700px] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#0A5D31] border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading map...</p>
+        </div>
+      </div>
+    </Card>
+  ),
+})
 
 // Harvester data with coordinates (approximate locations in California)
 const harvesters = [
