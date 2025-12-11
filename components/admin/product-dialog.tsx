@@ -215,7 +215,7 @@ export function ProductDialog({
               >
                 <option value="">Select unit</option>
                 {units.map((unit) => (
-                  <option key={unit.id} value={unit.id}>
+                  <option key={unit.id} value={String(unit.id)}>
                     {unit.name} {unit.symbol ? `(${unit.symbol})` : ""}
                   </option>
                 ))}
@@ -251,7 +251,7 @@ export function ProductDialog({
               >
                 <option value="">Select category</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
+                  <option key={category.id} value={String(category.id)}>
                     {category.name}
                   </option>
                 ))}
@@ -270,7 +270,7 @@ export function ProductDialog({
               >
                 <option value="">Select type</option>
                 {productTypes.map((type) => (
-                  <option key={type.id} value={type.id}>
+                  <option key={type.id} value={String(type.id)}>
                     {type.name}
                   </option>
                 ))}

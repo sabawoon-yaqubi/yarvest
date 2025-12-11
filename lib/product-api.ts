@@ -39,6 +39,7 @@ export interface CreateProductPayload {
 
 export interface Product {
   id: number
+  unique_id?: string
   name: string
   product_category_id: number
   product_type_id: number
@@ -163,17 +164,32 @@ export async function createProduct(payload: CreateProductPayload): Promise<Prod
 }
 
 /**
- * Update an existing product
+ * Update an existing product using unique_id
  */
-export async function updateProduct(id: number, payload: Partial<CreateProductPayload>): Promise<Product | null> {
+export async function updateProduct(uniqueId: string, payload: Partial<CreateProductPayload>): Promise<Product | null> {
   try {
-    const response = await api.put(`/products/${id}`, payload)
+    const response = await api.put(`/products/${uniqueId}`, payload)
     const product = response.data?.data || response.data
     toast.success('Product updated successfully!')
     return product
   } catch (error: any) {
     console.error('Error updating product:', error)
-    const errorMessage = error.response?.data?.message || 'Failed to update product'
+    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to update product'
+    toast.error(errorMessage)
+    throw error
+  }
+}
+
+/**
+ * Delete a product using unique_id
+ */
+export async function deleteProduct(uniqueId: string): Promise<void> {
+  try {
+    await api.delete(`/products/${uniqueId}`)
+    toast.success('Product deleted successfully!')
+  } catch (error: any) {
+    console.error('Error deleting product:', error)
+    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to delete product'
     toast.error(errorMessage)
     throw error
   }

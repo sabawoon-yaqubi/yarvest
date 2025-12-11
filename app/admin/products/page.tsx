@@ -17,8 +17,11 @@ import {
   MoreVertical
 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { fetchUnits, fetchCategories, fetchProductTypes, fetchProducts, createProduct, updateProduct, type Unit, type Category, type ProductType, type Product } from "@/lib/product-api"
+import { fetchUnits, fetchCategories, fetchProductTypes, fetchProducts, createProduct, updateProduct, deleteProduct, type Unit, type Category, type ProductType, type Product } from "@/lib/product-api"
 import { ProductDialog } from "@/components/admin/product-dialog"
+import { toast } from "sonner"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AlertTriangle } from "lucide-react"
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -27,6 +30,9 @@ export default function ProductsPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<any>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   // API data
   const [units, setUnits] = useState<Unit[]>([])
@@ -83,6 +89,11 @@ export default function ProductsPage() {
         const productsData = await fetchProducts()
         setProducts(productsData)
         console.log('Loaded products:', productsData)
+        // Log first product structure for debugging
+        if (productsData.length > 0) {
+          console.log('Sample product structure:', productsData[0])
+          console.log('Sample product keys:', Object.keys(productsData[0]))
+        }
       } catch (error) {
         console.error('Error loading products:', error)
       } finally {
@@ -111,31 +122,90 @@ export default function ProductsPage() {
   }
 
   const handleSave = async () => {
-    // Validation
-    if (!formData.name || !formData.product_category_id || !formData.product_type_id || !formData.unite_id || !formData.price || !formData.stock || !formData.sku) {
-      alert("Please fill in all required fields")
+    // Comprehensive validation
+    const errors: string[] = []
+
+    if (!formData.name || formData.name.trim() === "") {
+      errors.push("Product name is required")
+    }
+
+    if (!formData.sku || formData.sku.trim() === "") {
+      errors.push("SKU code is required")
+    }
+
+    if (!formData.product_category_id || formData.product_category_id === "") {
+      errors.push("Category is required")
+    }
+
+    if (!formData.product_type_id || formData.product_type_id === "") {
+      errors.push("Product type is required")
+    }
+
+    if (!formData.unite_id || formData.unite_id === "") {
+      errors.push("Unit is required")
+    }
+
+    if (!formData.price || formData.price.trim() === "") {
+      errors.push("Price is required")
+    } else {
+      const price = Number(formData.price)
+      if (isNaN(price) || price <= 0) {
+        errors.push("Price must be a positive number")
+      }
+    }
+
+    if (formData.discount && formData.discount.trim() !== "") {
+      const discount = Number(formData.discount)
+      if (isNaN(discount) || discount < 0) {
+        errors.push("Discount must be a non-negative number")
+      }
+    }
+
+    if (!formData.stock || formData.stock.trim() === "") {
+      errors.push("Stock quantity is required")
+    } else {
+      const stock = Number(formData.stock)
+      if (isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
+        errors.push("Stock must be a non-negative integer")
+      }
+    }
+
+    if (!formData.details || formData.details.trim() === "") {
+      errors.push("Full description is required")
+    }
+
+    if (errors.length > 0) {
+      toast.error(errors[0])
+      if (errors.length > 1) {
+        console.warn("Validation errors:", errors)
+      }
       return
     }
 
     setIsLoading(true)
     try {
       const payload = {
-        name: formData.name,
+        name: formData.name.trim(),
         product_category_id: Number(formData.product_category_id),
         product_type_id: Number(formData.product_type_id),
         unite_id: Number(formData.unite_id),
         price: Number(formData.price),
         discount: Number(formData.discount) || 0,
         stock: Number(formData.stock),
-        sku: formData.sku,
+        sku: formData.sku.trim(),
         status: formData.status,
-        main_image: formData.main_image || "",
-        excerpt: formData.excerpt || "",
-        details: formData.details || "",
+        main_image: formData.main_image?.trim() || "",
+        excerpt: formData.excerpt?.trim() || "",
+        details: formData.details.trim(),
       }
 
       if (editingProduct) {
-        await updateProduct(editingProduct.id, payload)
+        // Use unique_id if available, otherwise fall back to id
+        const uniqueId = editingProduct.unique_id || editingProduct.uniqueId || editingProduct.id?.toString()
+        if (!uniqueId) {
+          throw new Error("Product unique identifier is missing")
+        }
+        await updateProduct(uniqueId, payload)
       } else {
         await createProduct(payload)
       }
@@ -170,12 +240,23 @@ export default function ProductsPage() {
   }
 
   const handleEdit = (product: any) => {
+    console.log('Editing product:', product)
     setEditingProduct(product)
-    setFormData({
+    
+    // Handle different possible field name variations
+    // Use nullish coalescing and explicit checks to handle 0 values correctly
+    const categoryId = product.product_category_id ?? product.category_id ?? product.category?.id ?? product.product_category?.id ?? null
+    const typeId = product.product_type_id ?? product.type_id ?? product.product_type?.id ?? product.type?.id ?? null
+    const unitId = product.unite_id ?? product.unit_id ?? product.unit?.id ?? null
+    
+    console.log('Extracted IDs - Category:', categoryId, 'Type:', typeId, 'Unit:', unitId)
+    console.log('Available product fields:', Object.keys(product))
+    
+    const formDataToSet = {
       name: product.name || "",
-      product_category_id: product.product_category_id?.toString() || "",
-      product_type_id: product.product_type_id?.toString() || "",
-      unite_id: product.unite_id?.toString() || "",
+      product_category_id: categoryId !== null && categoryId !== undefined ? String(categoryId) : "",
+      product_type_id: typeId !== null && typeId !== undefined ? String(typeId) : "",
+      unite_id: unitId !== null && unitId !== undefined ? String(unitId) : "",
       price: product.price?.toString() || "",
       discount: product.discount?.toString() || "0",
       stock: product.stock?.toString() || "",
@@ -184,8 +265,63 @@ export default function ProductsPage() {
       main_image: product.main_image || product.image || "",
       excerpt: product.excerpt || "",
       details: product.details || product.description || "",
-    })
+    }
+    
+    // Verify IDs exist in the arrays
+    const categoryExists = categories.some(c => String(c.id) === formDataToSet.product_category_id)
+    const unitExists = units.some(u => String(u.id) === formDataToSet.unite_id)
+    const typeExists = productTypes.some(t => String(t.id) === formDataToSet.product_type_id)
+    
+    console.log('Setting form data:', formDataToSet)
+    console.log('Available units:', units.map(u => ({ id: u.id, name: u.name })))
+    console.log('Available categories:', categories.map(c => ({ id: c.id, name: c.name })))
+    console.log('ID validation - Category exists:', categoryExists, 'Unit exists:', unitExists, 'Type exists:', typeExists)
+    
+    if (!categoryExists && formDataToSet.product_category_id) {
+      console.warn('Category ID not found in categories array:', formDataToSet.product_category_id)
+    }
+    if (!unitExists && formDataToSet.unite_id) {
+      console.warn('Unit ID not found in units array:', formDataToSet.unite_id)
+    }
+    if (!typeExists && formDataToSet.product_type_id) {
+      console.warn('Product Type ID not found in productTypes array:', formDataToSet.product_type_id)
+    }
+    
+    setFormData(formDataToSet)
     setShowAddModal(true)
+  }
+
+  const handleDeleteClick = (product: any) => {
+    setProductToDelete(product)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return
+
+    // Get unique_id for deletion
+    const uniqueId = productToDelete.unique_id || productToDelete.uniqueId || productToDelete.id?.toString()
+    if (!uniqueId) {
+      toast.error("Product unique identifier is missing")
+      setDeleteDialogOpen(false)
+      setProductToDelete(null)
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await deleteProduct(uniqueId)
+      // Refresh products list
+      const productsData = await fetchProducts()
+      setProducts(productsData)
+      setDeleteDialogOpen(false)
+      setProductToDelete(null)
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      // Error is already handled in the API service with toast
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const filteredProducts = products.filter((product) =>
@@ -340,6 +476,7 @@ export default function ProductsPage() {
                   <Button
                     variant="outline"
                     className="border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                    onClick={() => handleDeleteClick(product)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -398,7 +535,11 @@ export default function ProductsPage() {
                           <Edit className="w-4 h-4 mr-2" />
                           Edit
                         </Button>
-                        <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+                        <Button 
+                          variant="outline" 
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => handleDeleteClick(product)}
+                        >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete
                         </Button>
@@ -428,6 +569,48 @@ export default function ProductsPage() {
         onAIGenerate={handleAIGenerate}
         onSave={handleSave}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <DialogTitle className="text-xl font-bold text-gray-900">
+                Delete Product
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-base text-gray-600 pt-2">
+              Are you sure you want to delete <span className="font-semibold text-gray-900">"{productToDelete?.name}"</span>?
+              <br />
+              <br />
+              <span className="text-red-600 font-medium">This action cannot be undone.</span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setProductToDelete(null)
+              }}
+              disabled={isDeleting}
+              className="h-10"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white h-10"
+            >
+              {isDeleting ? "Deleting..." : "Delete Product"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
