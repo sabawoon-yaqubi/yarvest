@@ -10,447 +10,23 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Star, ShoppingCart, SlidersHorizontal, Grid3x3, List, X, CheckCircle, Leaf } from "lucide-react"
-import { useState } from "react"
+import { Star, ShoppingCart, SlidersHorizontal, Grid3x3, List, X, CheckCircle, Leaf, Package } from "lucide-react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
+import { useApiFetch } from "@/hooks/use-api-fetch"
+import { transformProduct, transformProductDetails, transformProducts, type TransformedProduct } from "@/lib/product-api"
+import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 
-const allProducts = [
-  {
-    id: 1,
-    name: "Organic Heirloom Tomatoes",
-    price: 4.99,
-    unit: "/lb",
-    code: "TOMO001",
-    image: "https://images.unsplash.com/photo-1592924357228-91a8676d3a88?w=800&h=800&fit=crop",
-    producer: "Green Valley Farm",
-    rating: 4.8,
-    reviews: 128,
-    badge: "Best Seller",
-    category: "Vegetables",
-    organic: true,
-  },
-  {
-    id: 2,
-    name: "Fresh Local Carrots",
-    price: 2.99,
-    unit: "/lb",
-    code: "CARR002",
-    image: "https://images.unsplash.com/photo-1599599810694-b5ac4dd64b51?w=800&h=800&fit=crop",
-    producer: "Sunny Side Farm",
-    rating: 4.9,
-    reviews: 95,
-    badge: "New",
-    category: "Vegetables",
-    organic: true,
-  },
-  {
-    id: 3,
-    name: "Crisp Organic Lettuce",
-    price: 3.49,
-    unit: "/pack",
-    code: "LETT003",
-    image: "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=800&h=800&fit=crop",
-    producer: "Leaf & Root",
-    rating: 4.7,
-    reviews: 82,
-    badge: null,
-    category: "Vegetables",
-    organic: true,
-  },
-  {
-    id: 4,
-    name: "Sweet Local Apples",
-    price: 5.99,
-    unit: "/lb",
-    code: "APPL004",
-    image: "https://images.unsplash.com/photo-1560806887-1e4cd0b27c8a?w=800&h=800&fit=crop",
-    producer: "Orchard Fresh",
-    rating: 4.9,
-    reviews: 156,
-    badge: "Premium",
-    category: "Fruits",
-    organic: true,
-  },
-  {
-    id: 5,
-    name: "Fresh Spinach Bundles",
-    price: 3.99,
-    unit: "/pack",
-    code: "SPIN005",
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&h=800&fit=crop",
-    producer: "Green Valley Farm",
-    rating: 4.8,
-    reviews: 112,
-    badge: "Organic",
-    category: "Vegetables",
-    organic: true,
-  },
-  {
-    id: 6,
-    name: "Premium Blueberries",
-    price: 7.99,
-    unit: "/pack",
-    code: "BLUE006",
-    image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=800&h=800&fit=crop",
-    producer: "Berry Fields Co.",
-    rating: 5.0,
-    reviews: 203,
-    badge: "Premium",
-    category: "Fruits",
-    organic: true,
-  },
-  {
-    id: 7,
-    name: "Fresh Broccoli",
-    price: 3.29,
-    unit: "/lb",
-    code: "BROC007",
-    image: "https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?w=800&h=800&fit=crop",
-    producer: "Green Valley Farm",
-    rating: 4.6,
-    reviews: 67,
-    badge: null,
-    category: "Vegetables",
-    organic: true,
-  },
-  {
-    id: 8,
-    name: "Organic Strawberries",
-    price: 6.99,
-    unit: "/pack",
-    code: "STRA008",
-    image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=800&h=800&fit=crop",
-    producer: "Berry Fields Co.",
-    rating: 4.9,
-    reviews: 189,
-    badge: "Best Seller",
-    category: "Fruits",
-    organic: true,
-  },
-  {
-    id: 9,
-    name: "Fresh Bell Peppers",
-    price: 4.49,
-    unit: "/lb",
-    code: "PEPP009",
-    image: "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=800&h=800&fit=crop",
-    producer: "Sunny Side Farm",
-    rating: 4.7,
-    reviews: 91,
-    badge: null,
-    category: "Vegetables",
-    organic: false,
-  },
-  {
-    id: 10,
-    name: "Organic Kale",
-    price: 3.79,
-    unit: "/bunch",
-    code: "KALE010",
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&h=800&fit=crop",
-    producer: "Leaf & Root",
-    rating: 4.8,
-    reviews: 124,
-    badge: "Organic",
-    category: "Vegetables",
-    organic: true,
-  },
-]
+// Use TransformedProduct from product-api.ts
+type Product = TransformedProduct
 
-const productDetails: Record<number, any> = {
-  1: {
-    id: 1,
-    name: "Organic Heirloom Tomatoes",
-    price: 4.99,
-    unit: "per lb",
-    code: "TOMO001",
-    image: "https://images.unsplash.com/photo-1592924357228-91a8676d3a88?w=800&h=800&fit=crop",
-    producer: "Green Valley Farm",
-    producerImage: "https://images.unsplash.com/photo-1625246333195-78d9c38ad576?w=100&h=100&fit=crop",
-    rating: 4.8,
-    reviews: 156,
-    inStock: true,
-    badge: "Best Seller",
-    organic: true,
-    description: "Fresh, organic heirloom tomatoes grown without pesticides or synthetic fertilizers. These sun-ripened beauties are perfect for salads, cooking, or eating fresh. Handpicked at peak ripeness to ensure maximum flavor and nutrition.",
-    details: {
-      origin: "Marin County, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Summer to Fall",
-      harvested: "Daily",
-    },
-    nutritionFacts: {
-      calories: 18,
-      protein: "0.9g",
-      carbs: "3.9g",
-      fiber: "1.2g",
-    },
-    category: "Vegetables",
-  },
-  2: {
-    id: 2,
-    name: "Fresh Local Carrots",
-    price: 2.99,
-    unit: "per lb",
-    code: "CARR002",
-    image: "https://images.unsplash.com/photo-1599599810694-b5ac4dd64b51?w=800&h=800&fit=crop",
-    producer: "Sunny Side Farm",
-    producerImage: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=100&h=100&fit=crop",
-    rating: 4.9,
-    reviews: 203,
-    inStock: true,
-    badge: "New",
-    organic: true,
-    description: "Crisp, sweet carrots harvested at peak ripeness. Great raw, roasted, or juiced for maximum nutrition. Our carrots are grown using sustainable farming practices without any harmful pesticides.",
-    details: {
-      origin: "Sonoma County, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Year-round",
-      harvested: "Twice weekly",
-    },
-    nutritionFacts: {
-      calories: 41,
-      protein: "0.9g",
-      carbs: "10g",
-      fiber: "2.8g",
-    },
-    category: "Vegetables",
-  },
-  3: {
-    id: 3,
-    name: "Crisp Organic Lettuce",
-    price: 3.49,
-    unit: "per pack",
-    code: "LETT003",
-    image: "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=800&h=800&fit=crop",
-    producer: "Leaf & Root",
-    producerImage: "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=100&h=100&fit=crop",
-    rating: 4.7,
-    reviews: 82,
-    inStock: true,
-    organic: true,
-    description: "Fresh, crisp organic lettuce perfect for salads and sandwiches. Grown using sustainable methods and harvested daily to ensure maximum freshness.",
-    details: {
-      origin: "San Francisco, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Year-round",
-      harvested: "Daily",
-    },
-    nutritionFacts: {
-      calories: 15,
-      protein: "1.4g",
-      carbs: "2.9g",
-      fiber: "1.3g",
-    },
-    category: "Vegetables",
-  },
-  4: {
-    id: 4,
-    name: "Sweet Local Apples",
-    price: 5.99,
-    unit: "per lb",
-    code: "APPL004",
-    image: "https://images.unsplash.com/photo-1560806887-1e4cd0b27c8a?w=800&h=800&fit=crop",
-    producer: "Orchard Fresh",
-    producerImage: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=100&h=100&fit=crop",
-    rating: 4.9,
-    reviews: 156,
-    inStock: true,
-    badge: "Premium",
-    organic: true,
-    description: "Crisp, sweet apples picked fresh from our orchard. Perfect for snacking, baking, or making fresh juice. Available in multiple varieties.",
-    details: {
-      origin: "Sonoma County, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Fall to Spring",
-      harvested: "Weekly",
-    },
-    nutritionFacts: {
-      calories: 52,
-      protein: "0.3g",
-      carbs: "14g",
-      fiber: "2.4g",
-    },
-    category: "Fruits",
-  },
-  5: {
-    id: 5,
-    name: "Fresh Spinach Bundles",
-    price: 3.99,
-    unit: "per pack",
-    code: "SPIN005",
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&h=800&fit=crop",
-    producer: "Green Valley Farm",
-    producerImage: "https://images.unsplash.com/photo-1625246333195-78d9c38ad576?w=100&h=100&fit=crop",
-    rating: 4.8,
-    reviews: 112,
-    inStock: true,
-    badge: "Organic",
-    organic: true,
-    description: "Fresh, tender spinach leaves perfect for salads, smoothies, or cooking. Packed with nutrients and flavor.",
-    details: {
-      origin: "Marin County, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Year-round",
-      harvested: "Twice weekly",
-    },
-    nutritionFacts: {
-      calories: 23,
-      protein: "2.9g",
-      carbs: "3.6g",
-      fiber: "2.2g",
-    },
-    category: "Vegetables",
-  },
-  6: {
-    id: 6,
-    name: "Premium Blueberries",
-    price: 7.99,
-    unit: "per pack",
-    code: "BLUE006",
-    image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=800&h=800&fit=crop",
-    producer: "Berry Fields Co.",
-    producerImage: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=100&h=100&fit=crop",
-    rating: 5.0,
-    reviews: 203,
-    inStock: true,
-    badge: "Premium",
-    organic: true,
-    description: "Sweet, plump blueberries bursting with flavor. Perfect for breakfast, desserts, or as a healthy snack.",
-    details: {
-      origin: "Watsonville, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Summer",
-      harvested: "Daily",
-    },
-    nutritionFacts: {
-      calories: 57,
-      protein: "0.7g",
-      carbs: "14g",
-      fiber: "2.4g",
-    },
-    category: "Fruits",
-  },
-  7: {
-    id: 7,
-    name: "Fresh Broccoli",
-    price: 3.29,
-    unit: "per lb",
-    code: "BROC007",
-    image: "https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?w=800&h=800&fit=crop",
-    producer: "Green Valley Farm",
-    rating: 4.6,
-    reviews: 67,
-    inStock: true,
-    organic: true,
-    description: "Fresh, crisp broccoli perfect for steaming, roasting, or adding to stir-fries.",
-    details: {
-      origin: "Marin County, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Year-round",
-      harvested: "Twice weekly",
-    },
-    nutritionFacts: {
-      calories: 34,
-      protein: "2.8g",
-      carbs: "7g",
-      fiber: "2.6g",
-    },
-    category: "Vegetables",
-  },
-  8: {
-    id: 8,
-    name: "Organic Strawberries",
-    price: 6.99,
-    unit: "per pack",
-    code: "STRA008",
-    image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=800&h=800&fit=crop",
-    producer: "Berry Fields Co.",
-    rating: 4.9,
-    reviews: 189,
-    inStock: true,
-    badge: "Best Seller",
-    organic: true,
-    description: "Sweet, juicy organic strawberries. Perfect for desserts, smoothies, or fresh eating.",
-    details: {
-      origin: "Watsonville, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Spring to Summer",
-      harvested: "Daily",
-    },
-    nutritionFacts: {
-      calories: 32,
-      protein: "0.7g",
-      carbs: "7.7g",
-      fiber: "2g",
-    },
-    category: "Fruits",
-  },
-  9: {
-    id: 9,
-    name: "Fresh Bell Peppers",
-    price: 4.49,
-    unit: "per lb",
-    code: "PEPP009",
-    image: "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=800&h=800&fit=crop",
-    producer: "Sunny Side Farm",
-    rating: 4.7,
-    reviews: 91,
-    inStock: true,
-    organic: false,
-    description: "Colorful bell peppers in red, yellow, and green. Great for salads, roasting, or stuffing.",
-    details: {
-      origin: "Sonoma County, CA",
-      organic: false,
-      pesticide_free: false,
-      season: "Summer to Fall",
-      harvested: "Twice weekly",
-    },
-    nutritionFacts: {
-      calories: 31,
-      protein: "1g",
-      carbs: "7g",
-      fiber: "2.5g",
-    },
-    category: "Vegetables",
-  },
-  10: {
-    id: 10,
-    name: "Organic Kale",
-    price: 3.79,
-    unit: "per bunch",
-    code: "KALE010",
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&h=800&fit=crop",
-    producer: "Leaf & Root",
-    rating: 4.8,
-    reviews: 124,
-    inStock: true,
-    badge: "Organic",
-    organic: true,
-    description: "Nutrient-dense organic kale perfect for salads, smoothies, or sautéing.",
-    details: {
-      origin: "San Francisco, CA",
-      organic: true,
-      pesticide_free: true,
-      season: "Year-round",
-      harvested: "Twice weekly",
-    },
-    nutritionFacts: {
-      calories: 49,
-      protein: "4.3g",
-      carbs: "8.8g",
-      fiber: "2g",
-    },
-    category: "Vegetables",
-  },
+interface ProductsResponse {
+  products: any[]
+  count?: number
+}
+
+interface ProductDetailsResponse {
+  product: any
 }
 
 export default function ProductsPage() {
@@ -460,24 +36,98 @@ export default function ProductsPage() {
   const [favorites, setFavorites] = useState<number[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null)
+  const [selectedProductDetails, setSelectedProductDetails] = useState<any | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
   
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 20])
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000])
   const [sortBy, setSortBy] = useState("featured")
 
-  const filteredProducts = allProducts.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.producer.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = !selectedCategory || selectedCategory === "All" || 
-      (selectedCategory === "Organic" ? product.organic : product.category === selectedCategory)
-    const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
-    return matchesSearch && matchesCategory && matchesPrice
-  }).sort((a, b) => {
-    if (sortBy === "price-low") return a.price - b.price
-    if (sortBy === "price-high") return b.price - a.price
-    if (sortBy === "rating") return b.rating - a.rating
-    return 0
-  })
+  // Track when component mounts on client
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // Fetch all products
+  const { data: productsResponse, loading: productsLoading, error: productsError, refetch: refetchProducts } = useApiFetch<ProductsResponse>(
+    '/products',
+    { enabled: true }
+  )
+
+  // Fetch product details when a product is selected
+  const { data: productDetailsResponse, loading: detailsLoading } = useApiFetch<ProductDetailsResponse>(
+    selectedProduct ? `/products/${selectedProduct}` : '',
+    { enabled: !!selectedProduct }
+  )
+
+  // Update selected product details when response changes
+  useEffect(() => {
+    if (productDetailsResponse?.product) {
+      setSelectedProductDetails(productDetailsResponse.product)
+    }
+  }, [productDetailsResponse])
+
+  // Extract products from response
+  const rawProducts = productsResponse?.products || (Array.isArray(productsResponse) ? productsResponse : [])
+  
+  // Use loading state directly - only show skeleton on client after mount
+  const isLoading = isMounted && productsLoading
+
+  // Transform products using the API utility function
+  const products = useMemo(() => {
+    return transformProducts(rawProducts)
+  }, [rawProducts])
+
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    // Check if filters are at default (no active filtering)
+    const hasSearchQuery = searchQuery.trim().length > 0
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 1000
+    const hasActiveFilters = hasSearchQuery || !isDefaultPriceRange || selectedCategory
+    
+    // Filter products
+    let filtered = products
+    if (hasActiveFilters) {
+      filtered = products.filter((product) => {
+        // Search filter
+        const matchesSearch = !hasSearchQuery || 
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.producer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.code?.toLowerCase().includes(searchQuery.toLowerCase())
+        
+        // Category filter
+        const matchesCategory = !selectedCategory || selectedCategory === "All" || 
+          (selectedCategory === "Organic" ? product.organic : product.category === selectedCategory)
+        
+        // Price filter - handle edge cases
+        let price = typeof product.price === "number" ? product.price : parseFloat(product.price.toString())
+        if (isNaN(price) || price < 0) {
+          price = 0
+        }
+        const matchesPrice = isDefaultPriceRange || (price >= priceRange[0] && price <= priceRange[1])
+        
+        return matchesSearch && matchesCategory && matchesPrice
+      })
+    }
+    
+    // Sort products
+    return filtered.sort((a, b) => {
+      if (sortBy === "price-low") {
+        const priceA = typeof a.price === "number" ? a.price : parseFloat(a.price.toString()) || 0
+        const priceB = typeof b.price === "number" ? b.price : parseFloat(b.price.toString()) || 0
+        return priceA - priceB
+      }
+      if (sortBy === "price-high") {
+        const priceA = typeof a.price === "number" ? a.price : parseFloat(a.price.toString()) || 0
+        const priceB = typeof b.price === "number" ? b.price : parseFloat(b.price.toString()) || 0
+        return priceB - priceA
+      }
+      if (sortBy === "rating") {
+        return (b.rating || 0) - (a.rating || 0)
+      }
+      return 0
+    })
+  }, [products, searchQuery, priceRange, selectedCategory, sortBy])
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]))
@@ -487,16 +137,62 @@ export default function ProductsPage() {
     setSelectedProduct(id)
   }
 
-  const getRelatedProducts = (productId: number) => {
-    const product = productDetails[productId as keyof typeof productDetails]
+  const getRelatedProducts = (productId: number): any[] => {
+    const product = products.find(p => p.id === productId)
     if (!product) return []
-    return allProducts
+    return products
       .filter((p) => p.id !== productId && (p.category === product.category || p.producer === product.producer))
       .slice(0, 5)
-      .map((p) => ({
-        ...p,
-        ...productDetails[p.id as keyof typeof productDetails],
-      }))
+      .map((p) => transformProduct(p))
+  }
+
+  // transformProductDetails is now imported from product-api.ts
+
+  // Show skeleton only on client side to avoid hydration mismatch
+  if (isLoading && isMounted) {
+    return (
+      <div className="flex flex-col h-screen bg-background">
+        <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+        <main className="flex-1 overflow-auto">
+          <div className="bg-white">
+            <ProductCategories selectedCategory={selectedCategory} onCategorySelect={setSelectedCategory} />
+            <div className="px-6 py-6">
+              <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <ProductCardSkeleton count={12} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (productsError && products.length === 0) {
+    return (
+      <div className="flex flex-col h-screen bg-background">
+        <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+        <main className="flex-1 overflow-auto">
+          <div className="px-6 py-16 bg-gradient-to-b from-white to-gray-50/50">
+            <div className="max-w-7xl mx-auto text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-6">
+                <Package className="w-10 h-10 text-red-600" />
+              </div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">Error Loading Products</h1>
+              <p className="text-lg text-gray-600 mb-6">{productsError}</p>
+              <Button onClick={refetchProducts} className="bg-[#0A5D31] hover:bg-[#0d7a3f]">
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
   }
 
   return (
@@ -580,44 +276,44 @@ export default function ProductsPage() {
                       <label className="text-sm font-medium text-gray-700 mb-2 block">Price Range</label>
                       <div className="flex flex-wrap gap-2">
                         <Button
-                          variant={priceRange[0] === 0 && priceRange[1] === 20 ? "default" : "outline"}
+                          variant={priceRange[0] === 0 && priceRange[1] === 1000 ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setPriceRange([0, 20])}
+                          onClick={() => setPriceRange([0, 1000])}
                           className="rounded-full text-xs"
                         >
                           All
                         </Button>
                         <Button
-                          variant={priceRange[0] === 0 && priceRange[1] === 5 ? "default" : "outline"}
+                          variant={priceRange[0] === 0 && priceRange[1] === 10 ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setPriceRange([0, 5])}
+                          onClick={() => setPriceRange([0, 10])}
                           className="rounded-full text-xs"
                         >
-                          Under $5
+                          Under $10
                         </Button>
                         <Button
-                          variant={priceRange[0] === 5 && priceRange[1] === 10 ? "default" : "outline"}
+                          variant={priceRange[0] === 10 && priceRange[1] === 25 ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setPriceRange([5, 10])}
+                          onClick={() => setPriceRange([10, 25])}
                           className="rounded-full text-xs"
                         >
-                          $5 - $10
+                          $10 - $25
                         </Button>
                         <Button
-                          variant={priceRange[0] === 10 && priceRange[1] === 20 ? "default" : "outline"}
+                          variant={priceRange[0] === 25 && priceRange[1] === 50 ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setPriceRange([10, 20])}
+                          onClick={() => setPriceRange([25, 50])}
                           className="rounded-full text-xs"
                         >
-                          $10 - $20
+                          $25 - $50
                         </Button>
                         <Button
-                          variant={priceRange[0] === 20 ? "default" : "outline"}
+                          variant={priceRange[0] === 50 ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setPriceRange([20, 100])}
+                          onClick={() => setPriceRange([50, 1000])}
                           className="rounded-full text-xs"
                         >
-                          Over $20
+                          Over $50
                         </Button>
                       </div>
                     </div>
@@ -654,7 +350,7 @@ export default function ProductsPage() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setPriceRange([0, 20])
+                        setPriceRange([0, 1000])
                         setSelectedCategory(null)
                         setSearchQuery("")
                       }}
@@ -669,7 +365,7 @@ export default function ProductsPage() {
               {/* Results Count */}
               <div className="mb-6 flex items-center gap-4">
                 <p className="text-sm text-gray-600">
-                  Showing <span className="font-bold text-[#0A5D31]">{filteredProducts.length}</span> of {allProducts.length} products
+                  Showing <span className="font-bold text-[#0A5D31]">{filteredProducts.length}</span> of {products.length} products
                 </p>
                 {selectedCategory && (
                   <Badge className="bg-[#0A5D31]/10 text-[#0A5D31] px-3 py-1 rounded-full">
@@ -688,11 +384,11 @@ export default function ProductsPage() {
                       name={product.name}
                       price={product.price}
                       unit={product.unit}
-                      code={product.code}
-                      image={product.image}
-                      producer={product.producer}
-                      rating={product.rating}
-                      reviews={product.reviews}
+                      code={product.code || ""}
+                      image={product.image || "/placeholder.svg"}
+                      producer={product.producer || "Unknown Producer"}
+                      rating={product.rating || 0}
+                      reviews={product.reviews || 0}
                       badge={product.badge}
                       organic={product.organic}
                       isFavorite={favorites.includes(product.id)}
@@ -747,7 +443,7 @@ export default function ProductsPage() {
                               <Star
                                 key={i}
                                 className={`w-4 h-4 ${
-                                  i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                                  i < Math.floor(product.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
                                 }`}
                               />
                             ))}
@@ -762,7 +458,7 @@ export default function ProductsPage() {
                       <div className="pt-4 border-t border-gray-200">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-baseline gap-1">
-                            <span className="font-bold text-2xl text-[#0A5D31]">${product.price.toFixed(2)}</span>
+                            <span className="font-bold text-2xl text-[#0A5D31]">${typeof product.price === "number" ? product.price.toFixed(2) : parseFloat(product.price.toString() || "0").toFixed(2)}</span>
                             <span className="text-sm text-muted-foreground">{product.unit}</span>
                           </div>
                         </div>
@@ -799,7 +495,7 @@ export default function ProductsPage() {
                       onClick={() => {
                         setSearchQuery("")
                         setSelectedCategory(null)
-                        setPriceRange([0, 20])
+                        setPriceRange([0, 1000])
                       }}
                       className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white"
                     >
@@ -817,18 +513,18 @@ export default function ProductsPage() {
                     <p className="text-muted-foreground">Products similar to what you're viewing</p>
                   </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                          {allProducts.slice(0, 5).map((product) => (
+                          {products.slice(0, 5).map((product) => (
                             <ProductCard
                               key={product.id}
                               id={product.id}
                               name={product.name}
                               price={product.price}
                               unit={product.unit}
-                              code={product.code}
-                              image={product.image}
-                              producer={product.producer}
-                              rating={product.rating}
-                              reviews={product.reviews}
+                              code={product.code || ""}
+                              image={product.image || "/placeholder.svg"}
+                              producer={product.producer || "Unknown Producer"}
+                              rating={product.rating || 0}
+                              reviews={product.reviews || 0}
                               badge={product.badge}
                               organic={product.organic}
                               isFavorite={favorites.includes(product.id)}
@@ -848,18 +544,18 @@ export default function ProductsPage() {
                     <p className="text-muted-foreground">Continue shopping from where you left off</p>
                   </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                          {allProducts.slice(5, 10).map((product) => (
+                          {products.slice(5, 10).map((product) => (
                             <ProductCard
                               key={product.id}
                               id={product.id}
                               name={product.name}
                               price={product.price}
                               unit={product.unit}
-                              code={product.code}
-                              image={product.image}
-                              producer={product.producer}
-                              rating={product.rating}
-                              reviews={product.reviews}
+                              code={product.code || ""}
+                              image={product.image || "/placeholder.svg"}
+                              producer={product.producer || "Unknown Producer"}
+                              rating={product.rating || 0}
+                              reviews={product.reviews || 0}
                               badge={product.badge}
                               organic={product.organic}
                               isFavorite={favorites.includes(product.id)}
@@ -876,11 +572,16 @@ export default function ProductsPage() {
       <Footer />
       </main>
 
-      {selectedProduct && (
+      {selectedProduct && selectedProductDetails && !detailsLoading && (
         <ProductDetailsModal
-          product={productDetails[selectedProduct as keyof typeof productDetails]}
-          open={selectedProduct !== null}
-          onOpenChange={(open) => !open && setSelectedProduct(null)}
+          product={transformProductDetails(selectedProductDetails)}
+          open={selectedProduct !== null && !detailsLoading}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedProduct(null)
+              setSelectedProductDetails(null)
+            }
+          }}
           relatedProducts={getRelatedProducts(selectedProduct)}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}

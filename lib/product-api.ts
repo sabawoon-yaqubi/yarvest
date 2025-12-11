@@ -3,6 +3,7 @@
 
 import api from './axios'
 import { toast } from 'sonner'
+import { getImageUrl } from './utils'
 
 export interface Unit {
   id: number
@@ -52,6 +53,59 @@ export interface Product {
   main_image: string
   excerpt: string
   details: string
+}
+
+// Transformed product interface for frontend display
+export interface TransformedProduct {
+  id: number
+  name: string
+  price: number | string
+  unit: string
+  code?: string
+  image?: string
+  producer?: string
+  rating?: number
+  reviews?: number
+  badge?: string | null
+  organic?: boolean
+  category?: string
+  category_id?: number
+  stock?: number
+  discount?: number
+  originalPrice?: number
+  [key: string]: any
+}
+
+// Product details interface for modal/detail view
+export interface ProductDetails {
+  id: number
+  name: string
+  price: number
+  unit: string
+  code: string
+  image: string
+  producer: string
+  producerImage?: string
+  rating: number
+  reviews: number
+  inStock: boolean
+  badge?: string | null
+  organic?: boolean
+  description: string
+  details?: {
+    origin: string
+    organic: boolean
+    pesticide_free: boolean
+    season: string
+    harvested: string
+  }
+  nutritionFacts?: {
+    calories: number
+    protein: string
+    carbs: string
+    fiber: string
+  }
+  category?: string
 }
 
 /**
@@ -193,5 +247,164 @@ export async function deleteProduct(uniqueId: string): Promise<void> {
     toast.error(errorMessage)
     throw error
   }
+}
+
+/**
+ * Transform raw API product to component format
+ * Handles various API response structures and normalizes the data
+ */
+export function transformProduct(product: any): TransformedProduct {
+  // Get image - use main_image or first image from images array
+  let productImage = product.main_image
+  if (!productImage && product.images && Array.isArray(product.images) && product.images.length > 0) {
+    productImage = product.images[0].image
+  }
+  
+  // Get producer name from seller
+  let producerName = "Unknown Producer"
+  if (product.seller) {
+    const firstName = product.seller.first_name || ""
+    const lastName = product.seller.last_name || ""
+    producerName = `${firstName} ${lastName}`.trim() || product.seller.email || "Unknown Producer"
+  }
+  
+  // Get unit from product_type
+  const unit = product.product_type?.name || "/unit"
+  
+  // Get category name
+  const categoryName = product.category?.name || product.product_category?.name || ""
+  
+  // Calculate price with discount
+  const basePrice = parseFloat(product.price || "0")
+  const discount = parseFloat(product.discount || "0")
+  const finalPrice = discount > 0 ? basePrice - discount : basePrice
+  
+  // Handle rating - can be a number or an object with average_rating
+  let ratingValue = 0
+  if (product.rating) {
+    if (typeof product.rating === 'object' && product.rating.average_rating !== undefined) {
+      ratingValue = parseFloat(product.rating.average_rating) || 0
+    } else if (typeof product.rating === 'number') {
+      ratingValue = product.rating
+    }
+  } else if (product.average_rating) {
+    ratingValue = parseFloat(product.average_rating) || 0
+  }
+  
+  // Handle reviews - can be a number or from rating object
+  let reviewsValue = 0
+  if (product.reviews_count !== undefined) {
+    reviewsValue = parseInt(product.reviews_count) || 0
+  } else if (product.reviews !== undefined) {
+    reviewsValue = parseInt(product.reviews) || 0
+  } else if (product.rating && typeof product.rating === 'object' && product.rating.total !== undefined) {
+    reviewsValue = parseInt(product.rating.total) || 0
+  }
+  
+  return {
+    id: product.id,
+    name: product.name || "Unnamed Product",
+    price: finalPrice,
+    unit: unit,
+    code: product.sku || product.unique_id || "",
+    image: getImageUrl(productImage),
+    producer: producerName,
+    rating: ratingValue,
+    reviews: reviewsValue,
+    badge: discount > 0 ? "On Sale" : null,
+    organic: product.organic || product.is_organic || false,
+    category: categoryName,
+    category_id: product.product_category_id,
+    stock: product.stock || 0,
+    discount: discount,
+    originalPrice: basePrice,
+  }
+}
+
+/**
+ * Transform product details for modal/detail view
+ * Returns null if product is invalid
+ */
+export function transformProductDetails(product: any): ProductDetails | null {
+  if (!product) return null
+  
+  let productImage = product.main_image
+  if (!productImage && product.images && Array.isArray(product.images) && product.images.length > 0) {
+    productImage = product.images[0].image
+  }
+  
+  let producerName = "Unknown Producer"
+  let producerImage = ""
+  if (product.seller) {
+    const firstName = product.seller.first_name || ""
+    const lastName = product.seller.last_name || ""
+    producerName = `${firstName} ${lastName}`.trim() || product.seller.email || "Unknown Producer"
+    producerImage = product.seller.profile_image || ""
+  }
+  
+  const unit = product.product_type?.name || "per unit"
+  const basePrice = parseFloat(product.price || "0")
+  const discount = parseFloat(product.discount || "0")
+  const finalPrice = discount > 0 ? basePrice - discount : basePrice
+  
+  // Handle rating - can be a number or an object with average_rating
+  let ratingValue = 0
+  if (product.rating) {
+    if (typeof product.rating === 'object' && product.rating.average_rating !== undefined) {
+      ratingValue = parseFloat(product.rating.average_rating) || 0
+    } else if (typeof product.rating === 'number') {
+      ratingValue = product.rating
+    }
+  } else if (product.average_rating) {
+    ratingValue = parseFloat(product.average_rating) || 0
+  }
+  
+  // Handle reviews - can be a number or from rating object
+  let reviewsValue = 0
+  if (product.reviews_count !== undefined) {
+    reviewsValue = parseInt(product.reviews_count) || 0
+  } else if (product.reviews !== undefined) {
+    reviewsValue = parseInt(product.reviews) || 0
+  } else if (product.rating && typeof product.rating === 'object' && product.rating.total !== undefined) {
+    reviewsValue = parseInt(product.rating.total) || 0
+  }
+  
+  return {
+    id: product.id,
+    name: product.name || "Unnamed Product",
+    price: finalPrice,
+    unit: unit,
+    code: product.sku || product.unique_id || "",
+    image: getImageUrl(productImage),
+    producer: producerName,
+    producerImage: getImageUrl(producerImage),
+    rating: ratingValue,
+    reviews: reviewsValue,
+    inStock: (product.stock || 0) > 0,
+    badge: discount > 0 ? "On Sale" : null,
+    organic: product.organic || product.is_organic || false,
+    description: product.details || product.excerpt || "No description available",
+    details: {
+      origin: product.origin || "Unknown",
+      organic: product.organic || product.is_organic || false,
+      pesticide_free: product.organic || product.is_organic || false,
+      season: product.season || "Year-round",
+      harvested: product.harvested || "Regular",
+    },
+    nutritionFacts: product.nutrition_facts || {
+      calories: 0,
+      protein: "0g",
+      carbs: "0g",
+      fiber: "0g",
+    },
+    category: product.category?.name || product.product_category?.name || "",
+  }
+}
+
+/**
+ * Transform array of products
+ */
+export function transformProducts(products: any[]): TransformedProduct[] {
+  return products.map(transformProduct)
 }
 

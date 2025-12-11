@@ -12,29 +12,13 @@ import { SlidersHorizontal, Grid3x3, List, Search, ArrowLeft, Package, ShoppingC
 import { useState, useEffect, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { getImageUrl } from "@/lib/utils"
+import { transformProduct, transformProducts, type TransformedProduct } from "@/lib/product-api"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
+import { getImageUrl } from "@/lib/utils"
 
-interface Product {
-  id: number
-  name: string
-  price: number | string
-  unit: string
-  code?: string
-  image?: string
-  producer?: string
-  rating?: number
-  reviews?: number
-  badge?: string | null
-  organic?: boolean
-  category_id?: number
-  category_unique_id?: string
-  stock?: number
-  discount?: number
-  originalPrice?: number
-  [key: string]: any
-}
+// Use TransformedProduct from product-api.ts
+type Product = TransformedProduct
 
 interface Category {
   id: number
@@ -82,66 +66,41 @@ export default function CategoryProductsPage() {
   // Use loading state directly - only show skeleton on client after mount
   const isLoading = isMounted && loading
 
-  // Transform raw API product to component format
-  const transformProduct = (product: any): Product => {
-    // Get image - use main_image or first image from images array
-    let productImage = product.main_image
-    if (!productImage && product.images && Array.isArray(product.images) && product.images.length > 0) {
-      productImage = product.images[0].image
-    }
-    
-    // Get producer name from seller
-    let producerName = "Unknown Producer"
-    if (product.seller) {
-      const firstName = product.seller.first_name || ""
-      const lastName = product.seller.last_name || ""
-      producerName = `${firstName} ${lastName}`.trim() || product.seller.email || "Unknown Producer"
-    }
-    
-    // Get unit from product_type
-    const unit = product.product_type?.name || "/unit"
-    
-    // Calculate price with discount
-    const basePrice = parseFloat(product.price || "0")
-    const discount = parseFloat(product.discount || "0")
-    const finalPrice = discount > 0 ? basePrice - discount : basePrice
-    
-    return {
-      id: product.id,
-      name: product.name || "Unnamed Product",
-      price: finalPrice,
-      unit: unit,
-      code: product.sku || product.unique_id || "",
-      image: getImageUrl(productImage),
-      producer: producerName,
-      rating: product.rating || product.average_rating || 0,
-      reviews: product.reviews_count || product.reviews || 0,
-      badge: discount > 0 ? "On Sale" : null,
-      organic: product.organic || product.is_organic || false,
-      category_id: product.product_category_id,
-      stock: product.stock || 0,
-      discount: discount,
-      originalPrice: basePrice,
-    }
-  }
-
-  // Transform products
+  // Transform products using the API utility function
   const products = useMemo(() => {
-    return rawProducts.map(transformProduct)
+    return transformProducts(rawProducts)
   }, [rawProducts])
 
   // Filter and sort products
-  const filteredProducts = products
-    .filter((product) => {
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.producer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.code?.toLowerCase().includes(searchQuery.toLowerCase())
-      const price = typeof product.price === "number" ? product.price : parseFloat(product.price.toString()) || 0
-      const matchesPrice = price >= priceRange[0] && price <= priceRange[1]
-      return matchesSearch && matchesPrice
-    })
-    .sort((a, b) => {
+  const filteredProducts = useMemo(() => {
+    // Check if filters are at default (no active filtering)
+    const hasSearchQuery = searchQuery.trim().length > 0
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 1000
+    const hasActiveFilters = hasSearchQuery || !isDefaultPriceRange
+    
+    // Filter products
+    let filtered = products
+    if (hasActiveFilters) {
+      filtered = products.filter((product) => {
+        // Search filter
+        const matchesSearch = !hasSearchQuery || 
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.producer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.code?.toLowerCase().includes(searchQuery.toLowerCase())
+        
+        // Price filter - handle edge cases
+        let price = typeof product.price === "number" ? product.price : parseFloat(product.price.toString())
+        if (isNaN(price) || price < 0) {
+          price = 0
+        }
+        const matchesPrice = price >= priceRange[0] && price <= priceRange[1]
+        
+        return matchesSearch && matchesPrice
+      })
+    }
+    
+    // Sort products
+    return filtered.sort((a, b) => {
       if (sortBy === "price-low") {
         const priceA = typeof a.price === "number" ? a.price : parseFloat(a.price.toString()) || 0
         const priceB = typeof b.price === "number" ? b.price : parseFloat(b.price.toString()) || 0
@@ -157,6 +116,7 @@ export default function CategoryProductsPage() {
       }
       return 0
     })
+  }, [products, searchQuery, priceRange, sortBy])
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]))
