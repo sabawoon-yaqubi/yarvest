@@ -39,3 +39,10 @@ export type {
   ApiTestimonial,
 } from "./testimonial"
 
+// FAQ types
+export type {
+  FAQ,
+  FAQCategory,
+  FAQData,
+} from "./faq"
+

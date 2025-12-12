@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { ShoppingCart, Heart, Star } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import { getImageUrl } from "@/lib/utils"
 
 interface ProductCardProps {
   id: number
@@ -12,7 +13,7 @@ interface ProductCardProps {
   price: string | number
   unit: string
   code: string
-  image: string
+  image: string | null
   producer: string
   rating: number
   reviews: number
@@ -45,12 +46,11 @@ export function ProductCard({
 }: ProductCardProps) {
   const priceDisplay = typeof price === "number" ? price.toFixed(2) : price
   const [imgError, setImgError] = useState(false)
-  const [imgSrc, setImgSrc] = useState(image || "/placeholder.svg")
+  const imageUrl = getImageUrl(image, name)
 
   const handleImageError = () => {
     if (!imgError) {
       setImgError(true)
-      setImgSrc("/placeholder.svg")
     }
   }
 
@@ -61,8 +61,9 @@ export function ProductCard({
       {/* Product Image */}
             <div className="relative group overflow-hidden bg-secondary h-52">
               <div className="cursor-pointer" onClick={() => onClick?.(id)}>
+                
                 <img
-                  src={imgSrc}
+                  src={imageUrl}
                   alt={name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   onError={handleImageError}

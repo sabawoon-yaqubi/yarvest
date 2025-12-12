@@ -309,7 +309,7 @@ export default function ProductDetailPage() {
               {/* Price - Large & Prominent */}
               <div className="mb-8 pb-8 border-b border-gray-200">
                 <div className="flex items-baseline gap-3">
-                  <span className="text-5xl font-extrabold text-gray-900">${product.price.toFixed(2)}</span>
+                  <span className="text-5xl font-extrabold text-gray-900">${typeof product.price === "number" ? product.price.toFixed(2) : parseFloat(product.price.toString() || "0").toFixed(2)}</span>
                   <span className="text-xl text-gray-500">{product.unit}</span>
                 </div>
                 {product.inStock && (

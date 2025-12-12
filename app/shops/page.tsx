@@ -6,65 +6,120 @@ import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { MapPin, Star, Clock, Phone, Search } from "lucide-react"
-import { useState } from "react"
+import { MapPin, Star, Clock, Phone, Search, Loader2 } from "lucide-react"
+import { useState, useMemo } from "react"
+import { useApiFetch } from "@/hooks/use-api-fetch"
+import { usePaginatedApi } from "@/hooks/use-paginated-api"
+import Link from "next/link"
+import { ApiResponse } from "@/types/api"
 
-const shops = [
-  {
-    id: 1,
-    name: "Yarvest Market - Downtown",
-    location: "123 Main St, San Francisco, CA",
-    hours: "8:00 AM - 8:00 PM",
-    phone: "(555) 123-4567",
-    rating: 4.8,
-    reviews: 245,
-    image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=500&h=400&fit=crop",
-    specialty: "Fresh Produce & Organic Foods",
-  },
-  {
-    id: 2,
-    name: "Yarvest Market - Mission",
-    location: "456 Valencia St, San Francisco, CA",
-    hours: "7:00 AM - 9:00 PM",
-    phone: "(555) 234-5678",
-    rating: 4.7,
-    reviews: 189,
-    image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad576?w=500&h=400&fit=crop",
-    specialty: "Local Farmers & Artisan Goods",
-  },
-  {
-    id: 3,
-    name: "Yarvest Market - Oakland",
-    location: "789 Telegraph Ave, Oakland, CA",
-    hours: "8:00 AM - 7:00 PM",
-    phone: "(555) 345-6789",
-    rating: 4.9,
-    reviews: 312,
-    image: "https://images.unsplash.com/photo-1533322088b9-8808f011e87b?w=500&h=400&fit=crop",
-    specialty: "Organic & Sustainable Products",
-  },
-  {
-    id: 4,
-    name: "Yarvest Market - Berkeley",
-    location: "321 University Ave, Berkeley, CA",
-    hours: "9:00 AM - 8:00 PM",
-    phone: "(555) 456-7890",
-    rating: 4.6,
-    reviews: 178,
-    image: "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=500&h=400&fit=crop",
-    specialty: "Community & Educational Focus",
-  },
-]
+interface StoreLocation {
+  city?: string
+  state?: string
+  country?: string
+  full_location?: string
+}
+
+interface Store {
+  id: number
+  unique_id: string
+  name: string
+  logo: string | null
+  description: string | null
+  bio: string | null
+  website: string | null
+  phone: string | null
+  email: string | null
+  store_type: {
+    id: number
+    name: string
+  } | null
+  user: {
+    id: number
+    unique_id: string
+    full_name: string
+    image: string | null
+    location?: StoreLocation | null
+  } | null
+  location?: StoreLocation | null
+  items_count: number
+  status: boolean
+  created_at: string
+  updated_at: string
+}
+
+interface StoresResponse {
+  data: Store[]
+  pagination: {
+    current_page: number
+    per_page: number
+    total: number
+    total_pages: number
+  }
+}
 
 export default function ShopsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [page, setPage] = useState(1)
 
-  const filteredShops = shops.filter(
-    (shop) =>
-      shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      shop.location.toLowerCase().includes(searchQuery.toLowerCase()),
+  const { data, loading, error, loadMore, hasMore } = usePaginatedApi<Store>(
+    "/stores",
+    {
+      limit: 12,
+      enabled: true,
+    }
   )
+
+  const filteredShops = useMemo(() => {
+    if (!data) return []
+    if (!searchQuery.trim()) return data
+
+    const query = searchQuery.toLowerCase()
+    return data.filter(
+      (shop) =>
+        shop.name.toLowerCase().includes(query) ||
+        shop.description?.toLowerCase().includes(query) ||
+        shop.store_type?.name.toLowerCase().includes(query) ||
+        shop.user?.full_name.toLowerCase().includes(query)
+    )
+  }, [data, searchQuery])
+
+  const formatLocation = (store: Store): string => {
+    if (store.location?.full_location) {
+      return store.location.full_location
+    }
+    if (store.location) {
+      const parts = [
+        store.location.city,
+        store.location.state,
+        store.location.country
+      ].filter(Boolean)
+      if (parts.length > 0) {
+        return parts.join(', ')
+      }
+    }
+    if (store.user?.location?.full_location) {
+      return store.user.location.full_location
+    }
+    if (store.user?.location) {
+      const parts = [
+        store.user.location.city,
+        store.user.location.state,
+        store.user.location.country
+      ].filter(Boolean)
+      if (parts.length > 0) {
+        return parts.join(', ')
+      }
+    }
+    return store.store_type?.name || "Location not available"
+  }
+
+  const formatHours = (store: Store): string => {
+    // Hours would come from store.hours relationship
+    // For now, return a default
+    return "Check store for hours"
+  }
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -86,7 +141,7 @@ export default function ShopsPage() {
                 <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search by store name or location..."
+                  placeholder="Search by store name, description, or type..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-14 h-14 text-base rounded-full border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -94,58 +149,127 @@ export default function ShopsPage() {
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && filteredShops.length === 0 && (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <span className="ml-3 text-muted-foreground">Loading stores...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && filteredShops.length === 0 && (
+              <Card className="p-12 text-center rounded-3xl">
+                <p className="text-red-500 text-lg mb-4">Error loading stores: {error}</p>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Retry
+                </Button>
+              </Card>
+            )}
+
             {/* Shops Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {filteredShops.map((shop) => (
-                <Card
-                  key={shop.id}
-                  className="overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-105 rounded-3xl shadow-sm bg-white flex flex-col h-full"
-                >
-                  <div className="relative group overflow-hidden bg-secondary h-64">
-                    <img
-                      src={shop.image || "/placeholder.svg"}
-                      alt={shop.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-7 flex flex-col flex-1">
-                    <h3 className="text-2xl font-bold text-foreground mb-2">{shop.name}</h3>
-                    <p className="text-sm font-semibold text-primary mb-6 uppercase tracking-wide">{shop.specialty}</p>
+            {!loading && filteredShops.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {filteredShops.map((shop) => (
+                    <Link key={shop.id} href={`/shops/${shop.unique_id}`}>
+                      <Card className="overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-105 rounded-3xl shadow-sm bg-white flex flex-col h-full cursor-pointer">
+                        <div className="relative group overflow-hidden bg-secondary h-64">
+                          <img
+                            src={shop.logo || "/placeholder.svg"}
+                            alt={shop.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder.svg"
+                            }}
+                          />
+                          {shop.store_type && (
+                            <div className="absolute top-3 left-3 bg-primary/90 text-white px-3 py-1 rounded-full text-xs font-bold uppercase">
+                              {shop.store_type.name}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-7 flex flex-col flex-1">
+                          <h3 className="text-2xl font-bold text-foreground mb-2">{shop.name}</h3>
+                          {shop.store_type && (
+                            <p className="text-sm font-semibold text-primary mb-6 uppercase tracking-wide">
+                              {shop.store_type.name}
+                            </p>
+                          )}
 
-                    <div className="space-y-3.5 mb-8 pb-8 border-b-2 border-border flex-1">
-                      <div className="flex items-start gap-3 text-sm">
-                        <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-foreground font-medium">{shop.location}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="text-foreground font-medium">{shop.hours}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="text-foreground font-medium">{shop.phone}</span>
-                      </div>
-                    </div>
+                          <div className="space-y-3.5 mb-8 pb-8 border-b-2 border-border flex-1">
+                            {shop.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">{shop.description}</p>
+                            )}
+                            {formatLocation(shop) !== "Location not available" && (
+                              <div className="flex items-start gap-3 text-sm">
+                                <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                                <span className="text-foreground font-medium">
+                                  {formatLocation(shop)}
+                                </span>
+                              </div>
+                            )}
+                            {shop.user && (
+                              <div className="flex items-start gap-3 text-sm">
+                                <span className="text-foreground font-medium">
+                                  Owner: {shop.user.full_name}
+                                </span>
+                              </div>
+                            )}
+                            {shop.phone && (
+                              <div className="flex items-center gap-3 text-sm">
+                                <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                                <span className="text-foreground font-medium">{shop.phone}</span>
+                              </div>
+                            )}
+                          </div>
 
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-2">
-                        <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                        <span className="font-bold text-lg text-foreground">{shop.rating}</span>
-                        <span className="text-sm text-muted-foreground">({shop.reviews} reviews)</span>
-                      </div>
-                    </div>
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-muted-foreground">
+                                {shop.items_count} {shop.items_count === 1 ? 'product' : 'products'}
+                              </span>
+                            </div>
+                          </div>
 
-                    <Button className="w-full bg-primary hover:bg-accent text-white font-semibold rounded-lg h-12 transition-all">
-                      Visit Store
+                          <Button className="w-full bg-primary hover:bg-accent text-white font-semibold rounded-lg h-12 transition-all">
+                            Visit Store
+                          </Button>
+                        </div>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Load More Button */}
+                {hasMore && !loading && (
+                  <div className="mt-10 text-center">
+                    <Button
+                      onClick={loadMore}
+                      variant="outline"
+                      className="px-8 py-6 text-base"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          Loading...
+                        </>
+                      ) : (
+                        "Load More Stores"
+                      )}
                     </Button>
                   </div>
-                </Card>
-              ))}
-            </div>
+                )}
+              </>
+            )}
 
-            {filteredShops.length === 0 && (
+            {/* Empty State */}
+            {!loading && filteredShops.length === 0 && !error && (
               <Card className="p-12 text-center rounded-3xl">
-                <p className="text-muted-foreground text-lg">No stores found matching your search</p>
+                <p className="text-muted-foreground text-lg">
+                  {searchQuery ? "No stores found matching your search" : "No stores available at the moment"}
+                </p>
               </Card>
             )}
           </div>

@@ -7,9 +7,10 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Users, Clock } from "lucide-react"
 import { useState, useMemo } from "react"
-import { ApiEvent } from "@/types/event"
+import { ApiEvent, BackendEvent, transformEvent } from "@/types/event"
 import { InfiniteScrollFetcher } from "@/components/infinite-scroll-fetcher"
 import { EventCardSkeleton } from "@/components/event-card-skeleton"
+import Link from "next/link"
 
 export default function EventsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -61,55 +62,56 @@ export default function EventsPage() {
             </div>
 
             {/* Events Grid */}
-            <InfiniteScrollFetcher<ApiEvent>
+            <InfiniteScrollFetcher<BackendEvent>
               key={apiUrl}
               url={apiUrl}
               limit={12}
               gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-              renderItem={(event) => (
-                <Card
-                  key={event.id}
-                  className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-3xl border border-border bg-white flex flex-col h-full"
-                >
-                  <div className="relative group overflow-hidden bg-secondary h-56">
-                    <img
-                      src={event.image || "/placeholder.svg"}
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-full text-xs font-bold uppercase shadow-lg">
-                      {event.category}
-                    </div>
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="font-bold text-lg text-foreground mb-3 leading-snug">{event.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-6 line-clamp-2">{event.description}</p>
-
-                    <div className="space-y-3 mb-6 pb-6 border-b border-border flex-1 text-sm">
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="font-medium">{event.date}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="font-medium">{event.time}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="font-medium">{event.location}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <Users className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="font-medium">{event.attendees} attending</span>
+              renderItem={(backendEvent) => {
+                const event = transformEvent(backendEvent)
+                return (
+                  <Card
+                    key={event.id}
+                    className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-3xl border border-border bg-white flex flex-col h-full"
+                  >
+                    <div className="relative group overflow-hidden bg-secondary h-56">
+                      <img
+                        src={event.image || "/placeholder.svg"}
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-full text-xs font-bold uppercase shadow-lg">
+                        {event.category}
                       </div>
                     </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <h3 className="font-bold text-lg text-foreground mb-3 leading-snug">{event.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-6 line-clamp-2">{event.description}</p>
 
-                    <Button className="w-full bg-primary hover:bg-accent text-white font-semibold rounded-lg mt-auto h-11 transition-all">
-                      Learn More
-                    </Button>
-                  </div>
-                </Card>
-              )}
+                      <div className="space-y-3 mb-6 pb-6 border-b border-border flex-1 text-sm">
+                        <div className="flex items-center gap-3 text-muted-foreground">
+                          <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="font-medium">{event.date}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-muted-foreground">
+                          <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="font-medium">{event.location}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-muted-foreground">
+                          <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="font-medium">{event.attendees} attending</span>
+                        </div>
+                      </div>
+
+                      <Link href={`/events/${event.unique_id || event.id}`} className="w-full">
+                        <Button className="w-full bg-primary hover:bg-accent text-white font-semibold rounded-lg mt-auto h-11 transition-all">
+                          Learn More
+                        </Button>
+                      </Link>
+                    </div>
+                  </Card>
+                )
+              }}
               renderLoading={() => <EventCardSkeleton count={12} />}
               renderEmpty={() => (
                 <div className="text-center py-12 col-span-full">

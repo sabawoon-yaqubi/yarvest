@@ -17,7 +17,7 @@ import {
   MoreVertical
 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { fetchUnits, fetchCategories, fetchProductTypes, fetchProducts, createProduct, updateProduct, deleteProduct, type Unit, type Category, type ProductType, type Product } from "@/lib/product-api"
+import { fetchUnits, fetchCategories, fetchProductTypes, createProduct, updateProduct, deleteProduct, type Unit, type Category, type ProductType, type Product, fetchUserProducts } from "@/lib/product-api"
 import { ProductDialog } from "@/components/admin/product-dialog"
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -86,7 +86,7 @@ export default function ProductsPage() {
     const loadProducts = async () => {
       setLoadingProducts(true)
       try {
-        const productsData = await fetchProducts()
+        const productsData = await fetchUserProducts()
         setProducts(productsData)
         console.log('Loaded products:', productsData)
         // Log first product structure for debugging
@@ -211,7 +211,7 @@ export default function ProductsPage() {
       }
 
       // Refresh products list
-      const productsData = await fetchProducts()
+      const productsData = await fetchUserProducts()
       setProducts(productsData)
 
       // Reset form and close modal
@@ -312,7 +312,7 @@ export default function ProductsPage() {
     try {
       await deleteProduct(uniqueId)
       // Refresh products list
-      const productsData = await fetchProducts()
+      const productsData = await fetchUserProducts()
       setProducts(productsData)
       setDeleteDialogOpen(false)
       setProductToDelete(null)

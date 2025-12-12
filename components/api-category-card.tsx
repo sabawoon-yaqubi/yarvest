@@ -39,7 +39,7 @@ export function ApiCategoryCard({
   const [isNavigating, setIsNavigating] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   
-  const imageUrl = getImageUrl(category.image)
+  const imageUrl = getImageUrl(category.image, category.name)
   const categoryUrl = `/categories/${category.unique_id}/products`
   const productsCount = category.products_count || 0
 

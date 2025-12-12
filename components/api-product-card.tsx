@@ -24,7 +24,7 @@ export function ApiProductCard({
   const [isImageLoading, setIsImageLoading] = useState(true)
   
   const { price, discountAmount, originalPrice, discountPercentage, hasDiscount } = calculateProductPrices(product)
-  const imageUrl = getImageUrl(product.main_image)
+  const imageUrl = getImageUrl(product.main_image, product.name)
   const inStock = product.stock > 0
 
   const handleImageError = () => {
@@ -73,7 +73,7 @@ export function ApiProductCard({
               <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
             )}
             <img
-              src={imgError ? "/placeholder.svg" : imageUrl}
+              src={imageUrl}
               alt={product.name}
               className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${
                 isImageLoading ? "opacity-0" : "opacity-100"

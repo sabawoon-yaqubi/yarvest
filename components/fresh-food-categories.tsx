@@ -5,7 +5,7 @@ import { ApiDataFetcher } from "./api-data-fetcher"
 import { ApiCategoryCard, ApiCategory } from "./api-category-card"
 import { CategoryCardSkeleton } from "./category-card-skeleton"
 
-export function FreshFoodCategories() {
+export function FreshFoodCategories({ title = true }: { title?: boolean }) {
   const renderLoading = () => (
     <CategoryCardSkeleton count={12} variant="compact" />
   )
@@ -24,7 +24,8 @@ export function FreshFoodCategories() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-10">
+      {title && (
+        <div className="flex items-center justify-between mb-10">
         <div>
           <h2 className="text-4xl font-bold text-foreground">Shop by Category</h2>
           <p className="text-muted-foreground text-base mt-2">Explore fresh, local, and organic produce</p>
@@ -33,7 +34,7 @@ export function FreshFoodCategories() {
           View All
         </Link>
       </div>
-      
+      )}
       <ApiDataFetcher<ApiCategory>
         url="/categories"
         gridClassName="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-4"

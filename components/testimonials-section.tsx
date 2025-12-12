@@ -5,6 +5,7 @@ import { Star, Quote } from "lucide-react"
 import { ApiTestimonial } from "@/types/testimonial"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { TestimonialCardSkeleton } from "./testimonial-card-skeleton"
+import { getImageUrl } from "@/lib/utils"
 
 export function TestimonialsSection() {
   return (
@@ -37,7 +38,7 @@ export function TestimonialsSection() {
             </p>
             <div className="flex items-center gap-3 pt-4 border-t border-border">
               <img
-                src={testimonial.image || "/placeholder.svg"}
+                src={getImageUrl(testimonial.image) || "/placeholder.svg"}
                 alt={testimonial.full_name}
                 className="w-12 h-12 rounded-full object-cover"
               />

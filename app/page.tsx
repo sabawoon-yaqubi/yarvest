@@ -10,6 +10,7 @@ import { DealsSection } from "@/components/deals-section"
 import { TrendingProducts } from "@/components/trending-products"
 import { FeaturedShops } from "@/components/featured-shops"
 import { ProducersSection } from "@/components/producers-section"
+import { PartnersSection } from "@/components/partners-section"
 import { EventsSection } from "@/components/events-section"
 import { SponsorsSection } from "@/components/sponsors-section"
 import { TestimonialsSection } from "@/components/testimonials-section"
@@ -17,7 +18,8 @@ import { NewsletterSection } from "@/components/newsletter-section"
 import { StatsSection } from "@/components/stats-section"
 import { HowItWorks } from "@/components/how-it-works"
 import { HarvestingProductsSection } from "@/components/harvesting-products-section"
-import { ValidatorsSection } from "@/components/validators-section"
+import { VolunteersSection } from "@/components/volunteers-section"
+import { CouriersSection } from "@/components/couriers-section"
 import { useState } from "react"
 
 export default function Home() {
@@ -36,14 +38,15 @@ export default function Home() {
             <DealsSection />
             <ProductShowcase /> 
             <TrendingProducts />
+            <CouriersSection />
             <HowItWorks />
             <HarvestingProductsSection />
-            <ValidatorsSection />
+            <VolunteersSection />
             <FeaturedShops />
             <ProducersSection />
             <TestimonialsSection />
             <EventsSection />
-            <SponsorsSection />
+            <PartnersSection />
             <NewsletterSection />
           </div>
           <Footer />

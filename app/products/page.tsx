@@ -4,7 +4,6 @@ import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
-import { ProductCategories } from "@/components/product-categories"
 import { ProductDetailsModal } from "@/components/product-details-modal"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,7 +15,8 @@ import Link from "next/link"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { transformProduct, transformProductDetails, transformProducts, type TransformedProduct } from "@/lib/product-api"
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
-
+import { FreshFoodCategories } from "@/components/fresh-food-categories"
+import { getImageUrl } from "@/lib/utils"
 // Use TransformedProduct from product-api.ts
 type Product = TransformedProduct
 
@@ -156,7 +156,8 @@ export default function ProductsPage() {
         <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
         <main className="flex-1 overflow-auto">
           <div className="bg-white">
-            <ProductCategories selectedCategory={selectedCategory} onCategorySelect={setSelectedCategory} />
+          <FreshFoodCategories />
+
             <div className="px-6 py-6">
               <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -201,16 +202,13 @@ export default function ProductsPage() {
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <main className="flex-1 overflow-auto">
         <div className="bg-white">
-          {/* Categories Section */}
-          <ProductCategories 
-            selectedCategory={selectedCategory} 
-            onCategorySelect={setSelectedCategory}
-          />
-
+        
           <div className="px-6 py-6">
             <div className="max-w-7xl mx-auto">
+            <FreshFoodCategories title={false} />
+
               {/* Top Controls Bar */}
-              <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="mb-6 mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 {/* Left: Filter and View Toggle */}
                 <div className="flex items-center gap-3">
                   <Button
@@ -385,7 +383,7 @@ export default function ProductsPage() {
                       price={product.price}
                       unit={product.unit}
                       code={product.code || ""}
-                      image={product.image || "/placeholder.svg"}
+                      image={product.image || null}
                       producer={product.producer || "Unknown Producer"}
                       rating={product.rating || 0}
                       reviews={product.reviews || 0}
@@ -408,7 +406,7 @@ export default function ProductsPage() {
                     <div className="relative group overflow-hidden bg-gray-50 w-64 h-64 flex-shrink-0">
                       <div onClick={() => handleProductClick(product.id)} className="cursor-pointer">
                         <img
-                          src={product.image || "/placeholder.svg"}
+                          src={getImageUrl(product.image, product.name) }
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
@@ -521,7 +519,7 @@ export default function ProductsPage() {
                               price={product.price}
                               unit={product.unit}
                               code={product.code || ""}
-                              image={product.image || "/placeholder.svg"}
+                              image={product.image || null}
                               producer={product.producer || "Unknown Producer"}
                               rating={product.rating || 0}
                               reviews={product.reviews || 0}
@@ -552,7 +550,7 @@ export default function ProductsPage() {
                               price={product.price}
                               unit={product.unit}
                               code={product.code || ""}
-                              image={product.image || "/placeholder.svg"}
+                              image={product.image || null}
                               producer={product.producer || "Unknown Producer"}
                               rating={product.rating || 0}
                               reviews={product.reviews || 0}

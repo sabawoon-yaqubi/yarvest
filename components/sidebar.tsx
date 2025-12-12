@@ -15,12 +15,12 @@ const menuItems = [
   { icon: ShoppingBag, label: "Products", href: "/products" },
   { icon: Users, label: "Producers", href: "/producers" },
   { icon: ShoppingBag, label: "Harvesting Products", href: "/harvesting-products" },
-  { icon: Store, label: "Partner Stores", href: "/shops" },
+  { icon: Store, label: "Stores", href: "/shops" },
   { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
 ]
 
 const moreMenuItems = [
-  { icon: Truck, label: "Validators", href: "/validators" },
+  { icon: Truck, label: "Volunteers", href: "/volunteers" },
   { icon: Package, label: "Harvesters", href: "/harvesters" },
   { icon: Users2, label: "Community", href: "/community" },
   { icon: Calendar, label: "Events", href: "/events" },

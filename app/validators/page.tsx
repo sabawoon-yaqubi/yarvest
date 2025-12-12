@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Truck, Star, MapPin, CheckCircle, Phone, Mail, Shield, Clock, Package, TrendingUp, Users, Award } from "lucide-react"
 import { useState } from "react"
 
-const validators = [
+const volunteers = [
   {
     id: 1,
     name: "Fast Track Logistics",
@@ -112,7 +112,7 @@ const benefits = [
   {
     icon: Shield,
     title: "Verified & Insured",
-    description: "All validators are verified and fully insured for your peace of mind",
+    description: "All volunteers are verified and fully insured for your peace of mind",
   },
   {
     icon: Clock,
@@ -147,19 +147,19 @@ const testimonials = [
   {
     name: "Emily Rodriguez",
     role: "Market Manager",
-    text: "The validators on Yarvest are top-notch. Our customers always receive fresh products.",
+    text: "The volunteers on Yarvest are top-notch. Our customers always receive fresh products.",
     rating: 5,
   },
 ]
 
-export default function ValidatorsPage() {
+export default function VolunteersPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null)
 
   const specialties = ["All", "Fresh Produce", "Dairy Products", "Meat", "Organic Products", "Bulk Orders", "Temperature Controlled"]
-  const filteredValidators = selectedSpecialty && selectedSpecialty !== "All"
-    ? validators.filter(v => v.specialties.some(s => s.includes(selectedSpecialty)))
-    : validators
+  const filteredVolunteers = selectedSpecialty && selectedSpecialty !== "All"
+    ? volunteers.filter(v => v.specialties.some(s => s.includes(selectedSpecialty)))
+    : volunteers
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -173,14 +173,14 @@ export default function ValidatorsPage() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-[#0A5D31]/10 rounded-full mb-6">
                 <Truck className="w-10 h-10 text-[#0A5D31]" />
               </div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-4">Validators & Curriers</h1>
+              <h1 className="text-5xl font-bold text-gray-900 mb-4">Volunteers & Couriers</h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
                 Verified logistics partners who safely transport goods from farms to your door
               </p>
               <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-[#0A5D31]" />
-                  <span>{validators.length} Verified Validators</span>
+                  <span>{volunteers.length} Verified Volunteers</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-[#0A5D31]" />
@@ -194,7 +194,7 @@ export default function ValidatorsPage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">How It Works</h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
-                  { step: "1", title: "Choose Validator", desc: "Browse verified validators and select one that fits your needs" },
+                  { step: "1", title: "Choose Validator", desc: "Browse verified volunteers and select one that fits your needs" },
                   { step: "2", title: "Schedule Pickup", desc: "Coordinate pickup time and location with your chosen validator" },
                   { step: "3", title: "Track Delivery", desc: "Monitor your shipment in real-time from pickup to delivery" },
                   { step: "4", title: "Receive Goods", desc: "Get fresh products delivered safely to your door" },
@@ -212,7 +212,7 @@ export default function ValidatorsPage() {
 
             {/* Benefits */}
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Why Choose Our Validators</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Why Choose Our Volunteers</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {benefits.map((benefit, idx) => (
                   <Card key={idx} className="p-6 rounded-2xl border-2 border-gray-200 hover:border-[#0A5D31] transition-all text-center">
@@ -244,9 +244,9 @@ export default function ValidatorsPage() {
               ))}
             </div>
 
-            {/* Validators Grid */}
+            {/* Volunteers Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {filteredValidators.map((validator) => (
+              {filteredVolunteers.map((validator) => (
                 <Card key={validator.id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 rounded-2xl border-2 border-gray-200">
                   <div className="relative h-48 bg-gray-100">
                     <img src={validator.image} alt={validator.name} className="w-full h-full object-cover" />
@@ -335,7 +335,7 @@ export default function ValidatorsPage() {
             <Card className="p-8 rounded-2xl border-2 border-[#0A5D31] bg-gradient-to-br from-[#0A5D31]/5 to-white text-center">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Become a Validator</h2>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                Join our network of verified validators and help connect local farms with customers. Apply today to start delivering fresh products.
+                Join our network of verified volunteers and help connect local farms with customers. Apply today to start delivering fresh products.
               </p>
               <Button size="lg" className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white px-8">
                 Apply Now

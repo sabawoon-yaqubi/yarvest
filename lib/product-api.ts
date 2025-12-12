@@ -3,7 +3,6 @@
 
 import api from './axios'
 import { toast } from 'sonner'
-import { getImageUrl } from './utils'
 
 export interface Unit {
   id: number
@@ -199,6 +198,27 @@ export async function fetchProducts(): Promise<Product[]> {
   }
 }
 
+
+// fetch user products
+export async function fetchUserProducts(): Promise<Product[]> {
+  try {
+    const response = await api.get('/user/products')
+    // Handle different response structures
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      return response.data.data
+    }
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    return []
+  } catch (error: any) {
+    console.error('Error fetching user products:', error)
+    toast.error('Failed to fetch user products')
+    return []
+  }
+}
+
+
 /**
  * Create a new product
  */
@@ -307,7 +327,7 @@ export function transformProduct(product: any): TransformedProduct {
     price: finalPrice,
     unit: unit,
     code: product.sku || product.unique_id || "",
-    image: getImageUrl(productImage),
+    image: productImage || null, // Return raw image path or null, let components handle with getImageUrl
     producer: producerName,
     rating: ratingValue,
     reviews: reviewsValue,
@@ -375,9 +395,9 @@ export function transformProductDetails(product: any): ProductDetails | null {
     price: finalPrice,
     unit: unit,
     code: product.sku || product.unique_id || "",
-    image: getImageUrl(productImage),
+    image: productImage || null, // Return raw image path or null, let components handle with getImageUrl
     producer: producerName,
-    producerImage: getImageUrl(producerImage),
+    producerImage: producerImage || null, // Return raw image path or null
     rating: ratingValue,
     reviews: reviewsValue,
     inStock: (product.stock || 0) > 0,
