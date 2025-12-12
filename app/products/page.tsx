@@ -17,6 +17,7 @@ import { transformProduct, transformProductDetails, transformProducts, type Tran
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 import { FreshFoodCategories } from "@/components/fresh-food-categories"
 import { getImageUrl } from "@/lib/utils"
+import { YarvestLoader } from "@/components/yarvest-loader"
 // Use TransformedProduct from product-api.ts
 type Product = TransformedProduct
 
@@ -148,7 +149,7 @@ export default function ProductsPage() {
 
   // transformProductDetails is now imported from product-api.ts
 
-  // Show skeleton only on client side to avoid hydration mismatch
+  // Show YarvestLoader when data is loading
   if (isLoading && isMounted) {
     return (
       <div className="flex flex-col h-screen bg-background">

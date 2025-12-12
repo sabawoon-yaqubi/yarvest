@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, ReactNode } from "react"
+import { useCallback, ReactNode, useMemo } from "react"
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 
@@ -16,6 +17,7 @@ interface ApiDataFetcherProps<T> {
   enabled?: boolean
   onSuccess?: (data: T[]) => void
   onError?: (error: string) => void
+  transformResponse?: (response: any) => T[] // Transform API response to array
 }
 
 export function ApiDataFetcher<T extends { id: number | string }>({
@@ -30,6 +32,7 @@ export function ApiDataFetcher<T extends { id: number | string }>({
   enabled = true,
   onSuccess,
   onError,
+  transformResponse,
 }: ApiDataFetcherProps<T>) {
   // Build URL with query parameters
   const params = new URLSearchParams()
@@ -38,11 +41,21 @@ export function ApiDataFetcher<T extends { id: number | string }>({
   const queryString = params.toString()
   const finalUrl = queryString ? `${url}?${queryString}` : url
 
-  const { data, loading, error, refetch } = useApiFetch<T[]>(finalUrl, {
+  const { data, loading, error, refetch } = useApiFetch<any>(finalUrl, {
     enabled,
-    onSuccess,
+    onSuccess: (responseData) => {
+      // Transform response if transformResponse is provided
+      const transformedData = transformResponse ? transformResponse(responseData) : (Array.isArray(responseData) ? responseData : [])
+      onSuccess?.(transformedData)
+    },
     onError,
   })
+
+  // Transform data for rendering
+  const transformedData = React.useMemo(() => {
+    if (!data) return []
+    return transformResponse ? transformResponse(data) : (Array.isArray(data) ? data : [])
+  }, [data, transformResponse])
 
   // Loading state
   if (loading) {
@@ -72,7 +85,7 @@ export function ApiDataFetcher<T extends { id: number | string }>({
   }
 
   // Empty state
-  if (!data || data.length === 0) {
+  if (!transformedData || transformedData.length === 0) {
     return renderEmpty ? (
       renderEmpty()
     ) : (
@@ -83,6 +96,6 @@ export function ApiDataFetcher<T extends { id: number | string }>({
   }
 
   // Success state - render items
-  return <div className={gridClassName}>{data.map((item, index) => renderItem(item, index))}</div>
+  return <div className={gridClassName}>{transformedData.map((item, index) => renderItem(item, index))}</div>
 }
 
