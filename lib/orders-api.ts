@@ -113,7 +113,7 @@ export async function fetchOrder(uniqueId: string): Promise<Order | null> {
     const order = response.data?.data || response.data
     return order
   } catch (error: any) {
-    console.error('Error fetching order:', error)
+    console.error('Error fetching orders:', error)
     const errorMessage = error.response?.data?.message || 'Failed to fetch order'
     toast.error(errorMessage)
     return null
