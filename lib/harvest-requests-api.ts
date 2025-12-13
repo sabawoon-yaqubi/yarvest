@@ -64,11 +64,27 @@ export interface HarvestRequest {
   createdAt?: string
 }
 
+export interface Address {
+  id: number
+  street_address: string
+  city: string
+  state: string
+  country: string
+  postal_code: string
+  latitude?: number | string | null
+  longitude?: number | string | null
+  apt?: string
+  business_name?: string
+  status?: boolean | string
+  full_address?: string
+}
+
 export interface CreateHarvestRequestPayload {
   product_id?: number
   product_ids?: number[]
   date: string
-  user_address_id: number
+  user_address_id?: number
+  user_address_ids?: number[]
   number_of_people?: number
   description?: string
 }
@@ -121,6 +137,27 @@ export async function fetchUserHarvestRequests(): Promise<HarvestRequest[]> {
   } catch (error: any) {
     console.error('Error fetching user harvest requests:', error)
     toast.error('Failed to fetch your harvest requests')
+    return []
+  }
+}
+
+/**
+ * Fetch user's addresses for harvest requests
+ */
+export async function fetchUserAddresses(): Promise<Address[]> {
+  try {
+    const response = await api.get('/harvest-requests/my-addresses')
+    // Handle different response structures
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      return response.data.data
+    }
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    return []
+  } catch (error: any) {
+    console.error('Error fetching user addresses:', error)
+    toast.error('Failed to fetch your addresses')
     return []
   }
 }

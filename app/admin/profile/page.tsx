@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { 
-  User, 
+  User as UserIcon, 
   Mail, 
   Phone, 
   MapPin, 
@@ -27,15 +27,30 @@ import {
   Bell,
   Key,
   Verified,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { fetchUserProfile, updateUserProfile, fetchUserAddresses, updateAddress, deleteUser, type User, type Address } from "@/lib/user-api"
+import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/stores/auth-store"
 
 export default function ProfilePage() {
+  const router = useRouter()
+  const logout = useAuthStore((state) => state.logout)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showVerificationModal, setShowVerificationModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [userData, setUserData] = useState<User | null>(null)
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -47,10 +62,11 @@ export default function ProfilePage() {
     documents: [] as string[],
   })
   const [profile, setProfile] = useState({
-    name: "Green Valley Farm",
-    email: "contact@greenvalleyfarm.com",
-    phone: "(555) 123-4567",
-    address: "123 Farm Road, Marin County, CA 94941",
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    address: "",
     bio: "Family-owned organic farm specializing in fresh, locally grown produce. We've been serving our community for over 20 years with sustainable farming practices.",
     storeName: "Green Valley Farm Store",
     website: "www.greenvalleyfarm.com",
@@ -70,25 +86,160 @@ export default function ProfilePage() {
     reviews: 156,
   })
 
-  const handleSave = () => {
-    console.log("Saving profile:", profile)
-    setIsEditing(false)
+  // Fetch user data on mount
+  useEffect(() => {
+    const loadUserData = async () => {
+      setIsLoading(true)
+      try {
+        const user = await fetchUserProfile()
+        if (user) {
+          setUserData(user)
+          setProfile(prev => ({
+            ...prev,
+            first_name: user.first_name || "",
+            last_name: user.last_name || "",
+            email: user.email || "",
+            phone: user.phone || "",
+            isVerified: user.roles?.some(r => r.name === "Admin") || false,
+          }))
+        }
+        
+        // Fetch addresses
+        const userAddresses = await fetchUserAddresses()
+        setAddresses(userAddresses)
+        if (userAddresses.length > 0) {
+          const activeAddress = userAddresses.find(a => a.status === true || a.status === "true") || userAddresses[0]
+          setSelectedAddress(activeAddress)
+          if (activeAddress) {
+            const addressParts = [
+              activeAddress.street_address,
+              activeAddress.apt && `Apt ${activeAddress.apt}`,
+              activeAddress.city,
+              activeAddress.state,
+              activeAddress.postal_code,
+            ].filter(Boolean)
+            setProfile(prev => ({
+              ...prev,
+              address: addressParts.join(", "),
+            }))
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadUserData()
+  }, [])
+
+  const handleSave = async () => {
+    if (!userData) return
+    
+    setIsSaving(true)
+    try {
+      const payload: any = {
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        email: profile.email,
+        phone: profile.phone,
+      }
+      
+      // Only include role_id if user has roles
+      if (userData.roles && userData.roles.length > 0) {
+        // Get the first role ID (or you can make this configurable)
+        payload.role_id = userData.roles[0].id
+      }
+      
+      const updatedUser = await updateUserProfile(payload)
+      if (updatedUser) {
+        setUserData(updatedUser)
+        setIsEditing(false)
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      // Error is already handled in the API service with toast
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("Passwords don't match!")
+      toast.error("Passwords don't match!")
       return
     }
-    console.log("Changing password:", passwordData)
-    setShowPasswordModal(false)
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+    
+    if (passwordData.newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters long")
+      return
+    }
+
+    try {
+      await updateUserProfile({
+        password: passwordData.newPassword,
+      })
+      setShowPasswordModal(false)
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+    } catch (error) {
+      console.error('Error changing password:', error)
+      // Error is already handled in the API service with toast
+    }
+  }
+
+  const handleAddressUpdate = async (addressId: number, addressData: Partial<Address>) => {
+    try {
+      const updatedAddress = await updateAddress(addressId, {
+        city: addressData.city,
+        country: addressData.country,
+        state: addressData.state,
+        street_address: addressData.street_address,
+        postal_code: addressData.postal_code,
+        latitude: typeof addressData.latitude === 'number' ? addressData.latitude : undefined,
+        longitude: typeof addressData.longitude === 'number' ? addressData.longitude : undefined,
+        apt: addressData.apt,
+        business_name: addressData.business_name,
+        status: typeof addressData.status === 'boolean' ? addressData.status : undefined,
+      })
+      
+      if (updatedAddress) {
+        // Refresh addresses
+        const userAddresses = await fetchUserAddresses()
+        setAddresses(userAddresses)
+      }
+    } catch (error) {
+      console.error('Error updating address:', error)
+    }
   }
 
   const handleVerificationSubmit = () => {
     console.log("Submitting verification:", verificationData)
     setShowVerificationModal(false)
     setProfile({ ...profile, verificationStatus: "pending" })
+  }
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true)
+    try {
+      await deleteUser()
+      await logout()
+      router.push('/')
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      // Error is already handled in the API service with toast
+      setIsDeletingAccount(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-[#0A5D31]" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -109,16 +260,26 @@ export default function ProfilePage() {
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsEditing(false)} className="gap-2">
+            <Button variant="outline" onClick={() => setIsEditing(false)} className="gap-2" disabled={isSaving}>
               <X className="w-4 h-4" />
               Cancel
             </Button>
             <Button 
               className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white gap-2 shadow-lg"
               onClick={handleSave}
+              disabled={isSaving}
             >
-              <Save className="w-4 h-4" />
-              Save Changes
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save Changes
+                </>
+              )}
             </Button>
           </div>
         )}
@@ -154,7 +315,7 @@ export default function ProfilePage() {
         <Card className="border-2 hover:shadow-lg transition-all">
           <CardContent className="p-4 text-center">
             <p className="text-sm text-gray-500 mb-1">Status</p>
-            {profile.isVerified ? (
+            {userData?.roles && userData.roles.length > 0 ? (
               <Badge className="bg-emerald-500 text-white mt-2">
                 <Verified className="w-3 h-3 mr-1" />
                 Verified
@@ -170,7 +331,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Verification Badge Section */}
-      {!profile.isVerified && (
+      {(!userData?.roles || userData.roles.length === 0) && (
         <Card className="border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -235,7 +396,7 @@ export default function ProfilePage() {
           <Card className="border-2 shadow-lg">
             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5 text-[#5a9c3a]" />
+                <UserIcon className="w-5 h-5 text-[#5a9c3a]" />
                 Basic Information
               </CardTitle>
             </CardHeader>
@@ -259,19 +420,36 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="name" className="flex items-center gap-2 mb-2 text-base font-semibold">
-                    <User className="w-4 h-4" />
-                    Contact Name *
+                  <Label htmlFor="first_name" className="flex items-center gap-2 mb-2 text-base font-semibold">
+                    <UserIcon className="w-4 h-4" />
+                    First Name *
                   </Label>
                   {isEditing ? (
                     <Input
-                      id="name"
-                      value={profile.name}
-                      onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                      id="first_name"
+                      value={profile.first_name}
+                      onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
                       className="h-12 border-2"
                     />
                   ) : (
-                    <p className="text-gray-900 font-medium text-lg">{profile.name}</p>
+                    <p className="text-gray-900 font-medium text-lg">{profile.first_name || "Not provided"}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="last_name" className="flex items-center gap-2 mb-2 text-base font-semibold">
+                    <UserIcon className="w-4 h-4" />
+                    Last Name *
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      id="last_name"
+                      value={profile.last_name}
+                      onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                      className="h-12 border-2"
+                    />
+                  ) : (
+                    <p className="text-gray-900 font-medium text-lg">{profile.last_name || "Not provided"}</p>
                   )}
                 </div>
 
@@ -314,17 +492,76 @@ export default function ProfilePage() {
                 <div className="md:col-span-2">
                   <Label htmlFor="address" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <MapPin className="w-4 h-4" />
-                    Address *
+                    Address
                   </Label>
-                  {isEditing ? (
-                    <Input
-                      id="address"
-                      value={profile.address}
-                      onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                      className="h-12 border-2"
-                    />
+                  {isEditing && selectedAddress ? (
+                    <div className="space-y-2">
+                      <Input
+                        id="street_address"
+                        value={selectedAddress.street_address || ""}
+                        onChange={(e) => {
+                          const updated = { ...selectedAddress, street_address: e.target.value }
+                          setSelectedAddress(updated)
+                        }}
+                        placeholder="Street Address"
+                        className="h-12 border-2"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          id="city"
+                          value={selectedAddress.city || ""}
+                          onChange={(e) => {
+                            const updated = { ...selectedAddress, city: e.target.value }
+                            setSelectedAddress(updated)
+                          }}
+                          placeholder="City"
+                          className="h-12 border-2"
+                        />
+                        <Input
+                          id="state"
+                          value={selectedAddress.state || ""}
+                          onChange={(e) => {
+                            const updated = { ...selectedAddress, state: e.target.value }
+                            setSelectedAddress(updated)
+                          }}
+                          placeholder="State"
+                          className="h-12 border-2"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          id="postal_code"
+                          value={selectedAddress.postal_code || ""}
+                          onChange={(e) => {
+                            const updated = { ...selectedAddress, postal_code: e.target.value }
+                            setSelectedAddress(updated)
+                          }}
+                          placeholder="Postal Code"
+                          className="h-12 border-2"
+                        />
+                        <Input
+                          id="apt"
+                          value={selectedAddress.apt || ""}
+                          onChange={(e) => {
+                            const updated = { ...selectedAddress, apt: e.target.value }
+                            setSelectedAddress(updated)
+                          }}
+                          placeholder="Apt/Suite (Optional)"
+                          className="h-12 border-2"
+                        />
+                      </div>
+                      {selectedAddress && (
+                        <Button
+                          type="button"
+                          onClick={() => selectedAddress && handleAddressUpdate(selectedAddress.id, selectedAddress)}
+                          className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white"
+                        >
+                          Update Address
+                        </Button>
+                      )}
+                    </div>
                   ) : (
-                    <p className="text-gray-900 font-medium text-lg">{profile.address}</p>
+                    <p className="text-gray-900 font-medium text-lg">{profile.address || "No address provided"}</p>
                   )}
                 </div>
 
@@ -517,9 +754,23 @@ export default function ProfilePage() {
                   Notifications
                 </a>
               </Button>
-              <Button variant="outline" className="w-full justify-start gap-2 border-2 h-12 text-red-600 border-red-200 hover:bg-red-50">
-                <X className="w-4 h-4" />
-                Delete Account
+              <Button 
+                variant="outline" 
+                className="w-full justify-start gap-2 border-2 h-12 text-red-600 border-red-200 hover:bg-red-50"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={isDeletingAccount}
+              >
+                {isDeletingAccount ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <X className="w-4 h-4" />
+                    Delete Account
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
@@ -580,6 +831,7 @@ export default function ProfilePage() {
             <Button 
               className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white h-12"
               onClick={handlePasswordChange}
+              disabled={!passwordData.newPassword || !passwordData.confirmPassword}
             >
               Update Password
             </Button>
@@ -651,6 +903,45 @@ export default function ProfilePage() {
               onClick={handleVerificationSubmit}
             >
               Submit for Verification
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <DialogTitle className="text-xl font-bold text-gray-900">
+                Delete Profile
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-base text-gray-600 pt-2">
+              Are you sure you want to delete <span className="font-semibold text-gray-900">your profile</span>?
+              <br />
+              <br />
+              <span className="text-red-600 font-medium">This action cannot be undone.</span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeletingAccount}
+              className="h-10"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+              className="bg-red-600 hover:bg-red-700 text-white h-10"
+            >
+              {isDeletingAccount ? "Deleting..." : "Delete Profile"}
             </Button>
           </DialogFooter>
         </DialogContent>

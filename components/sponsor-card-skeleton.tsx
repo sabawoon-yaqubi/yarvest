@@ -27,3 +27,4 @@ export function SponsorCardSkeleton({ count = 4 }: SponsorCardSkeletonProps) {
   )
 }
 
+

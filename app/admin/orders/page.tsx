@@ -13,87 +13,19 @@ import {
   Clock,
   XCircle,
   Eye,
-  Download
+  Download,
+  Loader2,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  ShoppingCart
 } from "lucide-react"
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { fetchOrders, updateOrderStatus, transformOrder, type Order } from "@/lib/orders-api"
 
-const mockOrders = [
-  {
-    id: "ORD-001",
-    customer: "John Doe",
-    email: "john@example.com",
-    phone: "(555) 123-4567",
-    items: [
-      { name: "Organic Heirloom Tomatoes", quantity: 2, price: 4.99 },
-      { name: "Fresh Local Carrots", quantity: 3, price: 2.99 },
-    ],
-    total: 19.95,
-    status: "pending",
-    paymentStatus: "paid",
-    date: "2024-01-15 10:30 AM",
-    shippingAddress: "123 Main St, San Francisco, CA 94102",
-  },
-  {
-    id: "ORD-002",
-    customer: "Jane Smith",
-    email: "jane@example.com",
-    phone: "(555) 234-5678",
-    items: [
-      { name: "Sweet Local Apples", quantity: 5, price: 5.99 },
-    ],
-    total: 29.95,
-    status: "processing",
-    paymentStatus: "paid",
-    date: "2024-01-15 09:15 AM",
-    shippingAddress: "456 Oak Ave, Oakland, CA 94601",
-  },
-  {
-    id: "ORD-003",
-    customer: "Mike Johnson",
-    email: "mike@example.com",
-    phone: "(555) 345-6789",
-    items: [
-      { name: "Crisp Organic Lettuce", quantity: 1, price: 3.49 },
-      { name: "Fresh Spinach Bundles", quantity: 2, price: 3.99 },
-    ],
-    total: 11.47,
-    status: "shipped",
-    paymentStatus: "paid",
-    date: "2024-01-14 02:45 PM",
-    shippingAddress: "789 Pine St, Berkeley, CA 94704",
-    trackingNumber: "TRK123456789",
-  },
-  {
-    id: "ORD-004",
-    customer: "Sarah Williams",
-    email: "sarah@example.com",
-    phone: "(555) 456-7890",
-    items: [
-      { name: "Premium Blueberries", quantity: 2, price: 7.99 },
-    ],
-    total: 15.98,
-    status: "delivered",
-    paymentStatus: "paid",
-    date: "2024-01-13 11:20 AM",
-    shippingAddress: "321 Elm Dr, San Jose, CA 95110",
-    trackingNumber: "TRK987654321",
-  },
-  {
-    id: "ORD-005",
-    customer: "David Brown",
-    email: "david@example.com",
-    phone: "(555) 567-8901",
-    items: [
-      { name: "Organic Strawberries", quantity: 3, price: 6.99 },
-    ],
-    total: 20.97,
-    status: "cancelled",
-    paymentStatus: "refunded",
-    date: "2024-01-12 04:10 PM",
-    shippingAddress: "654 Maple Way, Palo Alto, CA 94301",
-  },
-]
 
 const statusConfig = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -104,12 +36,35 @@ const statusConfig = {
 }
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [transformedOrders, setTransformedOrders] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isUpdating, setIsUpdating] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
 
-  const filteredOrders = mockOrders.filter((order) => {
+  // Fetch orders on mount
+  useEffect(() => {
+    const loadOrders = async () => {
+      setIsLoading(true)
+      try {
+        const fetchedOrders = await fetchOrders()
+        setOrders(fetchedOrders)
+        // Transform orders for display
+        const transformed = fetchedOrders.map(order => transformOrder(order))
+        setTransformedOrders(transformed)
+      } catch (error) {
+        console.error('Error loading orders:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadOrders()
+  }, [])
+
+  const filteredOrders = transformedOrders.filter((order) => {
     const matchesSearch = 
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -119,22 +74,64 @@ export default function OrdersPage() {
   })
 
   const stats = {
-    total: mockOrders.length,
-    pending: mockOrders.filter(o => o.status === "pending").length,
-    processing: mockOrders.filter(o => o.status === "processing").length,
-    shipped: mockOrders.filter(o => o.status === "shipped").length,
-    delivered: mockOrders.filter(o => o.status === "delivered").length,
-    revenue: mockOrders.filter(o => o.status !== "cancelled").reduce((sum, o) => sum + o.total, 0),
+    total: transformedOrders.length,
+    pending: transformedOrders.filter(o => o.status === "pending").length,
+    processing: transformedOrders.filter(o => o.status === "processing").length,
+    shipped: transformedOrders.filter(o => o.status === "shipped").length,
+    delivered: transformedOrders.filter(o => o.status === "delivered").length,
+    revenue: transformedOrders.filter(o => o.status !== "cancelled").reduce((sum, o) => {
+      const orderTotal = typeof o.total === 'number' ? o.total : parseFloat(String(o.total)) || 0
+      return sum + orderTotal
+    }, 0),
   }
 
-  const handleStatusUpdate = (orderId: string, newStatus: string) => {
-    console.log(`Updating order ${orderId} to ${newStatus}`)
-    // In a real app, this would make an API call
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    setIsUpdating(true)
+    try {
+      // Find the order to get the uniqueId
+      const order = transformedOrders.find(o => o.id === orderId)
+      if (!order) {
+        console.error('Order not found')
+        return
+      }
+
+      // Use the uniqueId (stored as id in transformed order) for API calls
+      const uniqueId = order.id // This is already the uniqueId from transformOrder
+      await updateOrderStatus(uniqueId, { status: newStatus as any })
+      
+      // Refresh orders
+      const fetchedOrders = await fetchOrders()
+      setOrders(fetchedOrders)
+      const transformed = fetchedOrders.map(o => transformOrder(o))
+      setTransformedOrders(transformed)
+      
+      // Update selected order if it's the one being updated
+      if (selectedOrder && selectedOrder.id === orderId) {
+        const updated = transformed.find(o => o.id === orderId)
+        if (updated) setSelectedOrder(updated)
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      // Error is already handled in the API service with toast
+    } finally {
+      setIsUpdating(false)
+    }
   }
 
   const handleViewDetails = (order: any) => {
     setSelectedOrder(order)
     setShowDetailsModal(true)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-[#0A5D31]" />
+          <p className="text-gray-600">Loading orders...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -240,70 +237,81 @@ export default function OrdersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((order) => {
-                  const StatusIcon = statusConfig[order.status as keyof typeof statusConfig].icon
-                  return (
-                    <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                {filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-gray-500">
+                      No orders found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOrders.map((order) => {
+                    const StatusIcon = statusConfig[order.status as keyof typeof statusConfig]?.icon || Clock
+                    return (
+                      <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-4 px-4">
+                          <span className="font-mono font-semibold text-gray-900">{order.id}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div>
+                            <p className="font-medium text-gray-900">{order.customer}</p>
+                            <p className="text-sm text-gray-500">{order.email}</p>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="text-sm text-gray-600">
+                            {order.items?.length || 0} item(s)
+                          </div>
+                        </td>
                       <td className="py-4 px-4">
-                        <span className="font-mono font-semibold text-gray-900">{order.id}</span>
+                        <span className="font-bold text-gray-900">${(typeof order.total === 'number' ? order.total : parseFloat(String(order.total)) || 0).toFixed(2)}</span>
                       </td>
-                      <td className="py-4 px-4">
-                        <div>
-                          <p className="font-medium text-gray-900">{order.customer}</p>
-                          <p className="text-sm text-gray-500">{order.email}</p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="text-sm text-gray-600">
-                          {order.items.length} item(s)
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="font-bold text-gray-900">${order.total.toFixed(2)}</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge className={`${statusConfig[order.status as keyof typeof statusConfig].color} gap-1`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {statusConfig[order.status as keyof typeof statusConfig].label}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4 text-sm text-gray-600">
-                        {order.date}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDetails(order)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          {order.status === "pending" && (
+                        <td className="py-4 px-4">
+                          <Badge className={`${statusConfig[order.status as keyof typeof statusConfig]?.color || 'bg-gray-100 text-gray-800'} gap-1`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {statusConfig[order.status as keyof typeof statusConfig]?.label || order.status}
+                          </Badge>
+                        </td>
+                        <td className="py-4 px-4 text-sm text-gray-600">
+                          {order.date}
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleStatusUpdate(order.id, "processing")}
-                              className="text-blue-600 hover:text-blue-700"
+                              onClick={() => handleViewDetails(order)}
+                              disabled={isUpdating}
                             >
-                              Process
+                              <Eye className="w-4 h-4" />
                             </Button>
-                          )}
-                          {order.status === "processing" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleStatusUpdate(order.id, "shipped")}
-                              className="text-purple-600 hover:text-purple-700"
-                            >
-                              Ship
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
+                            {order.status === "pending" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleStatusUpdate(order.id, "processing")}
+                                className="text-blue-600 hover:text-blue-700"
+                                disabled={isUpdating}
+                              >
+                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Process"}
+                              </Button>
+                            )}
+                            {order.status === "processing" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleStatusUpdate(order.id, "shipped")}
+                                className="text-purple-600 hover:text-purple-700"
+                                disabled={isUpdating}
+                              >
+                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ship"}
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -313,91 +321,150 @@ export default function OrdersPage() {
       {/* Order Details Modal */}
       {selectedOrder && (
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Order Details - {selectedOrder.id}</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-0 gap-0 bg-white border-gray-200 shadow-xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {/* Header */}
+            <DialogHeader className="px-6 pt-5 pb-4 bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] text-white">
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <Eye className="w-5 h-5" />
+                Order Details - {selectedOrder.id}
+              </DialogTitle>
+              <DialogDescription className="text-gray-100 text-sm">
                 Order placed on {selectedOrder.date}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6 py-4">
-              {/* Customer Info */}
+            <div className="px-6 py-4 space-y-4">
+              {/* Customer Information */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                  <p><span className="font-medium">Name:</span> {selectedOrder.customer}</p>
-                  <p><span className="font-medium">Email:</span> {selectedOrder.email}</p>
-                  <p><span className="font-medium">Phone:</span> {selectedOrder.phone}</p>
+                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
+                  <User className="w-4 h-4" />
+                  Customer Information
+                </Label>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2 border border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-gray-500" />
+                    <p className="font-semibold text-gray-900">{selectedOrder.customer || 'Unknown Customer'}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <p className="text-gray-700">{selectedOrder.email || 'No email provided'}</p>
+                  </div>
+                  {selectedOrder.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <p className="text-gray-700">{selectedOrder.phone}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Order Items */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
+                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
+                  <ShoppingCart className="w-4 h-4" />
+                  Order Items
+                </Label>
                 <div className="space-y-2">
-                  {selectedOrder.items.map((item: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">{item.name}</p>
-                        <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                  {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                    selectedOrder.items.map((item: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div>
+                          <p className="font-semibold text-gray-900">{item.name || 'Unknown Product'}</p>
+                          <p className="text-sm text-gray-500">Quantity: {item.quantity || 0}</p>
+                        </div>
+                        <p className="font-semibold text-gray-900">${(item.total || ((item.price || 0) * (item.quantity || 0))).toFixed(2)}</p>
                       </div>
-                      <p className="font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+                    ))
+                  ) : (
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center text-gray-500">
+                      No items found
                     </div>
-                  ))}
-                  <div className="flex items-center justify-between p-3 bg-[#5a9c3a]/10 rounded-lg border-2 border-[#5a9c3a]">
-                    <span className="font-bold text-gray-900">Total</span>
-                    <span className="font-bold text-[#5a9c3a] text-xl">${selectedOrder.total.toFixed(2)}</span>
+                  )}
+                  <div className="flex items-center justify-between p-4 bg-[#0A5D31]/10 rounded-lg border-2 border-[#0A5D31] mt-3">
+                    <span className="font-bold text-gray-900 text-lg">Total</span>
+                    <span className="font-bold text-[#0A5D31] text-2xl">${(selectedOrder.total || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Shipping Address */}
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Shipping Address</h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-gray-700">{selectedOrder.shippingAddress}</p>
-                </div>
-              </div>
-
-              {/* Tracking */}
-              {selectedOrder.trackingNumber && (
+              {selectedOrder.shippingAddress && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Tracking Information</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="font-mono text-gray-900">{selectedOrder.trackingNumber}</p>
+                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4" />
+                    Shipping Address
+                  </Label>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text-gray-700">{selectedOrder.shippingAddress}</p>
                   </div>
                 </div>
               )}
 
-              {/* Status Actions */}
-              <div className="flex gap-3 pt-4 border-t">
-                {selectedOrder.status === "pending" && (
-                  <Button
-                    onClick={() => handleStatusUpdate(selectedOrder.id, "processing")}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                  >
-                    Mark as Processing
-                  </Button>
-                )}
-                {selectedOrder.status === "processing" && (
-                  <Button
-                    onClick={() => handleStatusUpdate(selectedOrder.id, "shipped")}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700"
-                  >
-                    Mark as Shipped
-                  </Button>
-                )}
-                {selectedOrder.status === "shipped" && (
-                  <Button
-                    onClick={() => handleStatusUpdate(selectedOrder.id, "delivered")}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                  >
-                    Mark as Delivered
-                  </Button>
-                )}
-              </div>
+              {/* Tracking Information */}
+              {selectedOrder.trackingNumber && (
+                <div>
+                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
+                    <Truck className="w-4 h-4" />
+                    Tracking Information
+                  </Label>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="font-mono text-gray-900">{selectedOrder.trackingNumber}</p>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Footer */}
+            <DialogFooter className="px-6 py-4 bg-gray-50 border-t border-gray-200 gap-2">
+              {selectedOrder.status === "pending" && (
+                <Button
+                  onClick={() => handleStatusUpdate(selectedOrder.id, "processing")}
+                  className="bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#0A5D31] text-white h-9 px-6 text-sm font-semibold"
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Mark as Processing"
+                  )}
+                </Button>
+              )}
+              {selectedOrder.status === "processing" && (
+                <Button
+                  onClick={() => handleStatusUpdate(selectedOrder.id, "shipped")}
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-600 text-white h-9 px-6 text-sm font-semibold"
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Mark as Shipped"
+                  )}
+                </Button>
+              )}
+              {selectedOrder.status === "shipped" && (
+                <Button
+                  onClick={() => handleStatusUpdate(selectedOrder.id, "delivered")}
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white h-9 px-6 text-sm font-semibold"
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Mark as Delivered"
+                  )}
+                </Button>
+              )}
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}

@@ -27,7 +27,9 @@ import {
   updateHarvestRequest, 
   deleteHarvestRequest,
   fetchHarvestRequest,
-  type HarvestRequest 
+  fetchUserAddresses,
+  type HarvestRequest,
+  type Address
 } from "@/lib/harvest-requests-api"
 import { fetchUserProducts, type Product } from "@/lib/product-api"
 import { toast } from "sonner"
@@ -76,8 +78,10 @@ export default function HarvestRequestsPage() {
   const [harvestRequests, setHarvestRequests] = useState<HarvestRequest[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
+  const [addresses, setAddresses] = useState<Address[]>([])
   const [formData, setFormData] = useState({
     product_ids: [] as number[],
+    address_ids: [] as number[],
     date: "",
     number_of_people: "",
     description: "",
@@ -110,6 +114,19 @@ export default function HarvestRequestsPage() {
       }
     }
     loadProducts()
+  }, [])
+
+  // Fetch addresses for the form dropdown
+  useEffect(() => {
+    const loadAddresses = async () => {
+      try {
+        const addressesData = await fetchUserAddresses()
+        setAddresses(addressesData)
+      } catch (error) {
+        console.error('Error loading addresses:', error)
+      }
+    }
+    loadAddresses()
   }, [])
 
 
@@ -181,8 +198,8 @@ export default function HarvestRequestsPage() {
 
   const handleSave = async () => {
     // Validation
-    if (formData.product_ids.length === 0 || !formData.date) {
-      toast.error("Please fill in all required fields (products and date)")
+    if (formData.product_ids.length === 0 || !formData.date || formData.address_ids.length === 0) {
+      toast.error("Please fill in all required fields (products, addresses, and date)")
       return
     }
 
@@ -196,6 +213,13 @@ export default function HarvestRequestsPage() {
         payload.product_id = formData.product_ids[0]
       } else {
         payload.product_ids = formData.product_ids
+      }
+
+      // Use user_address_ids if multiple, user_address_id if single
+      if (formData.address_ids.length === 1) {
+        payload.user_address_id = formData.address_ids[0]
+      } else {
+        payload.user_address_ids = formData.address_ids
       }
 
       // Optional fields
@@ -215,6 +239,7 @@ export default function HarvestRequestsPage() {
       setShowAddModal(false)
       setFormData({
         product_ids: [],
+        address_ids: [],
         date: "",
         number_of_people: "",
         description: "",
@@ -481,6 +506,75 @@ export default function HarvestRequestsPage() {
               {formData.product_ids.length > 0 && (
                 <p className="text-xs text-gray-500 mt-1">
                   {formData.product_ids.length} product(s) selected
+                </p>
+              )}
+            </div>
+
+            {/* Addresses Selection */}
+            <div>
+              <Label className="text-sm font-semibold text-gray-700">
+                Addresses <span className="text-red-500">*</span>
+              </Label>
+              <div className="mt-1.5 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
+                {addresses.length === 0 ? (
+                  <p className="text-sm text-gray-500 py-4 text-center">No addresses available</p>
+                ) : (
+                  <div className="space-y-2">
+                    {addresses.map((address) => {
+                      const isSelected = formData.address_ids.includes(address.id)
+                      const formatAddress = () => {
+                        const parts = [
+                          address.street_address,
+                          address.apt && `Apt ${address.apt}`,
+                          address.city,
+                          address.state,
+                          address.postal_code,
+                        ].filter(Boolean)
+                        return parts.join(", ")
+                      }
+                      return (
+                        <label
+                          key={address.id}
+                          className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({
+                                  ...formData,
+                                  address_ids: [...formData.address_ids, address.id],
+                                })
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  address_ids: formData.address_ids.filter((id) => id !== address.id),
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 mt-0.5 text-[#0A5D31] border-gray-300 rounded focus:ring-[#0A5D31] focus:ring-2"
+                          />
+                          <div className="flex-1">
+                            {address.business_name && (
+                              <span className="text-sm font-semibold text-gray-900 block mb-1">
+                                {address.business_name}
+                              </span>
+                            )}
+                            <span className="text-sm text-gray-700 block">{formatAddress()}</span>
+                            {address.country && (
+                              <span className="text-xs text-gray-500 block mt-0.5">{address.country}</span>
+                            )}
+                          </div>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+              {formData.address_ids.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.address_ids.length} address(es) selected
                 </p>
               )}
             </div>

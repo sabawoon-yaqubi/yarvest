@@ -13,3 +13,4 @@ export interface ApiPartner {
   [key: string]: any // Allow additional properties from API
 }
 
+
