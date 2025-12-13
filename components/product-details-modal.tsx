@@ -95,7 +95,7 @@ export function ProductDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left: Image */}
           <div className="relative bg-gray-50 lg:min-h-[600px]">

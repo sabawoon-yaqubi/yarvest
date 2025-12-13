@@ -6,33 +6,26 @@ import { Footer } from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Star, CheckCircle, Mail, Phone, Package, Calendar, Award, Globe, Truck, ArrowLeft, Loader2, Clock, Leaf, Shield, Users } from "lucide-react"
+import { MapPin, Star, CheckCircle, Mail, Phone, Package, Calendar, Award, Globe, Truck, ArrowLeft, Loader2, Leaf, Shield, Users } from "lucide-react"
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { ApiProductCard } from "@/components/api-product-card"
+import { StoreDetailSkeleton } from "@/components/store-detail-skeleton"
 
-interface StoreDetail {
+interface SellerDetail {
   id: number
   unique_id: string
   name: string
+  full_name: string
   logo: string | null
+  image: string | null
   description: string | null
   bio: string | null
   website: string | null
   phone: string | null
   email: string | null
-  store_type: {
-    id: number
-    name: string
-  } | null
-  user: {
-    id: number
-    unique_id: string
-    full_name: string
-    image: string | null
-  } | null
   location: {
     city?: string
     state?: string
@@ -44,24 +37,15 @@ interface StoreDetail {
     unique_id: string
     name: string
     price: number | string
+    main_image: string | null
     image: string | null
   }>
-  hours?: Array<{
-    id: number
-    day: string
-    start_time: string
-    end_time: string
-    type: string
-  }>
-  certifications?: Array<{
-    id: number
-    certification: {
-      id: number
-      name: string
-    }
-  }>
   products_count?: number
-  status: boolean
+  rating?: number
+  reviews_count?: number
+  is_verified?: boolean
+  verified?: boolean
+  certifications?: Array<any>
   created_at: string
   updated_at: string
 }
@@ -75,19 +59,6 @@ const formatLocation = (location: any): string => {
   return parts.join(', ') || 'Location not available'
 }
 
-// Format time
-const formatTime = (time: string): string => {
-  if (!time) return ""
-  try {
-    const [hours, minutes] = time.split(":")
-    const hour = parseInt(hours)
-    const ampm = hour >= 12 ? "PM" : "AM"
-    const displayHour = hour % 12 || 12
-    return `${displayHour}:${minutes} ${ampm}`
-  } catch {
-    return time
-  }
-}
 
 export default function ProducerDetailPage() {
   const params = useParams()
@@ -96,13 +67,16 @@ export default function ProducerDetailPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [favorites, setFavorites] = useState<number[]>([])
 
-  // Fetch store/producer details - try unique_id first, then fallback to numeric id
-  const { data: store, loading, error, refetch } = useApiFetch<StoreDetail>(
-    `/stores/${producerId}`,
+  // Fetch seller/producer details using unique_id
+  const { data: storeResponse, loading, error, refetch } = useApiFetch<any>(
+    `/sellers/${producerId}`,
     {
       enabled: !!producerId,
     }
   )
+  
+  // Extract seller data from response
+  const store = storeResponse?.data || storeResponse
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]))
@@ -119,11 +93,8 @@ export default function ProducerDetailPage() {
       <div className="flex flex-col h-screen bg-background">
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-        <main className="flex-1 overflow-auto flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-[#0A5D31] mx-auto mb-4" />
-            <p className="text-gray-600">Loading producer details...</p>
-          </div>
+        <main className="flex-1 overflow-auto">
+          <StoreDetailSkeleton />
         </main>
         <Footer />
       </div>
@@ -141,14 +112,14 @@ export default function ProducerDetailPage() {
             <div className="max-w-2xl mx-auto text-center">
               <Card className="p-12">
                 <p className="text-red-500 text-lg mb-4">
-                  {error || "Producer not found"}
+                  {error || "Seller not found"}
                 </p>
                 <div className="flex gap-4 justify-center">
                   <Button onClick={() => refetch()} variant="outline">
                     Retry
                   </Button>
                   <Button onClick={() => router.push("/producers")} className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white">
-                    Browse All Producers
+                    Browse All Sellers
                   </Button>
                 </div>
               </Card>
@@ -176,7 +147,7 @@ export default function ProducerDetailPage() {
             <div className="max-w-7xl mx-auto">
               {/* Breadcrumb */}
               <div className="mb-6 text-sm text-gray-500">
-                <Link href="/producers" className="hover:text-[#0A5D31] transition-colors">Producers</Link>
+                <Link href="/producers" className="hover:text-[#0A5D31] transition-colors">Sellers</Link>
                 <span className="mx-2">/</span>
                 <span className="text-gray-900 font-medium">{store.name}</span>
               </div>
@@ -222,9 +193,10 @@ export default function ProducerDetailPage() {
                           </Badge>
                         )}
                       </div>
-                      {store.store_type && (
-                        <Badge variant="secondary" className="text-base font-semibold mb-4">
-                          {store.store_type.name}
+                      {store.verified && (
+                        <Badge variant="secondary" className="text-base font-semibold mb-4 bg-green-100 text-green-800">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Verified Seller
                         </Badge>
                       )}
                     </div>
@@ -237,7 +209,7 @@ export default function ProducerDetailPage() {
                         <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                       </div>
                       <div>
-                        <div className="font-bold text-gray-900 text-lg">4.8</div>
+                        <div className="font-bold text-gray-900 text-lg">{store.rating || 0}</div>
                         <div className="text-xs text-gray-600">Rating</div>
                       </div>
                     </div>
@@ -342,14 +314,14 @@ export default function ProducerDetailPage() {
                         <Package className="w-6 h-6 text-[#0A5D31]" />
                         Products ({productsCount})
                       </h2>
-                      <Link href={`/shops/${store.unique_id}/products`}>
+                      <Link href={`/sellers/${store.unique_id}/products`}>
                         <Button variant="outline" className="border-[#0A5D31] text-[#0A5D31] hover:bg-[#0A5D31] hover:text-white">
                           View All Products
                         </Button>
                       </Link>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {store.products.slice(0, 6).map((product) => (
+                      {store.products.slice(0, 6).map((product: any) => (
                         <ApiProductCard
                           key={product.id}
                           product={{
@@ -357,19 +329,19 @@ export default function ProducerDetailPage() {
                             unique_id: product.unique_id,
                             name: product.name,
                             price: typeof product.price === 'string' ? product.price : product.price.toString(),
-                            discount: '0',
-                            main_image: product.image,
-                            excerpt: null,
-                            details: null,
-                            seller: store.user || { id: 0, unique_id: '', full_name: 'Unknown', image: null },
-                            product_category: { id: 0, unique_id: '', name: '' },
-                            product_type: { id: 0, unique_id: '', name: '' },
-                            reviews: { total: 0, average_rating: 0 },
-                            status: true,
-                            sku: '',
-                            stock: 0,
-                            created_at: '',
-                            updated_at: '',
+                            discount: product.discount || '0',
+                            main_image: product.main_image || product.image,
+                            excerpt: product.excerpt || null,
+                            details: product.details || null,
+                            seller: product.seller || store.user || { id: store.id, unique_id: store.unique_id, full_name: store.name, image: store.image },
+                            product_category: product.product_category || { id: 0, unique_id: '', name: '' },
+                            product_type: product.product_type || { id: 0, unique_id: '', name: '' },
+                            reviews: product.reviews || { total: 0, average_rating: 0 },
+                            status: product.status !== undefined ? product.status : true,
+                            sku: product.sku || '',
+                            stock: product.stock || 0,
+                            created_at: product.created_at || '',
+                            updated_at: product.updated_at || '',
                           }}
                           onAddToCart={handleAddToCart}
                           onToggleFavorite={toggleFavorite}
@@ -439,25 +411,6 @@ export default function ProducerDetailPage() {
                   </div>
                 </Card>
 
-                {/* Store Hours */}
-                {store.hours && store.hours.length > 0 && (
-                  <Card className="p-6 border-2 border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-[#0A5D31]" />
-                      Store Hours
-                    </h3>
-                    <div className="space-y-2">
-                      {store.hours.map((hour) => (
-                        <div key={hour.id} className="flex justify-between text-sm">
-                          <span className="font-medium text-gray-900 capitalize">{hour.day}</span>
-                          <span className="text-gray-600">
-                            {formatTime(hour.start_time)} - {formatTime(hour.end_time)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                )}
 
                 {/* Certifications */}
                 {certifications.length > 0 && (
@@ -479,35 +432,31 @@ export default function ProducerDetailPage() {
                   </Card>
                 )}
 
-                {/* Owner Information */}
-                {store.user && (
+                {/* Seller Stats */}
+                {store.reviews_count !== undefined && (
                   <Card className="p-6 border-2 border-gray-100">
                     <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                       <Users className="w-5 h-5 text-[#0A5D31]" />
-                      Store Owner
+                      Seller Stats
                     </h3>
-                    <div className="flex items-center gap-3">
-                      {store.user.image && (
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
-                          <img
-                            src={store.user.image}
-                            alt={store.user.full_name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg"
-                            }}
-                          />
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Total Reviews</span>
+                        <span className="font-semibold text-gray-900">{store.reviews_count || 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Total Products</span>
+                        <span className="font-semibold text-gray-900">{store.products_count || 0}</span>
+                      </div>
+                      {store.verified && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Status</span>
+                          <Badge className="bg-green-500 text-white">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Verified
+                          </Badge>
                         </div>
                       )}
-                      <div>
-                        <p className="font-semibold text-gray-900">{store.user.full_name}</p>
-                        <Link
-                          href={`/producers/${store.user.unique_id}`}
-                          className="text-sm text-[#0A5D31] hover:underline"
-                        >
-                          View Profile
-                        </Link>
-                      </div>
                     </div>
                   </Card>
                 )}

@@ -12,6 +12,7 @@ import { InfiniteScrollFetcher } from "@/components/infinite-scroll-fetcher"
 import { ProducerCardSkeleton } from "@/components/producer-card-skeleton"
 import { ApiVolunteer } from "@/components/volunteers-section"
 import { getImageUrl } from "@/lib/utils"
+import Link from "next/link"
 
 export default function VolunteersListPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -40,58 +41,72 @@ export default function VolunteersListPage() {
               gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               renderItem={(volunteer) => {
                 const imageUrl = getImageUrl(volunteer.image || volunteer.profile_picture, volunteer.name)
+                const rating = volunteer.reviews?.average_rating ?? 0
+                const reviewCount = volunteer.reviews?.total ?? 0
                 
                 return (
-                  <Card
+                  <Link 
+                    href={`/volunteers-list/${volunteer.unique_id || volunteer.id}`}
                     key={volunteer.id}
-                    className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-3xl border border-border bg-white flex flex-col h-full p-6"
+                    className="block"
                   >
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-20 h-20 bg-[#0A5D31]/10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {imageUrl && imageUrl !== "/placeholder.svg" ? (
-                          <img
-                            src={imageUrl}
-                            alt={volunteer.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.src = "/placeholder.svg"
-                            }}
-                          />
-                        ) : (
-                          <Users className="w-10 h-10 text-[#0A5D31]" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-xl font-bold text-foreground">{volunteer.name}</h3>
-                          {volunteer.verified && (
-                            <Badge className="bg-green-500 text-white">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Verified
-                            </Badge>
+                    <Card
+                      className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-3xl border border-border bg-white flex flex-col h-full p-6 cursor-pointer"
+                    >
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-20 h-20 bg-[#0A5D31]/10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {imageUrl && imageUrl !== "/placeholder.svg" ? (
+                            <img
+                              src={imageUrl}
+                              alt={volunteer.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.src = "/placeholder.svg"
+                              }}
+                            />
+                          ) : (
+                            <Users className="w-10 h-10 text-[#0A5D31]" />
                           )}
                         </div>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
-                          <MapPin className="w-4 h-4" />
-                          {volunteer.location}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-semibold text-sm">4.8</span>
-                          <span className="text-xs text-muted-foreground">(Verified)</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-xl font-bold text-foreground">{volunteer.name}</h3>
+                            {volunteer.verified && (
+                              <Badge className="bg-green-500 text-white">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Verified
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
+                            <MapPin className="w-4 h-4" />
+                            {volunteer.location}
+                          </div>
+                          {reviewCount > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-semibold text-sm">{rating.toFixed(1)}</span>
+                              <span className="text-xs text-muted-foreground">({reviewCount})</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Star className="w-4 h-4 text-gray-300" />
+                              <span className="text-xs text-muted-foreground">No reviews yet</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-border">
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Dedicated volunteer helping with harvesting and community support
-                      </p>
-                      <Button className="w-full bg-[#0A5D31] hover:bg-[#0d7a3f] text-white font-semibold rounded-lg">
-                        Contact Volunteer
-                      </Button>
-                    </div>
-                  </Card>
+                      <div className="mt-auto pt-4 border-t border-border">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Dedicated volunteer helping with harvesting and community support
+                        </p>
+                        <Button className="w-full bg-[#0A5D31] hover:bg-[#0d7a3f] text-white font-semibold rounded-lg">
+                          View Profile
+                        </Button>
+                      </div>
+                    </Card>
+                  </Link>
                 )
               }}
               renderLoading={() => <ProducerCardSkeleton count={12} />}

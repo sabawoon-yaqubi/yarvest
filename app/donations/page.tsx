@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Heart, DollarSign, Users, TrendingUp, CheckCircle, Clock, Award, Target, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useApiFetch } from "@/hooks/use-api-fetch"
+import { DonationSkeleton } from "@/components/donation-skeleton"
 
 interface DonationCampaign {
   id: number
@@ -78,12 +79,7 @@ export default function DonationsPage() {
 
             {/* Loading State */}
             {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="text-center">
-                  <Loader2 className="w-12 h-12 animate-spin text-[#0A5D31] mx-auto mb-4" />
-                  <p className="text-gray-600">Loading donation campaigns...</p>
-                </div>
-              </div>
+              <DonationSkeleton />
             ) : (
               <>
                 {/* Donation Campaigns */}

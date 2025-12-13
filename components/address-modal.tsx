@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { MapPin, Search, Check, X, Navigation, Trash2, Edit } from "lucide-react"
+import { MapPin, Search, Check, X, Navigation, Trash2, Edit, Send } from "lucide-react"
 import { useAuthStore } from "@/stores/auth-store"
 import { useAddressStore, type Address } from "@/stores/address-store"
 
@@ -383,8 +383,8 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
 
   if (showForm) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+      <Dialog open={open} onOpenChange={onOpenChange} >
+        <DialogContent className="sm:max-w-[500px] overflow-y-auto  p-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">{editingId ? "Edit address" : "Add address"}</DialogTitle>
             <DialogDescription>Fill in the details for your address</DialogDescription>
@@ -512,51 +512,54 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col">
+      <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px] max-h-[85vh] p-5 flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-xl font-semibold">Choose address</DialogTitle>
-          <DialogDescription>Select a delivery location to see product availability</DialogDescription>
+          <DialogTitle className="text-2xl font-bold text-gray-900 mb-2">Choose address</DialogTitle>
+          <DialogDescription className="text-base text-gray-600">Select a delivery location to see product availability</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col flex-1 min-h-0 py-4">
           {/* Search with Current Location */}
           <div className="mb-4 flex-shrink-0">
-            <label className="text-sm font-medium text-foreground mb-2 block">Enter your address</label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Enter your address"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-3"
-                />
-              </div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">Enter your address</label>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 z-10" />
+              <Input
+                type="text"
+                placeholder="Enter your address"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchQuery.trim()) {
+                    handleSearch(searchQuery)
+                  }
+                }}
+                className="w-full pl-12 pr-12 py-3.5 text-base bg-white border-2 border-[#0A5D31] rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31]"
+              />
               <button
                 type="button"
-                onClick={handleGetCurrentLocation}
-                disabled={isSearching}
-                className="px-3 py-2 border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 flex-shrink-0"
-                title="Use current location"
+                onClick={() => {
+                  if (searchQuery.trim()) {
+                    handleSearch(searchQuery)
+                  }
+                }}
+                disabled={!searchQuery.trim() || isSearching}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Search address"
               >
-                {isSearching ? (
-                  <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Navigation className="w-4 h-4 text-muted-foreground" />
-                )}
+                <Send className="w-5 h-5 text-[#0A5D31]" />
               </button>
             </div>
           </div>
 
           {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1 -mr-1">
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-2 pr-1 -mr-1">
             {/* Search Results */}
             {isSearching && (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-12 bg-muted animate-pulse rounded-lg" />
+                  <div key={i} className="h-12 bg-gray-100 animate-pulse rounded-lg" />
                 ))}
               </div>
             )}
@@ -567,11 +570,11 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
                   <button
                     key={index}
                     onClick={() => handleSelectSearchResult(result)}
-                    className="w-full text-left p-3 rounded-lg shadow-sm hover:shadow-md hover:bg-secondary/50 transition-all"
+                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-[#0A5D31] hover:bg-gray-50 transition-all"
                   >
                     <div className="flex items-start gap-3">
-                      <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-foreground flex-1">{result.display_name}</p>
+                      <MapPin className="w-4 h-4 text-[#0A5D31] mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-gray-900 flex-1">{result.display_name}</p>
                     </div>
                   </button>
                 ))}
@@ -587,29 +590,29 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
                     <div
                       key={addr.id}
                       onClick={() => handleSelectAddress(addr)}
-                      className={`w-full text-left p-3 rounded-lg shadow-sm transition-all cursor-pointer ${
+                      className={`w-full text-left p-3 rounded-lg border-2 transition-all cursor-pointer ${
                         isActive
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50 hover:bg-secondary/50"
+                          ? "border-[#0A5D31] bg-[#0A5D31]/5"
+                          : "border-gray-200 hover:border-[#0A5D31]/50 hover:bg-gray-50"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-start gap-3 flex-1">
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
                             isActive
-                              ? "border-gray-900 bg-gray-900"
+                              ? "border-[#0A5D31] bg-[#0A5D31]"
                               : "border-gray-300 bg-white"
                           }`}>
                             {isActive && (
-                              <div className="w-2 h-2 rounded-full bg-white" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-white" />
                             )}
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">
+                            <p className="text-sm font-medium text-gray-900">
                               {addr.street_address}
                             </p>
                             {addr.city && addr.state && (
-                              <p className="text-xs text-muted-foreground mt-0.5">
+                              <p className="text-xs text-gray-600 mt-0.5">
                                 {addr.city}, {addr.state} {addr.postal_code}
                               </p>
                             )}
@@ -617,7 +620,7 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
                         </div>
                         <div className="flex items-center gap-2">
                           {isActive && (
-                            <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                            <Check className="w-5 h-5 text-[#0A5D31] flex-shrink-0" />
                           )}
                           <button
                             type="button"
@@ -625,7 +628,7 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
                               e.stopPropagation()
                               handleEditAddress(addr)
                             }}
-                            className="p-1.5 hover:bg-secondary rounded transition-colors"
+                            className="p-1.5 hover:bg-gray-100 rounded transition-colors"
                             title="Edit address"
                           >
                             <Edit className="w-4 h-4 text-[#C5A000]" />
@@ -636,10 +639,10 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
                               e.stopPropagation()
                               handleDeleteAddress(addr.id!)
                             }}
-                            className="p-1.5 hover:bg-destructive/10 rounded transition-colors"
+                            className="p-1.5 hover:bg-red-50 rounded transition-colors"
                             title="Delete address"
                           >
-                            <Trash2 className="w-4 h-4 text-destructive" />
+                            <Trash2 className="w-4 h-4 text-red-600" />
                           </button>
                         </div>
                       </div>
@@ -652,20 +655,20 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
             {/* Empty State */}
             {!searchQuery && addresses.length === 0 && searchResults.length === 0 && !isSearching && (
               <div className="text-center py-8">
-                <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Start typing to search for your address</p>
+                <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-sm text-gray-600">Start typing to search for your address</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4 border-t border-border flex-shrink-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+        <div className="flex gap-3 pt-4 border-t border-gray-200 flex-shrink-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50">
             Cancel
           </Button>
           <Button 
             onClick={() => setShowForm(true)} 
-            className="flex-1 bg-primary hover:bg-accent text-white"
+            className="flex-1 bg-[#0A5D31] hover:bg-[#0d7a3f] text-white"
           >
             Add manually
           </Button>

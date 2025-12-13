@@ -10,6 +10,7 @@ import { MapPin, Star, Clock, Phone, Search, Loader2 } from "lucide-react"
 import { useState, useMemo } from "react"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { usePaginatedApi } from "@/hooks/use-paginated-api"
+import { StoreListSkeleton } from "@/components/store-list-skeleton"
 import Link from "next/link"
 import { ApiResponse } from "@/types/api"
 
@@ -151,10 +152,7 @@ export default function ShopsPage() {
 
             {/* Loading State */}
             {loading && filteredShops.length === 0 && (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <span className="ml-3 text-muted-foreground">Loading stores...</span>
-              </div>
+              <StoreListSkeleton />
             )}
 
             {/* Error State */}

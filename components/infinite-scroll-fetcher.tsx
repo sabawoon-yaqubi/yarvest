@@ -110,7 +110,7 @@ export function InfiniteScrollFetcher<T extends { id: number | string }>({
   }
 
   // Empty state
-  if (data.length === 0) {
+  if (transformedData.length === 0) {
     return renderEmpty ? (
       renderEmpty()
     ) : (
@@ -124,7 +124,7 @@ export function InfiniteScrollFetcher<T extends { id: number | string }>({
   return (
     <>
       <div className={gridClassName}>
-        {data.map((item, index) => renderItem(item, index))}
+        {transformedData.map((item, index) => renderItem(item, index))}
       </div>
       
       {/* Loading more indicator */}
@@ -140,7 +140,7 @@ export function InfiniteScrollFetcher<T extends { id: number | string }>({
       )}
 
       {/* End of list message */}
-      {!hasMore && data.length > 0 && (
+      {!hasMore && transformedData.length > 0 && (
         <div className="text-center py-8">
           <p className="text-sm text-muted-foreground">You've reached the end of the list</p>
         </div>

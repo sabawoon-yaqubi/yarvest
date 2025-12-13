@@ -1,15 +1,17 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Sparkles, Star, Plus, Minus } from "lucide-react"
+import { ShoppingCart, Sparkles, Star, Plus, Minus, Heart, Trash2 } from "lucide-react"
 import { getImageUrl } from "@/lib/utils"
 import { calculateProductPrices } from "@/lib/product-utils"
 import { ApiProduct, ApiProductCardProps } from "@/types/product"
 import { ProductModal } from "./product-modal"
 import { useCartStore } from "@/stores/cart-store"
 import { useCartHandler } from "@/hooks/use-cart-handler"
+import { useWishlistStore } from "@/stores/wishlist-store"
+import { useAuthStore } from "@/stores/auth-store"
 
 // Re-export types for convenience
 export type { ApiProduct, ApiProductCardProps } from "@/types/product"
@@ -18,14 +20,26 @@ export function ApiProductCard({
   product,
   onAddToCart,
   onToggleFavorite,
-  isFavorite = false,
+  isFavorite: propIsFavorite = false,
   className = "",
 }: ApiProductCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [imgError, setImgError] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
-  const { items, updateItemQuantity } = useCartStore()
+  const { items, updateItemQuantity, removeItem } = useCartStore()
   const { handleAddToCart } = useCartHandler()
+  const { isLoggedIn } = useAuthStore()
+  const { toggleItem, isFavorite: isFavoriteInStore, fetchProductIds } = useWishlistStore()
+  
+  // Determine if favorite: use prop if provided, otherwise use store
+  const isFavorite = propIsFavorite || (isLoggedIn ? isFavoriteInStore(product.id) : false)
+  
+  // Fetch wishlist product IDs on mount if logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchProductIds()
+    }
+  }, [isLoggedIn, fetchProductIds])
   
   const { price, discountAmount, originalPrice, discountPercentage, hasDiscount } = calculateProductPrices(product)
   const imageUrl = getImageUrl(product.main_image, product.name)
@@ -87,13 +101,28 @@ export function ApiProductCard({
     }
   }
 
+  const handleRemoveFromCart = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (cartItem) {
+      try {
+        await removeItem(cartItem.id)
+      } catch (error) {
+        console.error('Failed to remove item:', error)
+      }
+    }
+  }
+
+  // Get dynamic review data from API
+  const rating = product.reviews?.average_rating ?? 0
+  const reviewCount = product.reviews?.total ?? 0
+
   return (
     <>
-      <Card
-        className={`overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02] flex flex-col bg-white shadow-sm rounded-2xl relative group ${className}`}
+      <div
+        className={`group relative w-full max-w-[200px] overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-md flex flex-col ${className}`}
       >
-        {/* Product Image */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 h-52">
+        {/* Product Image Container */}
+        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-emerald-50/60 to-green-50/60">
           <div
             onClick={handleCardClick}
             className="cursor-pointer h-full w-full relative"
@@ -108,156 +137,151 @@ export function ApiProductCard({
             }}
           >
             {isImageLoading && !imgError && (
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/60 via-white to-green-100/60 animate-pulse" />
             )}
             <img
               src={imageUrl}
               alt={product.name}
-              className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${
+              className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
                 isImageLoading ? "opacity-0" : "opacity-100"
               }`}
               loading="lazy"
               onError={handleImageError}
               onLoad={handleImageLoad}
             />
-            {/* Overlay on hover */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
           </div>
-          
-          {/* Discount Badge */}
-          {hasDiscount && (
-            <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-              <Sparkles className="w-3 h-3" />
-              {discountPercentage}% OFF
-            </div>
-          )}
 
-          {/* Stock Badge */}
-          {!inStock && (
-            <div className="absolute top-3 left-3 z-10 bg-gray-500/90 text-white px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
-              Out of Stock
+          {/* Favorite Button */}
+          <button
+            onClick={async (e) => {
+              e.stopPropagation()
+              if (isLoggedIn) {
+                try {
+                  const newFavoriteState = await toggleItem(product.id)
+                  // Call prop callback if provided
+                  if (onToggleFavorite) {
+                    onToggleFavorite(product.id)
+                  }
+                } catch (error) {
+                  console.error('Error toggling favorite:', error)
+                }
+              } else {
+                // If not logged in, just call the prop callback
+                onToggleFavorite?.(product.id)
+              }
+            }}
+            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-300 hover:scale-110 active:scale-95 z-10"
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Heart
+              className={`h-3 w-3 transition-colors ${
+                isFavorite 
+                  ? "fill-red-500 text-red-500" 
+                  : "text-gray-400 hover:text-red-400"
+              }`}
+            />
+          </button>
+
+          {/* Add to Cart Button */}
+          {isInCart ? (
+            <div className="absolute bottom-2 right-2 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-[#0A5D31]/20">
+              {cartQuantity === 1 ? (
+                <button
+                  onClick={handleRemoveFromCart}
+                  className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 active:scale-95"
+                  aria-label="Remove from cart"
+                >
+                  <Trash2 className="h-3 w-3 text-red-600" strokeWidth={2.5} />
+                </button>
+              ) : (
+                <button
+                  onClick={handleDecreaseQuantity}
+                  className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-green-50 transition-all duration-300 active:scale-95"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="h-3 w-3 text-[#0A5D31]" strokeWidth={2.5} />
+                </button>
+              )}
+              <span className="text-xs font-bold text-[#0A5D31] min-w-[18px] text-center">
+                {cartQuantity}
+              </span>
+              <button
+                onClick={handleIncreaseQuantity}
+                disabled={cartQuantity >= product.stock}
+                className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-green-50 disabled:opacity-50 transition-all duration-300 active:scale-95"
+                aria-label="Increase quantity"
+              >
+                <Plus className="h-3 w-3 text-[#0A5D31]" strokeWidth={2.5} />
+              </button>
             </div>
+          ) : (
+            <button
+              onClick={handleAddToCartClick}
+              disabled={!inStock}
+              className={`absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#0A5D31] shadow-md transition-all duration-300 hover:scale-110 active:scale-95 ${
+                inStock 
+                  ? "text-white" 
+                  : "bg-gray-400 cursor-not-allowed text-white"
+              }`}
+              aria-label="Add to cart"
+            >
+              <Plus className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+            </button>
           )}
         </div>
 
-        {/* Product Info */}
-        <div className="p-5 flex flex-col flex-1 bg-white">
-          {/* Seller Name */}
-          <p className="text-xs font-semibold text-[#0A5D31] mb-2 uppercase tracking-wider">
-            {product.seller.full_name}
-          </p>
-
-          {/* Product Name */}
-          <h3 
-            onClick={handleCardClick}
-            className="font-bold text-gray-900 mb-3 hover:text-[#0A5D31] cursor-pointer leading-tight line-clamp-2 text-base transition-colors min-h-[3rem]"
-            role="button"
-            tabIndex={0}
-            aria-label={`View ${product.name} details`}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault()
-                handleCardClick()
-              }
-            }}
-          >
-            {product.name}
-          </h3>
-
-          {/* Category Badge */}
-          <div className="mb-3">
-            <span className="inline-block px-2 py-1 bg-[#0A5D31]/10 text-[#0A5D31] text-xs font-medium rounded-md">
-              {product.product_category.name}
-            </span>
+        {/* Product Details */}
+        <div className="px-3 py-2 min-w-0 w-full">
+          {/* Product Name and Weight */}
+          <div className="mb-1.5">
+            <h3 
+              onClick={handleCardClick}
+              className="text-sm font-semibold leading-tight text-gray-900 cursor-pointer hover:text-[#0A5D31] transition-colors"
+              role="button"
+              tabIndex={0}
+              aria-label={`View ${product.name} details`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  handleCardClick()
+                }
+              }}
+            >
+              {product.name}
+            </h3>
+            {product.unit?.name && (
+              <p className="mt-0.5 text-xs text-gray-500">
+                {product.unit.name}
+              </p>
+            )}
           </div>
 
-          {/* Reviews/Rating */}
-          {product.reviews && product.reviews.total > 0 && (
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex items-center gap-0.5">
-                {[...Array(5)].map((_, i) => {
-                  const rating = product.reviews!.average_rating
-                  const filled = i < Math.floor(rating)
-                  const halfFilled = i === Math.floor(rating) && rating % 1 >= 0.5
-                  
-                  return (
-                    <Star
-                      key={i}
-                      className={`w-3.5 h-3.5 ${
-                        filled
-                          ? "fill-yellow-400 text-yellow-400"
-                          : halfFilled
-                          ? "fill-yellow-400/50 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  )
-                })}
-              </div>
-              <span className="text-xs text-gray-600 font-medium">
-                {product.reviews.average_rating.toFixed(1)} ({product.reviews.total} {product.reviews.total === 1 ? 'review' : 'reviews'})
-              </span>
-            </div>
-          )}
-
-          {/* Price Section */}
-          <div className="mt-auto pt-4 border-t border-gray-100">
-            <div className="mb-4 space-y-1.5">
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-3xl text-[#0A5D31]">${price.toFixed(2)}</span>
-              </div>
+          {/* Price and Rating Section */}
+          <div className="flex items-center justify-between gap-1.5 min-w-0 w-full">
+            <div className="flex items-baseline gap-1 min-w-0 flex-1 overflow-hidden">
+              <span className="text-lg font-bold text-red-600 truncate">${price.toFixed(2)}</span>
               {hasDiscount && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm text-gray-500 line-through font-medium">${originalPrice.toFixed(2)}</span>
-                  <span className="text-xs text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded">
-                    Save ${discountAmount.toFixed(2)}
-                  </span>
-                </div>
+                <span className="text-xs text-gray-400 line-through flex-shrink-0 hidden sm:inline">
+                  ${originalPrice.toFixed(2)}
+                </span>
               )}
             </div>
-            
-            {/* Add to Cart Button or Quantity Controls */}
-            {isInCart ? (
-              <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleDecreaseQuantity}
-                  disabled={cartQuantity <= 1}
-                  className="h-9 w-9 rounded-lg hover:bg-white disabled:opacity-50"
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="flex-1 text-center font-bold text-lg text-gray-900">
-                  {cartQuantity}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleIncreaseQuantity}
-                  disabled={cartQuantity >= product.stock}
-                  className="h-9 w-9 rounded-lg hover:bg-white disabled:opacity-50"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+            {/* Rating */}
+            {reviewCount > 0 ? (
+              <div className="flex items-center gap-0.5 flex-shrink-0 ml-auto">
+                <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+                <span className="text-xs font-semibold text-gray-900 whitespace-nowrap">{rating.toFixed(1)}</span>
+                <span className="text-xs text-gray-500 whitespace-nowrap">({reviewCount})</span>
               </div>
             ) : (
-              <Button 
-                onClick={handleAddToCartClick}
-                disabled={!inStock}
-                className={`w-full gap-2 text-white rounded-xl font-semibold transition-all h-11 shadow-md hover:shadow-xl ${
-                  inStock 
-                    ? "bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#0A5D31]" 
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-              >
-                <ShoppingCart className="w-4 h-4" />
-                {inStock ? "Add to Cart" : "Out of Stock"}
-              </Button>
+              <div className="flex items-center gap-0.5 flex-shrink-0 ml-auto">
+                <Star className="h-2.5 w-2.5 text-gray-300 flex-shrink-0" />
+                <span className="text-xs text-gray-400 whitespace-nowrap">No reviews</span>
+              </div>
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Product Modal */}
       <ProductModal

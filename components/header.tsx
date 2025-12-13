@@ -133,7 +133,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                     }
                   }}
                   autoFocus
-                  className="w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31]"
+                  className="w-full pl-10 pr-3 py-3 text-sm bg-white border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31]"
                 />
               </div>
               <Button
@@ -175,7 +175,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 z-10" />
               <Input
                 type="text"
-                placeholder="Search products, stores, and recipes"
+                placeholder="Search home grown fruits, vegetables, and more"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -183,7 +183,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                     handleSearch()
                   }
                 }}
-                className="w-full pl-12 pr-4 py-2.5 md:py-3 text-sm md:text-base bg-white border border-gray-300 rounded-full text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31] shadow-sm hover:border-gray-400 transition-all"
+                className="w-full h-12 pl-12 pr-4 py-3.5 md:py-4 text-sm md:text-base bg-white border border-gray-300 rounded-full text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31] shadow-sm hover:border-gray-400 transition-all"
               />
             </div>
           </div>
@@ -210,14 +210,16 @@ export function Header({ toggleSidebar }: HeaderProps) {
             </button>
 
             {/* Cart */}
-            <Link href="/cart" className="flex items-center gap-1.5 hover:bg-gray-100 rounded-lg px-2 md:px-3 py-2 transition-colors relative">
-              <ShoppingCart className="w-5 h-5 text-gray-900" />
-              <span className="text-sm text-gray-900 hidden sm:inline">{totalQuantity || 0}</span>
-              {totalQuantity > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#0A5D31] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center sm:hidden font-semibold">
-                  {totalQuantity > 99 ? '99+' : totalQuantity}
-                </span>
-              )}
+            <Link href="/cart" className="flex items-center gap-2 hover:bg-gray-100 rounded-lg px-3 md:px-4 py-2.5 transition-all relative group">
+              <div className="relative">
+                <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-900 group-hover:text-[#0A5D31] transition-colors" />
+                {totalQuantity > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#0A5D31] text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 font-semibold shadow-md">
+                    {totalQuantity > 99 ? '99+' : totalQuantity}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-medium text-gray-900 hidden sm:inline">{totalQuantity > 0 ?'' : 'Cart'}</span>
             </Link>
 
             {/* User Menu */}

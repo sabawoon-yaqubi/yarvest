@@ -10,6 +10,7 @@ import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useApiFetch } from "@/hooks/use-api-fetch"
+import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 
 interface Product {
   id: number
@@ -48,12 +49,30 @@ export default function StoreProductsPage() {
       <div className="flex flex-col h-screen bg-background">
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-        <main className="flex-1 overflow-auto flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading store products...</p>
+        <main className="flex-1 overflow-auto">
+          <div className="bg-gradient-to-b from-white to-secondary/10">
+            <div className="px-6 py-8 border-b border-border">
+              <div className="max-w-6xl mx-auto">
+                <div className="h-10 w-32 bg-gray-200 rounded animate-pulse mb-6"></div>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-gray-200 rounded-lg animate-pulse"></div>
+                  <div className="space-y-2">
+                    <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-12">
+              <div className="max-w-6xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <ProductCardSkeleton count={8} />
+                </div>
+              </div>
+            </div>
           </div>
         </main>
+        <Footer />
       </div>
     )
   }
@@ -100,12 +119,7 @@ export default function StoreProductsPage() {
 
           <div className="px-6 py-12">
             <div className="max-w-6xl mx-auto">
-              {storeLoading ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <span className="ml-3 text-muted-foreground">Loading products...</span>
-                </div>
-              ) : storeProducts.length === 0 ? (
+              {storeProducts.length === 0 ? (
                 <Card className="p-12 text-center">
                   <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground text-lg">No products available from this store</p>

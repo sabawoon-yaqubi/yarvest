@@ -302,7 +302,8 @@ export function transformProducer(producer: any): TransformedProducer {
   
   return {
     id: producer.id,
-    name: producer.name || producer.business_name || producer.store_name || "Unknown Producer",
+    unique_id: producer.unique_id,
+    name: producer.name || producer.full_name || producer.business_name || producer.store_name || "Unknown Producer",
     location: location,
     fullAddress: producer.full_address || producer.fullAddress || producer.address || "",
     specialty: specialty,
@@ -311,14 +312,14 @@ export function transformProducer(producer: any): TransformedProducer {
     rating: ratingValue,
     verified: producer.verified || producer.is_verified || false,
     products: parseInt(producer.products || producer.products_count || producer.total_products || "0") || 0,
-    yearsInBusiness: yearsInBusiness,
+    yearsInBusiness: yearsInBusiness || producer.years_experience || 0,
     email: producer.email || "",
     phone: producer.phone || producer.phone_number || "",
     website: producer.website || producer.website_url || "",
     certifications: certifications,
     activities: activities,
     deliveryAreas: deliveryAreas,
-    established: producer.established || producer.founded || "",
+    established: producer.established || producer.founded || producer.established_year || "",
     totalReviews: producer.total_reviews || producer.reviews_count || producer.reviews || 0,
   }
 }

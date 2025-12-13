@@ -17,9 +17,8 @@ interface ProducerSectionProps {
   gridClassName?: string
 }
 
-interface ProducersResponse {
-  stores?: any[]
-  producers?: any[]
+interface SellersResponse {
+  sellers?: any[]
   data?: any[]
 }
 
@@ -39,14 +38,14 @@ export function ProducerSection({
   const queryString = params.toString()
   const finalUrl = queryString ? `${url}?${queryString}` : url
 
-  const { data, loading, error, refetch } = useApiFetch<ProducersResponse>(finalUrl, {
+  const { data, loading, error, refetch } = useApiFetch<SellersResponse>(finalUrl, {
     enabled: true,
   })
 
-  // Extract and transform producers
+  // Extract and transform sellers (producers)
   const producers = useMemo(() => {
     if (!data) return []
-    const rawProducers = data?.stores || data?.producers || data?.data || (Array.isArray(data) ? data : [])
+    const rawProducers = data?.sellers || data?.data || (Array.isArray(data) ? data : [])
     return transformProducers(rawProducers).slice(0, limit)
   }, [data, limit])
 
@@ -86,7 +85,7 @@ export function ProducerSection({
       {/* Empty state */}
       {!loading && !error && (!producers || producers.length === 0) && (
         <div className="text-center py-12">
-          <p className="text-gray-600 text-lg">No producers available at the moment.</p>
+          <p className="text-gray-600 text-lg">No sellers available at the moment.</p>
         </div>
       )}
 

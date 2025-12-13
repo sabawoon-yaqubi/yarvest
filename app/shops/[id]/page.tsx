@@ -26,6 +26,7 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { ApiResponse } from "@/types/api"
+import { StoreDetailSkeleton } from "@/components/store-detail-skeleton"
 
 interface StoreType {
   id: number
@@ -143,12 +144,10 @@ export default function StoreDetailPage() {
       <div className="flex flex-col h-screen bg-background">
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-        <main className="flex-1 overflow-auto flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading store details...</p>
-          </div>
+        <main className="flex-1 overflow-auto">
+          <StoreDetailSkeleton />
         </main>
+        <Footer />
       </div>
     )
   }

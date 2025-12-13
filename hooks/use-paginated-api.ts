@@ -32,7 +32,16 @@ export function usePaginatedApi<T extends { id: number | string }>(
   const isLoadingRef = useRef(false)
 
   const fetchPage = useCallback(async (page: number, reset: boolean = false) => {
-    if (!enabled || isLoadingRef.current) return
+    if (!enabled || !url || isLoadingRef.current) return
+    
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    })
+    
+    // Check if URL already has query params
+    const separator = url.includes('?') ? '&' : '?'
+    const fullUrl = `${url}${separator}${params}`
     
     try {
       isLoadingRef.current = true
@@ -41,12 +50,7 @@ export function usePaginatedApi<T extends { id: number | string }>(
       }
       setError(null)
       
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      })
-      
-      const response = await api.get<ApiResponse<T[]>>(`${url}?${params}`)
+      const response = await api.get<ApiResponse<T[]>>(fullUrl)
       
       if (response.data.success && response.data.data) {
         const newData = response.data.data
@@ -62,7 +66,11 @@ export function usePaginatedApi<T extends { id: number | string }>(
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || "Failed to fetch data"
-      console.error("Error fetching data:", err)
+      console.error("Error fetching data:", {
+        url: fullUrl,
+        error: err.response?.data || err.message,
+        status: err.response?.status
+      })
       setError(errorMessage)
       onError?.(errorMessage)
       setHasMore(false)
@@ -85,10 +93,19 @@ export function usePaginatedApi<T extends { id: number | string }>(
   }, [fetchPage])
 
   useEffect(() => {
-    if (enabled) {
+    if (enabled && url) {
+      // Reset state when URL changes
+      setData([])
+      setCurrentPage(1)
+      setHasMore(true)
       fetchPage(1, true)
+    } else if (!enabled || !url) {
+      // Reset state when disabled or no URL
+      setData([])
+      setLoading(false)
+      setHasMore(false)
     }
-  }, [enabled]) // Only run on mount or when enabled changes
+  }, [enabled, url]) // Refetch when URL or enabled changes
 
   return {
     data,

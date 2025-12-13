@@ -1,8 +1,16 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { ShoppingBag, ArrowRight, CheckCircle, Truck, Leaf, Users } from "lucide-react"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import {
+  ShoppingBag,
+  ArrowRight,
+  CheckCircle,
+  Truck,
+  Leaf,
+  Users,
+  Store,
+} from "lucide-react";
+import Link from "next/link";
 
 export function HeroSection() {
   return (
@@ -10,7 +18,7 @@ export function HeroSection() {
       {/* Background with gradient overlay */}
       <div className="absolute inset-0">
         <img
-          src="https://images.pexels.com/photos/2255935/pexels-photo-2255935.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1920"
+          src="https://conveyancinghome.com.au/wp-content/uploads/2022/06/homegrown-fruits-and-vegetables-2.jpg"
           alt="Fresh produce"
           className="w-full h-full object-cover object-center brightness-110 contrast-110 saturate-110"
           loading="eager"
@@ -37,58 +45,66 @@ export function HeroSection() {
 
           {/* Description */}
           <p className="text-lg md:text-xl text-white/95 max-w-xl mb-8 leading-relaxed">
-            Discover fresh, locally-grown produce directly from verified farmers. Support your community while eating the
-            freshest food available.
+            Discover fresh, locally-grown produce directly from verified
+            farmers. Support your community while eating the freshest food
+            available.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
             <Link href="/products">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-white text-[#0A5D31] hover:bg-gray-50 text-base md:text-lg px-8 py-6 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
               >
                 <ShoppingBag className="w-5 h-5 mr-2" />
                 Shop Now
               </Button>
             </Link>
-            <Link href="/producers">
-              <Button 
-                size="lg" 
-                className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-white/20 text-base md:text-lg px-8 py-6 rounded-xl font-semibold transition-all hover:scale-105"
+            <Link href="/dashboard">
+              <Button
+                size="lg"
+                className="bg-white text-[#0A5D31] hover:bg-gray-50 text-base md:text-lg px-8 py-6 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
               >
-                Find Producers
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <Store className="w-5 h-5 mr-2" />
+                List Products
               </Button>
             </Link>
+
           </div>
 
           {/* Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-white/20">
+          <div className="hidden md:grid grid-cols-3 gap-6 pt-8 border-t border-white/20">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+              <div className="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg">
                 <Truck className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-sm">Fast Delivery</p>
+                <p className="text-white font-semibold text-sm">
+                  Fast Delivery
+                </p>
                 <p className="text-white/70 text-xs">Same day available</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+              <div className="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-sm">Verified Farmers</p>
+                <p className="text-white font-semibold text-sm">
+                  Verified Farmers
+                </p>
                 <p className="text-white/70 text-xs">100% trusted</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+              <div className="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-sm">Community First</p>
+                <p className="text-white font-semibold text-sm">
+                  Community First
+                </p>
                 <p className="text-white/70 text-xs">Supporting local</p>
               </div>
             </div>
@@ -96,5 +112,5 @@ export function HeroSection() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -115,9 +115,9 @@ export function Sidebar({ open = true, setOpen }: SidebarProps) {
           </div>
         </>
       )}
-      <aside className="bg-white border-b border-gray-200 z-50 relative">
-        <nav className="flex items-center justify-center gap-1 px-2 sm:px-3 md:px-4 py-2.5 md:py-3 overflow-x-auto relative scrollbar-hide">
-          <div className="flex items-center gap-1 relative min-w-max mx-auto">
+      <aside className="bg-white border-b border-gray-200 z-30 sticky top-16 md:top-20">
+        <nav className="flex items-center gap-1 px-2 sm:px-3 md:px-4 py-2.5 md:py-3 overflow-x-auto relative scrollbar-hide md:justify-center">
+          <div className="flex items-center gap-1 relative min-w-max md:mx-auto">
             {/* Main Menu Items */}
             {menuItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))

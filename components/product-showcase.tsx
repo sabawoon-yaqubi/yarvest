@@ -26,9 +26,9 @@ export function ProductShowcase() {
       
       <ApiDataFetcher<ApiProduct>
         url="/featured-products"
-        limit={4}
+        limit={6}
         page={1}
-        gridClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+        gridClassName="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-6 gap-3"
         renderItem={(product) => (
           <ApiProductCard
             key={product.id}
@@ -44,7 +44,7 @@ export function ProductShowcase() {
             isFavorite={favorites.includes(product.id)}
           />
         )}
-        renderLoading={() => <ProductCardSkeleton count={4} />}
+        renderLoading={() => <ProductCardSkeleton count={6} />}
         renderEmpty={() => (
           <div className="text-center py-12 col-span-full">
             <p className="text-muted-foreground">No featured products available at the moment.</p>

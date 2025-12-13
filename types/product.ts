@@ -25,6 +25,13 @@ export interface ProductType {
   name: string
 }
 
+// Unit interface
+export interface Unit {
+  id: number
+  unique_id: string
+  name: string
+}
+
 // Reviews interface
 export interface ProductReviews {
   total: number
@@ -44,6 +51,7 @@ export interface ApiProduct {
   seller: Seller
   product_category: ProductCategory
   product_type: ProductType
+  unit?: Unit | null
   reviews?: ProductReviews
   status: number | boolean
   sku: string

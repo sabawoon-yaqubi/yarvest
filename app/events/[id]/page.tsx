@@ -15,6 +15,7 @@ import Link from "next/link"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { BackendEvent } from "@/types/event"
 import api from "@/lib/axios"
+import { EventDetailSkeleton } from "@/components/event-detail-skeleton"
 
 export default function EventDetailPage() {
   const params = useParams()
@@ -92,16 +93,9 @@ export default function EventDetailPage() {
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
         <main className="flex-1 overflow-auto">
-          <div className="px-6 py-12 bg-gradient-to-b from-white to-secondary/10">
-            <div className="max-w-4xl mx-auto">
-              <div className="animate-pulse space-y-6">
-                <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-                <div className="h-64 bg-gray-200 rounded"></div>
-                <div className="h-32 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          </div>
+          <EventDetailSkeleton />
         </main>
+        <Footer />
       </div>
     )
   }

@@ -71,7 +71,6 @@ export default function Home() {
           <HeroSection />
           <div className="px-6 py-16 space-y-24 max-w-7xl mx-auto">
             <FreshFoodCategories />
-            <StatsSection />
             <DealsSection />
             <ProductShowcase /> 
             <TrendingProducts />
@@ -83,6 +82,8 @@ export default function Home() {
             <ProducersSection />
             <TestimonialsSection />
             <EventsSection />
+            <StatsSection />
+
             <PartnersSection />
             <NewsletterSection />
           </div>

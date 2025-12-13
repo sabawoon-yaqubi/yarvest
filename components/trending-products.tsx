@@ -30,15 +30,15 @@ export function TrendingProducts() {
       
       <ApiDataFetcher<ApiProduct>
         url="/trending-products"
-        limit={5}
+        limit={6}
         page={1}
-        gridClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
+        gridClassName="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-6 gap-3"
         renderItem={(product) => (
           <ApiProductCard
             key={product.id}
             product={product}
             onAddToCart={handleAddToCart}
-            onToggleFavorite={(productId) => {
+            onToggleFavorite={(productId) => {  
               setFavorites(prev => 
                 prev.includes(productId) 
                   ? prev.filter(id => id !== productId)
@@ -48,7 +48,7 @@ export function TrendingProducts() {
             isFavorite={favorites.includes(product.id)}
           />
         )}
-        renderLoading={() => <ProductCardSkeleton count={5} />}
+        renderLoading={() => <ProductCardSkeleton count={6} />}
         renderEmpty={() => (
           <div className="text-center py-12 col-span-full">
             <p className="text-muted-foreground">No trending products available at the moment.</p>
