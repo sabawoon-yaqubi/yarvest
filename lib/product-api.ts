@@ -202,7 +202,7 @@ export async function fetchProducts(): Promise<Product[]> {
 // fetch user products
 export async function fetchUserProducts(): Promise<Product[]> {
   try {
-    const response = await api.get('/user/products')
+    const response = await api.get('/products/my-products')
     // Handle different response structures
     if (response.data?.data && Array.isArray(response.data.data)) {
       return response.data.data

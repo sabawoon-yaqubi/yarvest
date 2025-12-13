@@ -15,83 +15,56 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Eye
+  Eye,
+  Trash2,
+  AlertTriangle
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-
-const mockHarvestRequests = [
-  {
-    id: "HR-001",
-    product: "Organic Tomatoes",
-    quantity: 50,
-    unit: "lbs",
-    requestedDate: "2024-01-20",
-    status: "pending",
-    location: "Field A, Section 3",
-    notes: "Need ripe tomatoes for weekend market",
-    createdAt: "2024-01-15 10:30 AM",
-  },
-  {
-    id: "HR-002",
-    product: "Fresh Carrots",
-    quantity: 30,
-    unit: "lbs",
-    requestedDate: "2024-01-18",
-    status: "approved",
-    location: "Field B, Section 1",
-    notes: "Standard harvest",
-    createdAt: "2024-01-14 02:15 PM",
-    approvedBy: "John Manager",
-    approvedAt: "2024-01-14 03:00 PM",
-  },
-  {
-    id: "HR-003",
-    product: "Organic Lettuce",
-    quantity: 25,
-    unit: "bunches",
-    requestedDate: "2024-01-17",
-    status: "in_progress",
-    location: "Greenhouse 2",
-    notes: "Harvest early morning for freshness",
-    createdAt: "2024-01-13 09:00 AM",
-    assignedTo: "Harvest Team A",
-    startedAt: "2024-01-16 06:00 AM",
-  },
-  {
-    id: "HR-004",
-    product: "Sweet Apples",
-    quantity: 100,
-    unit: "lbs",
-    requestedDate: "2024-01-19",
-    status: "completed",
-    location: "Orchard North",
-    notes: "Select only premium quality",
-    createdAt: "2024-01-12 11:20 AM",
-    completedAt: "2024-01-17 04:30 PM",
-    harvestedQuantity: 98,
-  },
-  {
-    id: "HR-005",
-    product: "Fresh Spinach",
-    quantity: 20,
-    unit: "bunches",
-    requestedDate: "2024-01-16",
-    status: "rejected",
-    location: "Field C, Section 2",
-    notes: "Not ready for harvest",
-    createdAt: "2024-01-11 03:45 PM",
-    rejectedReason: "Crops not mature enough",
-    rejectedBy: "Quality Control",
-  },
-]
+import { 
+  fetchUserHarvestRequests, 
+  createHarvestRequest, 
+  updateHarvestRequest, 
+  deleteHarvestRequest,
+  fetchHarvestRequest,
+  type HarvestRequest 
+} from "@/lib/harvest-requests-api"
+import { fetchUserProducts, type Product } from "@/lib/product-api"
+import { toast } from "sonner"
 
 const statusConfig = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-  approved: { label: "Approved", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
-  in_progress: { label: "In Progress", color: "bg-purple-100 text-purple-800", icon: Package },
+  accepted: { label: "Accepted", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
   completed: { label: "Completed", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  rejected: { label: "Rejected", color: "bg-red-100 text-red-800", icon: XCircle },
+  cancelled: { label: "Cancelled", color: "bg-red-100 text-red-800", icon: XCircle },
+  unknown: { label: "Unknown", color: "bg-gray-100 text-gray-800", icon: AlertTriangle },
+}
+
+// Helper function to safely get status config
+const getStatusConfig = (status: string) => {
+  const normalizedStatus = status?.toLowerCase() || "unknown"
+  // Map old status values to new ones for backward compatibility
+  const statusMap: Record<string, keyof typeof statusConfig> = {
+    'approved': 'accepted',
+    'in_progress': 'pending',
+    'rejected': 'cancelled',
+  }
+  const mappedStatus = statusMap[normalizedStatus] || normalizedStatus
+  return statusConfig[mappedStatus as keyof typeof statusConfig] || statusConfig.unknown
+}
+
+// Helper function to safely render a value as string
+const safeString = (value: any): string => {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'string' || typeof value === 'number') return String(value)
+  if (typeof value === 'object') {
+    // Try common object properties
+    if ('name' in value) return String(value.name || '')
+    if ('title' in value) return String(value.title || '')
+    if ('id' in value) return String(value.id || '')
+    if ('unique_id' in value) return String(value.unique_id || '')
+  }
+  return String(value || '')
 }
 
 export default function HarvestRequestsPage() {
@@ -100,16 +73,97 @@ export default function HarvestRequestsPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<any>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [harvestRequests, setHarvestRequests] = useState<HarvestRequest[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [products, setProducts] = useState<Product[]>([])
   const [formData, setFormData] = useState({
-    product: "",
-    quantity: "",
-    unit: "lbs",
-    requestedDate: "",
-    location: "",
-    notes: "",
+    product_ids: [] as number[],
+    date: "",
+    number_of_people: "",
+    description: "",
   })
 
-  const filteredRequests = mockHarvestRequests.filter((request) => {
+  // Fetch user's harvest requests on component mount
+  useEffect(() => {
+    const loadHarvestRequests = async () => {
+      setIsLoading(true)
+      try {
+        const requests = await fetchUserHarvestRequests()
+        setHarvestRequests(requests)
+      } catch (error) {
+        console.error('Error loading harvest requests:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadHarvestRequests()
+  }, [])
+
+  // Fetch products for the form dropdown
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const productsData = await fetchUserProducts()
+        setProducts(productsData)
+      } catch (error) {
+        console.error('Error loading products:', error)
+      }
+    }
+    loadProducts()
+  }, [])
+
+
+  // Normalize request data for display
+  const normalizedRequests = useMemo(() => {
+    return harvestRequests.map((request) => {
+      // Get product name(s) from products array or single product
+      let productDisplayName = request.title || "Untitled Request"
+      if (request.products && request.products.length > 0) {
+        const productNames = request.products.map(p => p.name).join(", ")
+        productDisplayName = productNames
+      } else if (request.product && typeof request.product === 'object') {
+        productDisplayName = request.product.name || request.title || "Unknown"
+      } else if (request.product && typeof request.product === 'string') {
+        productDisplayName = request.product
+      }
+      
+      // Get address display
+      const addressDisplay = request.address?.full_address || 
+                            (request.address ? 
+                              `${request.address.street_address}, ${request.address.city}, ${request.address.state} ${request.address.postal_code}` : 
+                              "")
+      
+      return {
+        id: request.id?.toString() || "",
+        title: request.title || "Untitled Request",
+        product: productDisplayName,
+        products: request.products || [],
+        quantity: request.products_count || 0,
+        unit: request.products?.[0]?.unit?.name || "",
+        requestedDate: request.date || request.requested_date || "",
+        location: addressDisplay,
+        notes: request.description || "",
+        status: (() => {
+          const status = request.status || "pending"
+          const normalized = status.toLowerCase().trim()
+          // Map backend statuses to display statuses
+          if (normalized === "accepted") return "accepted"
+          if (normalized === "cancelled") return "cancelled"
+          if (normalized === "completed") return "completed"
+          if (normalized === "pending") return "pending"
+          return "pending" // Default fallback
+        })(),
+        createdAt: request.created_at || request.createdAt || "",
+        number_of_people: request.number_of_people || 0,
+        accepted_count: request.accepted_count || 0,
+        store: request.store,
+        address: request.address,
+        originalRequest: request, // Keep reference to original for updates
+      }
+    })
+  }, [harvestRequests, products])
+
+  const filteredRequests = normalizedRequests.filter((request) => {
     const matchesSearch = 
       request.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.product.toLowerCase().includes(searchQuery.toLowerCase())
@@ -118,24 +172,57 @@ export default function HarvestRequestsPage() {
   })
 
   const stats = {
-    total: mockHarvestRequests.length,
-    pending: mockHarvestRequests.filter(r => r.status === "pending").length,
-    approved: mockHarvestRequests.filter(r => r.status === "approved").length,
-    in_progress: mockHarvestRequests.filter(r => r.status === "in_progress").length,
-    completed: mockHarvestRequests.filter(r => r.status === "completed").length,
+    total: normalizedRequests.length,
+    pending: normalizedRequests.filter(r => r.status === "pending").length,
+    accepted: normalizedRequests.filter(r => r.status === "accepted").length,
+    completed: normalizedRequests.filter(r => r.status === "completed").length,
+    cancelled: normalizedRequests.filter(r => r.status === "cancelled").length,
   }
 
-  const handleSave = () => {
-    console.log("Creating harvest request:", formData)
-    setShowAddModal(false)
-    setFormData({
-      product: "",
-      quantity: "",
-      unit: "lbs",
-      requestedDate: "",
-      location: "",
-      notes: "",
-    })
+  const handleSave = async () => {
+    // Validation
+    if (formData.product_ids.length === 0 || !formData.date) {
+      toast.error("Please fill in all required fields (products and date)")
+      return
+    }
+
+    try {
+      const payload: any = {
+        date: formData.date,
+      }
+
+      // Use product_ids if multiple, product_id if single
+      if (formData.product_ids.length === 1) {
+        payload.product_id = formData.product_ids[0]
+      } else {
+        payload.product_ids = formData.product_ids
+      }
+
+      // Optional fields
+      if (formData.number_of_people) {
+        payload.number_of_people = Number(formData.number_of_people)
+      }
+      if (formData.description) {
+        payload.description = formData.description
+      }
+
+      await createHarvestRequest(payload)
+      
+      // Refresh user's harvest requests
+      const requests = await fetchUserHarvestRequests()
+      setHarvestRequests(requests)
+      
+      setShowAddModal(false)
+      setFormData({
+        product_ids: [],
+        date: "",
+        number_of_people: "",
+        description: "",
+      })
+    } catch (error) {
+      console.error('Error creating harvest request:', error)
+      // Error is already handled in the API service with toast
+    }
   }
 
   const handleViewDetails = (request: any) => {
@@ -143,8 +230,39 @@ export default function HarvestRequestsPage() {
     setShowDetailsModal(true)
   }
 
-  const handleStatusUpdate = (requestId: string, newStatus: string) => {
-    console.log(`Updating request ${requestId} to ${newStatus}`)
+  const handleStatusUpdate = async (requestId: string, newStatus: string) => {
+    try {
+      // Find the normalized request first
+      const normalizedRequest = normalizedRequests.find(r => r.id === requestId)
+      if (!normalizedRequest || !normalizedRequest.originalRequest) {
+        toast.error("Request not found")
+        return
+      }
+
+      const originalRequest = normalizedRequest.originalRequest
+      const requestIdToUpdate = originalRequest.id || originalRequest.unique_id
+      if (!requestIdToUpdate) {
+        toast.error("Invalid request ID")
+        return
+      }
+
+      await updateHarvestRequest(requestIdToUpdate, {
+        status: newStatus as any,
+      })
+
+      // Refresh user's harvest requests
+      const requests = await fetchUserHarvestRequests()
+      setHarvestRequests(requests)
+      
+      // Close details modal if open
+      if (selectedRequest && selectedRequest.id === requestId) {
+        setShowDetailsModal(false)
+        setSelectedRequest(null)
+      }
+    } catch (error) {
+      console.error('Error updating harvest request:', error)
+      // Error is already handled in the API service with toast
+    }
   }
 
   return (
@@ -180,20 +298,20 @@ export default function HarvestRequestsPage() {
         </Card>
         <Card className="border-2 border-gray-100">
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">Approved</p>
-            <p className="text-2xl font-bold text-blue-600">{stats.approved}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-gray-100">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">In Progress</p>
-            <p className="text-2xl font-bold text-purple-600">{stats.in_progress}</p>
+            <p className="text-sm text-gray-500 mb-1">Accepted</p>
+            <p className="text-2xl font-bold text-blue-600">{stats.accepted}</p>
           </CardContent>
         </Card>
         <Card className="border-2 border-gray-100">
           <CardContent className="p-4">
             <p className="text-sm text-gray-500 mb-1">Completed</p>
             <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-gray-100">
+          <CardContent className="p-4">
+            <p className="text-sm text-gray-500 mb-1">Cancelled</p>
+            <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
           </CardContent>
         </Card>
       </div>
@@ -218,30 +336,40 @@ export default function HarvestRequestsPage() {
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="in_progress">In Progress</option>
+              <option value="accepted">Accepted</option>
               <option value="completed">Completed</option>
-              <option value="rejected">Rejected</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
         </CardContent>
       </Card>
 
       {/* Requests List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRequests.map((request) => {
-          const StatusIcon = statusConfig[request.status as keyof typeof statusConfig].icon
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <p className="text-gray-500">Loading harvest requests...</p>
+        </div>
+      ) : filteredRequests.length === 0 ? (
+        <div className="flex items-center justify-center py-12">
+          <p className="text-gray-500">No harvest requests found</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRequests.map((request) => {
+          const statusInfo = getStatusConfig(request.status)
+          const StatusIcon = statusInfo.icon
           return (
             <Card key={request.id} className="border-2 border-gray-100 hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono font-semibold text-gray-900">{request.id}</span>
-                  <Badge className={`${statusConfig[request.status as keyof typeof statusConfig].color} gap-1`}>
+                  <span className="font-mono font-semibold text-gray-900">{safeString(request.id)}</span>
+                  <Badge className={`${statusInfo.color} gap-1`}>
                     <StatusIcon className="w-3 h-3" />
-                    {statusConfig[request.status as keyof typeof statusConfig].label}
+                    {statusInfo.label}
                   </Badge>
                 </div>
-                <CardTitle className="text-xl">{request.product}</CardTitle>
+                <CardTitle className="text-xl">{safeString(request.title)}</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">{safeString(request.product)}</p>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -256,10 +384,10 @@ export default function HarvestRequestsPage() {
                   <MapPin className="w-4 h-4" />
                   <span>{request.location}</span>
                 </div>
-                {request.status === "completed" && request.harvestedQuantity && (
+                {request.status === "completed" && request.quantity > 0 && (
                   <div className="p-2 bg-green-50 rounded-lg">
                     <p className="text-sm text-green-800">
-                      Harvested: {request.harvestedQuantity} {request.unit}
+                      Products: {request.quantity} {request.unit && `(${request.unit})`}
                     </p>
                   </div>
                 )}
@@ -275,9 +403,9 @@ export default function HarvestRequestsPage() {
                   {request.status === "pending" && (
                     <Button
                       className="flex-1 bg-[#0A5D31] hover:bg-[#0d7a3f] text-white"
-                      onClick={() => handleStatusUpdate(request.id, "approved")}
+                      onClick={() => handleStatusUpdate(request.id, "accepted")}
                     >
-                      Approve
+                      Accept
                     </Button>
                   )}
                 </div>
@@ -285,105 +413,140 @@ export default function HarvestRequestsPage() {
             </Card>
           )
         })}
-      </div>
+        </div>
+      )}
 
       {/* Add Request Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <Leaf className="w-6 h-6" />
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-0 gap-0 bg-white border-gray-200 shadow-xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {/* Header */}
+          <DialogHeader className="px-6 pt-5 pb-4 bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] text-white">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Leaf className="w-5 h-5" />
               New Harvest Request
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-100 text-sm">
               Create a new harvest request for your products
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="px-6 py-4 space-y-4">
+            {/* Products Selection */}
             <div>
-              <Label htmlFor="product">Product *</Label>
-              <Input
-                id="product"
-                value={formData.product}
-                onChange={(e) => setFormData({ ...formData, product: e.target.value })}
-                placeholder="e.g., Organic Tomatoes"
-                className="mt-2"
-              />
+              <Label className="text-sm font-semibold text-gray-700">
+                Products <span className="text-red-500">*</span>
+              </Label>
+              <div className="mt-1.5 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3 bg-white">
+                {products.length === 0 ? (
+                  <p className="text-sm text-gray-500 py-4 text-center">No products available</p>
+                ) : (
+                  <div className="space-y-2">
+                    {products.map((product) => {
+                      const isSelected = formData.product_ids.includes(product.id)
+                      return (
+                        <label
+                          key={product.id}
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({
+                                  ...formData,
+                                  product_ids: [...formData.product_ids, product.id],
+                                })
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  product_ids: formData.product_ids.filter((id) => id !== product.id),
+                                })
+                              }
+                            }}
+                            className="w-4 h-4 text-[#0A5D31] border-gray-300 rounded focus:ring-[#0A5D31] focus:ring-2"
+                          />
+                          <div className="flex-1">
+                            <span className="text-sm font-medium text-gray-900">{product.name}</span>
+                            {product.sku && (
+                              <span className="text-xs text-gray-500 ml-2">({product.sku})</span>
+                            )}
+                          </div>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+              {formData.product_ids.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.product_ids.length} product(s) selected
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="quantity">Quantity *</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                  placeholder="0"
-                  className="mt-2"
-                />
-              </div>
-              <div>
-                <Label htmlFor="unit">Unit *</Label>
-                <select
-                  id="unit"
-                  value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  className="mt-2 w-full px-3 py-2 rounded-lg border-2 border-gray-200 bg-white text-sm focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31]"
-                >
-                  <option>lbs</option>
-                  <option>bunches</option>
-                  <option>pieces</option>
-                  <option>kg</option>
-                </select>
-              </div>
-            </div>
-
+            {/* Harvest Date */}
             <div>
-              <Label htmlFor="requestedDate">Requested Harvest Date *</Label>
+              <Label htmlFor="date" className="text-sm font-semibold text-gray-700">
+                Harvest Date <span className="text-red-500">*</span>
+              </Label>
               <Input
-                id="requestedDate"
+                id="date"
                 type="date"
-                value={formData.requestedDate}
-                onChange={(e) => setFormData({ ...formData, requestedDate: e.target.value })}
-                className="mt-2"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                min={new Date().toISOString().split('T')[0]}
+                className="mt-1.5 h-9 border-gray-200 focus:border-[#0A5D31] focus:ring-[#0A5D31] text-sm"
               />
             </div>
 
+            {/* Number of People */}
             <div>
-              <Label htmlFor="location">Location *</Label>
+              <Label htmlFor="number_of_people" className="text-sm font-semibold text-gray-700">
+                Number of People
+              </Label>
               <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="e.g., Field A, Section 3"
-                className="mt-2"
+                id="number_of_people"
+                type="number"
+                value={formData.number_of_people}
+                onChange={(e) => setFormData({ ...formData, number_of_people: e.target.value })}
+                placeholder="Optional"
+                min="1"
+                className="mt-1.5 h-9 border-gray-200 focus:border-[#0A5D31] focus:ring-[#0A5D31] text-sm"
               />
             </div>
 
+            {/* Description */}
             <div>
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="description" className="text-sm font-semibold text-gray-700">
+                Description
+              </Label>
               <textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes or instructions..."
-                rows={4}
-                className="mt-2 w-full p-3 rounded-lg border-2 border-gray-200 focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31] resize-none"
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Additional details or instructions..."
+                rows={3}
+                className="mt-1.5 w-full p-2.5 border border-gray-200 focus:ring-2 focus:ring-[#0A5D31] focus:border-[#0A5D31] resize-none text-sm rounded-md"
               />
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddModal(false)}>
+          {/* Footer */}
+          <DialogFooter className="px-6 py-4 bg-gray-50 border-t border-gray-200 gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowAddModal(false)}
+              className="h-9 px-4 text-sm border-gray-300 hover:bg-gray-100"
+            >
               Cancel
             </Button>
-            <Button 
-              className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white"
+            <Button
+              className="bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#0A5D31] text-white h-9 px-6 text-sm font-semibold"
               onClick={handleSave}
+              disabled={isLoading}
             >
-              Create Request
+              {isLoading ? "Creating..." : "Create Request"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -392,73 +555,81 @@ export default function HarvestRequestsPage() {
       {/* Request Details Modal */}
       {selectedRequest && (
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Harvest Request Details - {selectedRequest.id}</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-0 gap-0 bg-white border-gray-200 shadow-xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {/* Header */}
+            <DialogHeader className="px-6 pt-5 pb-4 bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] text-white">
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <Eye className="w-5 h-5" />
+                Harvest Request Details - {selectedRequest.id}
+              </DialogTitle>
+              <DialogDescription className="text-gray-100 text-sm">
                 Created on {selectedRequest.createdAt}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <div className="px-6 py-4 space-y-4">
+              <div>
+                <Label className="text-sm font-semibold text-gray-700">Title</Label>
+                <p className="font-semibold text-gray-900 mt-1">{safeString(selectedRequest.title)}</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Product</Label>
-                  <p className="font-semibold text-gray-900 mt-1">{selectedRequest.product}</p>
+                  <Label className="text-sm font-semibold text-gray-700">Products</Label>
+                  <p className="font-semibold text-gray-900 mt-1">{safeString(selectedRequest.product)}</p>
+                  {selectedRequest.products && selectedRequest.products.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">{selectedRequest.products.length} product(s)</p>
+                  )}
                 </div>
                 <div>
-                  <Label>Quantity</Label>
-                  <p className="font-semibold text-gray-900 mt-1">{selectedRequest.quantity} {selectedRequest.unit}</p>
-                </div>
-                <div>
-                  <Label>Requested Date</Label>
+                  <Label className="text-sm font-semibold text-gray-700">Date</Label>
                   <p className="font-semibold text-gray-900 mt-1">{selectedRequest.requestedDate}</p>
                 </div>
                 <div>
-                  <Label>Location</Label>
+                  <Label className="text-sm font-semibold text-gray-700">Location</Label>
                   <p className="font-semibold text-gray-900 mt-1">{selectedRequest.location}</p>
                 </div>
+                {selectedRequest.number_of_people && (
+                  <div>
+                    <Label className="text-sm font-semibold text-gray-700">Number of People</Label>
+                    <p className="font-semibold text-gray-900 mt-1">{selectedRequest.number_of_people}</p>
+                  </div>
+                )}
               </div>
 
               {selectedRequest.notes && (
                 <div>
-                  <Label>Notes</Label>
-                  <p className="text-gray-700 mt-1 bg-gray-50 p-3 rounded-lg">{selectedRequest.notes}</p>
+                  <Label className="text-sm font-semibold text-gray-700">Description</Label>
+                  <p className="text-gray-700 mt-1.5 w-full p-2.5 border border-gray-200 rounded-md bg-gray-50">{selectedRequest.notes}</p>
                 </div>
               )}
 
-              {selectedRequest.status === "rejected" && selectedRequest.rejectedReason && (
-                <div className="p-4 bg-red-50 rounded-lg border-2 border-red-200">
-                  <Label className="text-red-800">Rejection Reason</Label>
-                  <p className="text-red-700 mt-1">{selectedRequest.rejectedReason}</p>
-                </div>
-              )}
-
-              {selectedRequest.status === "completed" && selectedRequest.harvestedQuantity && (
+              {selectedRequest.status === "completed" && selectedRequest.quantity > 0 && (
                 <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
-                  <Label className="text-green-800">Harvested Quantity</Label>
+                  <Label className="text-green-800 text-sm font-semibold">Products Count</Label>
                   <p className="text-green-700 font-semibold mt-1">
-                    {selectedRequest.harvestedQuantity} {selectedRequest.unit}
+                    {selectedRequest.quantity} product(s)
                   </p>
                 </div>
               )}
             </div>
 
-            <DialogFooter>
+            {/* Footer */}
+            <DialogFooter className="px-6 py-4 bg-gray-50 border-t border-gray-200 gap-2">
               {selectedRequest.status === "pending" && (
                 <>
                   <Button
                     variant="outline"
-                    onClick={() => handleStatusUpdate(selectedRequest.id, "rejected")}
-                    className="text-red-600"
+                    onClick={() => handleStatusUpdate(selectedRequest.id, "cancelled")}
+                    className="h-9 px-4 text-sm border-gray-300 hover:bg-gray-100 text-red-600"
                   >
-                    Reject
+                    Cancel Request
                   </Button>
                   <Button
-                    onClick={() => handleStatusUpdate(selectedRequest.id, "approved")}
-                    className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white"
+                    onClick={() => handleStatusUpdate(selectedRequest.id, "accepted")}
+                    className="bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#0A5D31] text-white h-9 px-6 text-sm font-semibold"
                   >
-                    Approve Request
+                    Accept Request
                   </Button>
                 </>
               )}
