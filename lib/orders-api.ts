@@ -30,6 +30,12 @@ export interface Order {
   unique_id?: string
   order_id?: string
   user_id?: number
+  buyer?: {
+    id: number
+    name?: string
+    email?: string
+    phone?: string
+  }
   customer?: {
     id: number
     unique_id?: string
@@ -43,6 +49,19 @@ export interface Order {
   customer_name?: string
   email?: string
   phone?: string
+  seller?: {
+    id: number
+    name?: string
+    email?: string
+  }
+  courier?: {
+    id: number
+    name?: string
+    full_name?: string
+    email?: string
+    phone?: string
+  }
+  courier_id?: number
   items: OrderItem[] | { [key: string]: OrderItem } // Can be array or object with numeric keys
   items_count?: number
   subtotal?: string | number
@@ -72,6 +91,8 @@ export interface Order {
   tracking_number?: string
   courier?: any
   courier_type?: string
+  has_delivery_review?: boolean
+  has_harvesting_review?: boolean
   created_at: string
   updated_at: string
   date?: string
@@ -221,6 +242,28 @@ export async function getOrderCourierRequests(orderUniqueId: string): Promise<an
     return response.data?.data || []
   } catch (error: any) {
     console.error('Error fetching courier requests:', error)
+    return []
+  }
+}
+
+/**
+ * Get orders where user is the courier
+ */
+export async function getCourierOrders(status?: string): Promise<Order[]> {
+  try {
+    const params: any = {}
+    if (status) {
+      params.status = status
+    }
+    const response = await api.get('/orders/my-courier-orders', { params })
+    if (response.data?.success) {
+      return response.data.data || []
+    }
+    return []
+  } catch (error: any) {
+    console.error('Error fetching courier orders:', error)
+    const errorMessage = error.response?.data?.message || 'Failed to fetch courier orders'
+    toast.error(errorMessage, { duration: 3000 })
     return []
   }
 }

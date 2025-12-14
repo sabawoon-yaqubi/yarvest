@@ -92,5 +92,3 @@ export async function rejectCourierRequest(requestId: number): Promise<any> {
     throw error
   }
 }
-
-

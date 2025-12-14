@@ -99,23 +99,23 @@ export function FirstTimeAddressPrompt() {
       <Dialog open={showPrompt} onOpenChange={setShowPrompt}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 p-5">
               <div className="p-2 bg-[#0A8542]/10 rounded-lg">
                 <MapPin className="w-6 h-6 text-[#0A8542]" />
               </div>
               <DialogTitle className="text-xl font-bold">Add Your Address</DialogTitle>
             </div>
-            <DialogDescription className="text-base">
+            <DialogDescription className="text-base p-5">
               To get started with deliveries, please add your address. You can search for it or enter it manually.
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600 mb-6 p-5">
               Adding your address helps us show you products available in your area and enables faster checkout.
             </p>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2 p-5">
               <Button
                 onClick={handleDismiss}
                 variant="outline"

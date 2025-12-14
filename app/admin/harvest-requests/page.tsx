@@ -16,7 +16,8 @@ import {
   Clock,
   Eye,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  Pencil
 } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
@@ -163,6 +164,10 @@ export default function HarvestRequestsPage() {
     router.push(`/admin/harvest-requests/${request.id}`)
   }
 
+  const handleEdit = (request: any) => {
+    router.push(`/admin/harvest-requests/${request.id}/edit`)
+  }
+
   const handleStatusUpdate = async (requestId: string, newStatus: string) => {
     try {
       // Find the normalized request first
@@ -215,7 +220,7 @@ export default function HarvestRequestsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Harvest Requests</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Harvest Requests</h1>
           <p className="text-gray-500 mt-1 text-sm">{stats.total} total requests</p>
         </div>
         <Button 
@@ -279,28 +284,29 @@ export default function HarvestRequestsPage() {
 
       {/* Requests Table */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
           <h2 className="text-lg font-semibold text-gray-900">Harvest Requests ({filteredRequests.length})</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Request ID</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Title</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Product</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Quantity</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Date</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Location</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Actions</th>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Title</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Product</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                <th className="text-right py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gray-500">
-                    No harvest requests found
+                  <td colSpan={6} className="py-12 text-center text-gray-500">
+                    <div className="flex flex-col items-center gap-2">
+                      <Leaf className="w-8 h-8 text-gray-300" />
+                      <p>No harvest requests found</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -308,53 +314,80 @@ export default function HarvestRequestsPage() {
                   const statusInfo = getStatusConfig(request.status)
                   const StatusIcon = statusInfo.icon
                   return (
-                    <tr key={request.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <span className="font-mono font-semibold text-gray-900">{safeString(request.id)}</span>
+                    <tr key={request.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <span className="text-xs font-mono text-gray-500">#{safeString(request.id)}</span>
                       </td>
-                      <td className="py-4 px-4">
-                        <p className="font-medium text-gray-900">{safeString(request.title)}</p>
-                      </td>
-                      <td className="py-4 px-4">
-                        <p className="text-sm text-gray-600">{safeString(request.product)}</p>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="text-sm text-gray-600">
-                          {request.quantity} {request.unit}
+                      <td className="py-4 px-6">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-900">{safeString(request.title)}</span>
+                          {request.location && (
+                            <span className="text-xs text-gray-500 mt-0.5 truncate max-w-[200px]" title={request.location}>
+                              {request.location}
+                            </span>
+                          )}
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-600">
-                        {request.requestedDate}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="text-sm text-gray-600 max-w-xs truncate" title={request.location}>
-                          {request.location}
+                      <td className="py-4 px-6">
+                        <div className="flex flex-col">
+                          <span className="text-sm text-gray-900">{safeString(request.product)}</span>
+                          {request.quantity > 0 && (
+                            <span className="text-xs text-gray-500 mt-0.5">
+                              {request.quantity} {request.unit || 'units'}
+                            </span>
+                          )}
                         </div>
                       </td>
-                      <td className="py-4 px-4">
-                        <Badge className={`${statusInfo.color} gap-1`}>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <span className="text-sm text-gray-600">{request.requestedDate || '-'}</span>
+                      </td>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <Badge className={`${statusInfo.color} gap-1.5 px-2 py-1`}>
                           <StatusIcon className="w-3 h-3" />
-                          {statusInfo.label}
+                          <span className="text-xs font-medium">{statusInfo.label}</span>
                         </Badge>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="flex gap-2">
+                      <td className="py-4 px-6 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleViewDetails(request)}
                             title="View Details"
+                            className="h-8 w-8 p-0"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
+                          {(request.status === "pending" || request.status === "accepted") && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(request)}
+                              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              title="Edit Request"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          )}
                           {request.status === "pending" && (
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleStatusUpdate(request.id, "accepted")}
-                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                              className="h-8 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
                             >
                               Accept
+                            </Button>
+                          )}
+                          {(request.status === "pending" || request.status === "accepted") && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStatusUpdate(request.id, "completed")}
+                              className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              title="Mark as Completed"
+                            >
+                              Complete
                             </Button>
                           )}
                         </div>
@@ -446,6 +479,14 @@ export default function HarvestRequestsPage() {
                     Accept Request
                   </Button>
                 </>
+              )}
+              {(selectedRequest.status === "pending" || selectedRequest.status === "accepted") && (
+                <Button
+                  onClick={() => handleStatusUpdate(selectedRequest.id, "completed")}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Mark as Completed
+                </Button>
               )}
             </DialogFooter>
           </DialogContent>

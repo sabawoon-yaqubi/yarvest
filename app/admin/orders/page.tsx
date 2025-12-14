@@ -275,7 +275,7 @@ export default function OrdersPage() {
 
   return (
     <>
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 max-w-8xl mx-auto px-10 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

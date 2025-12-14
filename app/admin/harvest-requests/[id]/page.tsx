@@ -20,7 +20,7 @@ import {
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { fetchHarvestRequest, type HarvestRequest } from "@/lib/harvest-requests-api"
+import { fetchHarvestRequest, updateHarvestRequest, type HarvestRequest } from "@/lib/harvest-requests-api"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -60,6 +60,7 @@ export default function HarvestRequestDetailsPage() {
   const [showAcceptModal, setShowAcceptModal] = useState(false)
   const [shareContact, setShareContact] = useState(false)
   const [sharePhone, setSharePhone] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   useEffect(() => {
     const loadRequest = async () => {
@@ -127,6 +128,24 @@ export default function HarvestRequestDetailsPage() {
     }
   }
 
+  const handleMarkAsCompleted = async () => {
+    if (!request) return
+    
+    setIsCompleting(true)
+    try {
+      await updateHarvestRequest(request.id, { status: 'completed' })
+      toast.success('Harvest request marked as completed')
+      // Reload request
+      const requestData = await fetchHarvestRequest(requestId)
+      setRequest(requestData)
+    } catch (error: any) {
+      console.error('Error marking request as completed:', error)
+      toast.error('Failed to mark request as completed')
+    } finally {
+      setIsCompleting(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-screen">
@@ -160,7 +179,7 @@ export default function HarvestRequestDetailsPage() {
   const rejectedOffers = offers.filter(o => o.status === 'rejected')
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-8xl mx-auto px-10">
       {/* Header */}
       <div className="mb-6">
         <Button
@@ -179,10 +198,31 @@ export default function HarvestRequestDetailsPage() {
               <p className="text-gray-500 mt-1 text-sm">Request ID: {request.id}</p>
             </div>
           </div>
-          <Badge className={`${statusInfo.color} gap-1`}>
-            <StatusIcon className="w-3 h-3" />
-            {statusInfo.label}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge className={`${statusInfo.color} gap-1`}>
+              <StatusIcon className="w-3 h-3" />
+              {statusInfo.label}
+            </Badge>
+            {(request.status === "pending" || request.status === "accepted") && (
+              <Button
+                onClick={handleMarkAsCompleted}
+                disabled={isCompleting}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isCompleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Completing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Mark as Completed
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

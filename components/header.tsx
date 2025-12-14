@@ -226,7 +226,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
             {isLoggedIn && user ? (
               <div className="flex items-center gap-0">
                 <Link 
-                  href="/profile" 
+                  href="/dashboard" 
                   className="flex items-center gap-1 hover:bg-gray-100 rounded-lg px-2 md:px-3 py-2 transition-colors"
                 >
                   <User className="w-5 h-5 text-gray-900" />
@@ -252,12 +252,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="my-2" />
-                    <DropdownMenuItem asChild className="px-3 py-2.5 rounded-lg cursor-pointer focus:bg-gray-100 focus:text-gray-900">
-                      <Link href="/profile" className="flex items-center w-full">
-                        <User className="mr-3 h-4 w-4 text-gray-600" />
-                        <span className="text-sm font-medium">Profile</span>
-                      </Link>
-                    </DropdownMenuItem>
                     <DropdownMenuItem asChild className="px-3 py-2.5 rounded-lg cursor-pointer focus:bg-gray-100 focus:text-gray-900">
                       <Link href="/dashboard" className="flex items-center w-full">
                         <LayoutDashboard className="mr-3 h-4 w-4 text-gray-600" />

@@ -155,7 +155,7 @@ export default function MyOrdersPage() {
     name: string
     main_image?: string
   } | null>(null)
-  const [reviewedProducts, setReviewedProducts] = useState<Set<number>>(new Set())
+  const [productReviews, setProductReviews] = useState<Map<number, { stars: number; message: string | null }>>(new Map()) // key: productId
   const [checkingReviews, setCheckingReviews] = useState(false)
 
   useEffect(() => {
@@ -185,8 +185,11 @@ export default function MyOrdersPage() {
       setOrders(ordersData)
       
       // Check which products have been reviewed for completed orders
-      if (user) {
-        checkReviewedProducts(ordersData)
+      // Wait a bit to ensure user is fully loaded
+      if (user && user.id) {
+        setTimeout(() => {
+          checkReviewedProducts(ordersData)
+        }, 100)
       }
     } catch (error: any) {
       console.error('Error fetching orders:', error)
@@ -196,7 +199,10 @@ export default function MyOrdersPage() {
   }
 
   const checkReviewedProducts = async (ordersData: Order[]) => {
-    if (!user) return
+    if (!user || !user.id) {
+      console.log('No user or user.id available for review check')
+      return
+    }
     
     try {
       setCheckingReviews(true)
@@ -213,28 +219,44 @@ export default function MyOrdersPage() {
         }
       })
 
-      // Check reviews for each product
-      const reviewedSet = new Set<number>()
+      if (productIds.size === 0) {
+        setProductReviews(new Map())
+        return
+      }
+
+      // Fetch reviews for each product and store the user's review
+      const reviewsMap = new Map<number, { stars: number; message: string | null }>()
+      const userId = String(user.id) // Normalize to string for comparison
+      
       await Promise.all(
         Array.from(productIds).map(async (productId) => {
           try {
             const response = await api.get(`/products/${productId}/reviews`)
-            if (response.data.success && response.data.data) {
-              const hasReviewed = response.data.data.some(
-                (review: any) => review.buyer?.id === user.id
+            if (response.data.success && response.data.data && Array.isArray(response.data.data)) {
+              // Find review by current user - handle both string and number IDs
+              const userReview = response.data.data.find(
+                (review: any) => {
+                  const buyerId = review.buyer?.id || review.buyer_id
+                  if (!buyerId) return false
+                  // Compare as strings to handle type mismatches
+                  return String(buyerId) === userId
+                }
               )
-              if (hasReviewed) {
-                reviewedSet.add(productId)
+              if (userReview) {
+                reviewsMap.set(productId, {
+                  stars: userReview.stars,
+                  message: userReview.message || null
+                })
               }
             }
           } catch (error) {
-            // Silently fail - product might not have reviews endpoint or other error
+            // Log error for debugging
             console.error(`Error checking reviews for product ${productId}:`, error)
           }
         })
       )
       
-      setReviewedProducts(reviewedSet)
+      setProductReviews(reviewsMap)
     } catch (error) {
       console.error('Error checking reviewed products:', error)
     } finally {
@@ -247,11 +269,37 @@ export default function MyOrdersPage() {
     setReviewModalOpen(true)
   }
 
-  const handleReviewSubmitted = () => {
-    if (selectedProductForReview) {
-      setReviewedProducts(prev => new Set(prev).add(selectedProductForReview.id))
+  const handleReviewSubmitted = async () => {
+    // Immediately refresh reviews for the selected product
+    if (selectedProductForReview && user && user.id) {
+      try {
+        // Wait a bit for the backend to process
+        await new Promise(resolve => setTimeout(resolve, 500))
+        const response = await api.get(`/products/${selectedProductForReview.id}/reviews`)
+        if (response.data.success && response.data.data && Array.isArray(response.data.data)) {
+          const userId = String(user.id)
+          const userReview = response.data.data.find(
+            (review: any) => {
+              const buyerId = review.buyer?.id || review.buyer_id
+              return buyerId && String(buyerId) === userId
+            }
+          )
+          if (userReview) {
+            setProductReviews(prev => {
+              const newMap = new Map(prev)
+              newMap.set(selectedProductForReview.id, {
+                stars: userReview.stars,
+                message: userReview.message || null
+              })
+              return newMap
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing review after submission:', error)
+      }
     }
-    // Refresh orders to get updated data
+    // Also refresh orders to get updated data
     fetchOrders()
   }
 
@@ -536,7 +584,8 @@ export default function MyOrdersPage() {
                               <div className="space-y-2">
                                 {sellerGroup.items.map((item) => {
                                   const isCompleted = order.status === 'completed'
-                                  const hasReviewed = reviewedProducts.has(item.product.id)
+                                  const review = productReviews.get(item.product.id)
+                                  const hasReviewed = !!review
                                   
                                   return (
                                     <div key={item.id} className="flex items-start gap-3">
@@ -568,13 +617,31 @@ export default function MyOrdersPage() {
                                             </>
                                           )}
                                         </div>
-                                        {/* Review Button for Completed Orders */}
+                                        {/* Review Display/Button for Completed Orders */}
                                         {isCompleted && (
                                           <div className="mt-2">
                                             {hasReviewed ? (
-                                              <div className="flex items-center gap-1.5 text-xs text-emerald-600">
-                                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                                <span className="font-medium">Reviewed</span>
+                                              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 space-y-1.5">
+                                                <div className="flex items-center gap-1.5">
+                                                  {[...Array(5)].map((_, i) => (
+                                                    <Star
+                                                      key={i}
+                                                      className={`w-3.5 h-3.5 ${
+                                                        i < review.stars
+                                                          ? "fill-yellow-400 text-yellow-400"
+                                                          : "text-gray-300"
+                                                      }`}
+                                                    />
+                                                  ))}
+                                                  <span className="text-xs font-medium text-gray-700 ml-1">
+                                                    Your Review
+                                                  </span>
+                                                </div>
+                                                {review.message && (
+                                                  <p className="text-xs text-gray-700 leading-relaxed">
+                                                    {review.message}
+                                                  </p>
+                                                )}
                                               </div>
                                             ) : (
                                               <Button

@@ -5,13 +5,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Leaf, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { createHarvestRequest, fetchUserAddresses, type Address } from "@/lib/harvest-requests-api"
+import { useRouter, useParams } from "next/navigation"
+import { updateHarvestRequest, fetchHarvestRequest, fetchUserAddresses, type Address } from "@/lib/harvest-requests-api"
 import { fetchUserProducts, type Product } from "@/lib/product-api"
 import { toast } from "sonner"
 
-export default function NewHarvestRequestPage() {
+export default function EditHarvestRequestPage() {
   const router = useRouter()
+  const params = useParams()
+  const requestId = params.id as string
+  
   const [isLoading, setIsLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
@@ -27,26 +30,68 @@ export default function NewHarvestRequestPage() {
   
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Fetch products and addresses on component mount
+  // Fetch existing request data, products and addresses on component mount
   useEffect(() => {
     const loadData = async () => {
       setLoadingData(true)
       try {
-        const [productsData, addressesData] = await Promise.all([
+        const [requestData, productsData, addressesData] = await Promise.all([
+          fetchHarvestRequest(requestId),
           fetchUserProducts(),
           fetchUserAddresses(),
         ])
+        
+        if (!requestData) {
+          toast.error("Harvest request not found")
+          router.push('/admin/harvest-requests')
+          return
+        }
+        
         setProducts(productsData)
         setAddresses(addressesData)
+        
+        // Pre-fill form with existing request data
+        if (requestData.products && requestData.products.length > 0) {
+          const productIds = requestData.products.map(p => p.id)
+          setFormData(prev => ({
+            ...prev,
+            product_ids: productIds,
+          }))
+        } else if (requestData.product?.id) {
+          setFormData(prev => ({
+            ...prev,
+            product_ids: [requestData.product.id],
+          }))
+        }
+        
+        // Handle address - harvest requests typically have one address
+        if (requestData.address?.id) {
+          setFormData(prev => ({
+            ...prev,
+            address_ids: [requestData.address.id],
+          }))
+        }
+        
+        // Set other fields
+        setFormData(prev => ({
+          ...prev,
+          date: requestData.date || requestData.requested_date || "",
+          number_of_people: requestData.number_of_people?.toString() || "",
+          description: requestData.description || "",
+        }))
       } catch (error) {
         console.error('Error loading data:', error)
-        toast.error("Failed to load form data")
+        toast.error("Failed to load harvest request data")
+        router.push('/admin/harvest-requests')
       } finally {
         setLoadingData(false)
       }
     }
-    loadData()
-  }, [])
+    
+    if (requestId) {
+      loadData()
+    }
+  }, [requestId, router])
 
   const handleSave = async () => {
     const validationErrors: Record<string, string> = {}
@@ -86,11 +131,9 @@ export default function NewHarvestRequestPage() {
         payload.product_ids = formData.product_ids
       }
 
-      // Use user_address_ids if multiple, user_address_id if single
-      if (formData.address_ids.length === 1) {
+      // Use user_address_id (single address for updates)
+      if (formData.address_ids.length > 0) {
         payload.user_address_id = formData.address_ids[0]
-      } else {
-        payload.user_address_ids = formData.address_ids
       }
 
       // Optional fields
@@ -101,12 +144,12 @@ export default function NewHarvestRequestPage() {
         payload.description = formData.description
       }
 
-      await createHarvestRequest(payload)
+      await updateHarvestRequest(requestId, payload)
       
       // Navigate back to harvest requests list
       router.push('/admin/harvest-requests')
     } catch (error) {
-      console.error('Error creating harvest request:', error)
+      console.error('Error updating harvest request:', error)
       // Error is already handled in the API service with toast
     } finally {
       setIsLoading(false)
@@ -118,7 +161,7 @@ export default function NewHarvestRequestPage() {
       <div className="p-6 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-[#0A5D31]" />
-          <p className="text-gray-600">Loading form data...</p>
+          <p className="text-gray-600">Loading harvest request data...</p>
         </div>
       </div>
     )
@@ -138,7 +181,7 @@ export default function NewHarvestRequestPage() {
         </Button>
         <div className="flex items-center gap-2">
           <Leaf className="w-5 h-5 text-[#5a9c3a]" />
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">New Harvest Request</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Edit Harvest Request</h1>
         </div>
         <div className="w-20"></div>
       </div>
@@ -236,9 +279,10 @@ export default function NewHarvestRequestPage() {
                         checked={isSelected}
                         onChange={(e) => {
                           if (e.target.checked) {
+                            // For edit, allow only one address selection
                             setFormData({
                               ...formData,
-                              address_ids: [...formData.address_ids, address.id],
+                              address_ids: [address.id],
                             })
                             if (errors.address_ids) {
                               setErrors({ ...errors, address_ids: "" })
@@ -246,7 +290,7 @@ export default function NewHarvestRequestPage() {
                           } else {
                             setFormData({
                               ...formData,
-                              address_ids: formData.address_ids.filter((id) => id !== address.id),
+                              address_ids: [],
                             })
                           }
                         }}
@@ -353,10 +397,10 @@ export default function NewHarvestRequestPage() {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating...
+                Updating...
               </>
             ) : (
-              "Create Request"
+              "Update Request"
             )}
           </Button>
         </div>

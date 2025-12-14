@@ -156,10 +156,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       },
       {
         icon: Leaf,
-        label: "Harvest Requests",
+        label: "My Harvest Requests",
         href: "/admin/harvest-requests",
         section: "seller",
-      }
+      },
+
+      {
+        icon: Package,
+        label: "Deliveries Requests",
+        href: "/admin/deliveries-requests",
+        section: "seller",
+      },
      
     );
   }
@@ -179,30 +186,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         href: "/volunteers/schedule",
         section: "helper",
       },
-      {
-        icon: Award,
-        label: "Impact",
-        href: "/volunteers/impact",
-        section: "helper",
-      },
+    
       {
         icon: DollarSign,
         label: "Earnings",
         href: "/volunteers/earnings",
         section: "helper",
       },
-      {
-        icon: Truck,
-        label: "Deliveries",
-        href: "/volunteers/deliveries",
-        section: "helper",
-      },
-      {
-        icon: TrendingUp,
-        label: "Performance",
-        href: "/volunteers/performance",
-        section: "helper",
-      },
+     
       {
         icon: Wrench,
         label: "Equipment",
@@ -215,30 +206,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   // Courier menu items
   if (hasCourier) {
     allMenuItems.push(
+     
+
       {
         icon: Truck,
         label: "Deliveries",
-        href: "/courier/deliveries",
+        href: "/volunteers/deliveries",
         section: "courier",
       },
-      {
-        icon: MapPin,
-        label: "Routes",
-        href: "/courier/routes",
-        section: "courier",
-      },
-      {
-        icon: DollarSign,
-        label: "Earnings",
-        href: "/courier/earnings",
-        section: "courier",
-      },
-      {
-        icon: TrendingUp,
-        label: "Performance",
-        href: "/courier/performance",
-        section: "courier",
-      },
+     
       {
         icon: DollarSign,
         label: "Pricing",
@@ -250,7 +226,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         label: "Vehicles",
         href: "/dashboard/vehicles",
         section: "courier",
-      }
+      },
+     
     );
   }
 
@@ -282,6 +259,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       section: "account",
     },
     {
+      icon: Award,
+      label: "Impact",
+      href: "/volunteers/impact",
+      section: "account",
+    },
+    {
       icon: Users,
       label: "Referrals",
       href: "/dashboard/referrals",
@@ -294,7 +277,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     icon: Settings,
     label: "Settings",
     href: "/settings",
-    section: "settings",
+    section: "account",
   });
 
   const handleLogout = async () => {
