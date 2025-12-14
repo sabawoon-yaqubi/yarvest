@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
     }
   )
 
-  const product = productResponse?.data || productResponse
+  const product = (productResponse as any)?.data || productResponse
 
   // Fetch wishlist product IDs on mount if logged in
   useEffect(() => {
@@ -167,7 +167,7 @@ export default function ProductDetailPage() {
   
   const allImages = product ? [
     product.main_image,
-    ...product.images.map(img => img.image)
+    ...product.images.map((img: any) => img.image)
   ].filter(Boolean) : []
   
   const mainImageUrl = product ? getImageUrl(allImages[selectedImageIndex] || product.main_image, product.name) : ''
@@ -530,7 +530,7 @@ export default function ProductDetailPage() {
                 Reviews ({product.reviews.total})
               </h2>
               <div className="space-y-4">
-                {product.reviews.list.map((review) => (
+                {product.reviews.list.map((review: any) => (
                   <div key={review.id} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">

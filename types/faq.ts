@@ -23,3 +23,6 @@ export interface FAQData {
   categories: FAQCategory[]
   faqs: FAQ[]
 }
+
+
+

@@ -261,3 +261,6 @@ export function searchFAQs(query: string): FAQ[] {
       faq.answer.toLowerCase().includes(lowerQuery)
   )
 }
+
+
+

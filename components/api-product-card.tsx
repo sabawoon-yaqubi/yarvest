@@ -1,9 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ShoppingCart, Sparkles, Star, Plus, Minus, Heart, Trash2 } from "lucide-react"
+import { Star, Plus, Minus, Heart, Trash2 } from "lucide-react"
 import { getImageUrl } from "@/lib/utils"
 import { calculateProductPrices } from "@/lib/product-utils"
 import { ApiProduct, ApiProductCardProps } from "@/types/product"
@@ -120,7 +118,7 @@ export function ApiProductCard({
     <>
       <div
         onClick={handleCardClick}
-        className={`group relative w-full max-w-[200px] overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-md flex flex-col cursor-pointer ${className}`}
+        className={`group relative w-full bg-white rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col cursor-pointer border border-gray-100 ${className}`}
         role="button"
         tabIndex={0}
         aria-label={`View ${product.name} details`}
@@ -131,23 +129,33 @@ export function ApiProductCard({
           }
         }}
       >
-        {/* Product Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-emerald-50/60 to-green-50/60">
-          <div className="h-full w-full relative">
-            {isImageLoading && !imgError && (
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/60 via-white to-green-100/60 animate-pulse" />
-            )}
-            <img
-              src={imageUrl}
-              alt={product.name}
-              className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-                isImageLoading ? "opacity-0" : "opacity-100"
-              }`}
-              loading="lazy"
-              onError={handleImageError}
-              onLoad={handleImageLoad}
-            />
-          </div>
+        {/* Product Image Container - Bigger and shows full image */}
+        <div className="relative w-full h-[280px] overflow-hidden bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100">
+          {isImageLoading && !imgError && (
+            <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+          )}
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-110 ${
+              isImageLoading ? "opacity-0" : "opacity-100"
+            }`}
+            loading="lazy"
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+          />
+
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/0 group-hover:via-black/0 group-hover:to-black/5 transition-all duration-300 pointer-events-none" />
+
+          {/* Discount Badge */}
+          {hasDiscount && (
+            <div className="absolute left-3 top-3 z-10">
+              <span className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                -{discountPercentage}%
+              </span>
+            </div>
+          )}
 
           {/* Favorite Button */}
           <button
@@ -156,7 +164,6 @@ export function ApiProductCard({
               if (isLoggedIn) {
                 try {
                   const newFavoriteState = await toggleItem(product.id)
-                  // Call prop callback if provided
                   if (onToggleFavorite) {
                     onToggleFavorite(product.id)
                   }
@@ -164,108 +171,107 @@ export function ApiProductCard({
                   console.error('Error toggling favorite:', error)
                 }
               } else {
-                // If not logged in, just call the prop callback
                 onToggleFavorite?.(product.id)
               }
             }}
-            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm transition-all duration-300 hover:scale-110 active:scale-95 z-10"
+            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-white/50 shadow-xl hover:bg-white hover:scale-110 transition-all duration-300 z-10"
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <Heart
-              className={`h-3 w-3 transition-colors ${
+              className={`h-5 w-5 transition-all duration-300 ${
                 isFavorite 
-                  ? "fill-red-500 text-red-500" 
-                  : "text-gray-400 hover:text-red-400"
+                  ? "fill-red-500 text-red-500 scale-110" 
+                  : "text-gray-600 hover:text-red-400"
               }`}
             />
           </button>
 
+          {/* Stock Badge */}
+          {!inStock && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20 backdrop-blur-sm">
+              <span className="bg-gray-900/95 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-2xl">
+                Out of Stock
+              </span>
+            </div>
+          )}
+
           {/* Add to Cart Button */}
           {isInCart ? (
             <div 
-              className="absolute bottom-2 right-2 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-[#5a9c3a]/20"
+              className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/50 px-2 py-1.5"
               onClick={(e) => e.stopPropagation()}
             >
               {cartQuantity === 1 ? (
                 <button
                   onClick={handleRemoveFromCart}
-                  className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 active:scale-95"
+                  className="h-9 w-9 rounded-xl flex items-center justify-center hover:bg-red-50 transition-all duration-200 hover:scale-105"
                   aria-label="Remove from cart"
                 >
-                  <Trash2 className="h-3 w-3 text-red-600" strokeWidth={2.5} />
+                  <Trash2 className="h-4.5 w-4.5 text-red-600" />
                 </button>
               ) : (
                 <button
                   onClick={handleDecreaseQuantity}
-                  className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-green-50 transition-all duration-300 active:scale-95"
+                  className="h-9 w-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-all duration-200 hover:scale-105"
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="h-3 w-3 text-[#5a9c3a]" strokeWidth={2.5} />
+                  <Minus className="h-4.5 w-4.5 text-gray-700" />
                 </button>
               )}
-              <span className="text-xs font-bold text-[#5a9c3a] min-w-[18px] text-center">
+              <span className="text-base font-bold text-gray-900 min-w-[32px] text-center">
                 {cartQuantity}
               </span>
               <button
                 onClick={handleIncreaseQuantity}
                 disabled={cartQuantity >= product.stock}
-                className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-green-50 disabled:opacity-50 transition-all duration-300 active:scale-95"
+                className="h-9 w-9 rounded-xl flex items-center justify-center hover:bg-[#5a9c3a]/10 disabled:opacity-40 transition-all duration-200 hover:scale-105"
                 aria-label="Increase quantity"
               >
-                <Plus className="h-3 w-3 text-[#5a9c3a]" strokeWidth={2.5} />
+                <Plus className="h-4.5 w-4.5 text-[#5a9c3a]" />
               </button>
             </div>
           ) : (
             <button
               onClick={handleAddToCartClick}
               disabled={!inStock}
-              className={`absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#5a9c3a] shadow-md transition-all duration-300 hover:scale-110 active:scale-95 ${
-                inStock 
-                  ? "text-white" 
-                  : "bg-gray-400 cursor-not-allowed text-white"
-              }`}
+              className={`absolute bottom-4 right-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] text-white shadow-2xl hover:shadow-[#5a9c3a]/50 hover:scale-110 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 z-10`}
               aria-label="Add to cart"
             >
-              <Plus className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+              <Plus className="h-5 w-5" strokeWidth={2.5} />
             </button>
           )}
         </div>
 
         {/* Product Details */}
-        <div className="px-3 py-2 min-w-0 w-full">
-          {/* Product Name and Weight */}
-          <div className="mb-1.5">
-            <h3 className="text-sm font-semibold leading-tight text-gray-900 group-hover:text-[#5a9c3a] transition-colors">
+        <div className="p-5 space-y-3 bg-white">
+          {/* Product Name */}
+          <div>
+            <h3 className="text-base font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-[#5a9c3a] transition-colors duration-300">
               {product.name}
             </h3>
             {product.unit?.name && (
-              <p className="mt-0.5 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-gray-500 font-medium uppercase tracking-wide">
                 {product.unit.name}
               </p>
             )}
           </div>
 
-          {/* Price and Rating Section */}
-          <div className="flex items-center justify-between gap-1.5 min-w-0 w-full">
-            <div className="flex items-baseline gap-1 min-w-0 flex-1 overflow-hidden">
-              <span className="text-lg font-bold text-red-600 truncate">${price.toFixed(2)}</span>
+          {/* Price and Rating */}
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-extrabold text-[#5a9c3a]">${price.toFixed(2)}</span>
               {hasDiscount && (
-                <span className="text-xs text-gray-400 line-through flex-shrink-0 hidden sm:inline">
+                <span className="text-sm text-gray-400 line-through font-semibold">
                   ${originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
-            {/* Rating */}
-            {reviewCount > 0 ? (
-              <div className="flex items-center gap-0.5 flex-shrink-0 ml-auto">
-                <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400 flex-shrink-0" />
-                <span className="text-xs font-semibold text-gray-900 whitespace-nowrap">{rating.toFixed(1)}</span>
-                <span className="text-xs text-gray-500 whitespace-nowrap">({reviewCount})</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-0.5 flex-shrink-0 ml-auto">
-                <Star className="h-2.5 w-2.5 text-gray-300 flex-shrink-0" />
-                <span className="text-xs text-gray-400 whitespace-nowrap">No reviews</span>
+            {/* Rating - Only show if there are reviews */}
+            {reviewCount > 0 && (
+              <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-amber-100 px-3 py-1.5 rounded-xl border border-amber-200/50 shadow-sm">
+                <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+                <span className="text-xs font-bold text-gray-900">{rating.toFixed(1)}</span>
+                <span className="text-xs text-gray-600">({reviewCount})</span>
               </div>
             )}
           </div>

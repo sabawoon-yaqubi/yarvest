@@ -131,13 +131,97 @@ export async function updateOrderStatus(
     const response = await api.put(`/orders/${uniqueId}/status`, payload)
     // Handle different response structures
     const order = response.data?.data || response.data
-    toast.success(response.data?.message || 'Order status updated successfully')
+    toast.success(response.data?.message || 'Order status updated successfully', { duration: 3000 })
     return order
   } catch (error: any) {
     console.error('Error updating order status:', error)
     const errorMessage = error.response?.data?.message || 'Failed to update order status'
-    toast.error(errorMessage)
+    toast.error(errorMessage, { duration: 3000 })
     throw error
+  }
+}
+
+export interface AcceptOrderPayload {
+  note?: string
+  share_address?: boolean
+  share_phone?: boolean
+}
+
+export interface RejectOrderPayload {
+  reason?: string
+}
+
+/**
+ * Accept order (seller accepts pending order)
+ */
+export async function acceptOrder(
+  uniqueId: string,
+  payload: AcceptOrderPayload
+): Promise<Order | null> {
+  try {
+    const response = await api.post(`/orders/${uniqueId}/accept`, payload)
+    const order = response.data?.data || response.data
+    toast.success(response.data?.message || 'Order accepted successfully', { duration: 3000 })
+    return order
+  } catch (error: any) {
+    console.error('Error accepting order:', error)
+    const errorMessage = error.response?.data?.message || 'Failed to accept order'
+    toast.error(errorMessage, { duration: 3000 })
+    throw error
+  }
+}
+
+/**
+ * Reject order (seller rejects pending order)
+ */
+export async function rejectOrder(
+  uniqueId: string,
+  payload: RejectOrderPayload
+): Promise<Order | null> {
+  try {
+    const response = await api.post(`/orders/${uniqueId}/reject`, payload)
+    const order = response.data?.data || response.data
+    toast.success(response.data?.message || 'Order rejected successfully', { duration: 3000 })
+    return order
+  } catch (error: any) {
+    console.error('Error rejecting order:', error)
+    const errorMessage = error.response?.data?.message || 'Failed to reject order'
+    toast.error(errorMessage, { duration: 3000 })
+    throw error
+  }
+}
+
+/**
+ * Request courier for order delivery
+ */
+export async function requestCourier(
+  uniqueId: string,
+  notes?: string
+): Promise<any> {
+  try {
+    const response = await api.post(`/orders/${uniqueId}/request-courier`, {
+      notes: notes || ''
+    })
+    toast.success(response.data?.message || 'Courier request created successfully', { duration: 3000 })
+    return response.data?.data || response.data
+  } catch (error: any) {
+    console.error('Error requesting courier:', error)
+    const errorMessage = error.response?.data?.message || 'Failed to create courier request'
+    toast.error(errorMessage, { duration: 3000 })
+    throw error
+  }
+}
+
+/**
+ * Get courier requests for an order
+ */
+export async function getOrderCourierRequests(orderUniqueId: string): Promise<any[]> {
+  try {
+    const response = await api.get(`/orders/${orderUniqueId}/courier-requests`)
+    return response.data?.data || []
+  } catch (error: any) {
+    console.error('Error fetching courier requests:', error)
+    return []
   }
 }
 

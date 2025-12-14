@@ -55,7 +55,7 @@ export default function CartPage() {
   // STATE MANAGEMENT
   // ============================================
   const { items: cartItems, isLoading, error, fetchCart, updateItemQuantity, removeItem, addItem } = useCartStore()
-  const { isLoggedIn } = useAuthStore()
+  const { isLoggedIn, isLoading: authLoading } = useAuthStore()
   const { deliveryTypes, setDeliveryType } = useDeliveryTypesStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [updatingItems, setUpdatingItems] = useState<Set<number>>(new Set())
@@ -88,10 +88,10 @@ export default function CartPage() {
 
   // Fetch cart when user logs in
   useEffect(() => {
-    if (isLoggedIn) {
+    if (!authLoading && isLoggedIn) {
       fetchCart()
     }
-  }, [isLoggedIn, fetchCart])
+  }, [isLoggedIn, authLoading])
 
   // ============================================
   // EVENT HANDLERS
@@ -163,12 +163,10 @@ export default function CartPage() {
 
   const handleOrderNow = () => {
     if (cartItems.length === 0) return
-    // Show confirmation dialog first
     setShowOrderConfirmation(true)
   }
 
   const handleConfirmOrder = async () => {
-    setShowOrderConfirmation(false)
     setIsPlacingOrder(true)
     
     try {
@@ -181,7 +179,8 @@ export default function CartPage() {
         // Refresh cart to clear items
         await fetchCart()
         
-        // Show success message
+        // Close confirmation modal and show success message
+        setShowOrderConfirmation(false)
         setIsOrderPlaced(true)
       } else {
         throw new Error(response.data.message || 'Failed to place order')
@@ -520,7 +519,7 @@ export default function CartPage() {
           )}
 
           {/* Error State */}
-          {!isLoading && isLoggedIn && error && renderEmptyState(
+          {!isLoading && !authLoading && isLoggedIn && error && renderEmptyState(
             "Error loading cart",
             error,
             <ShoppingBag className="w-8 h-8 text-red-600" />,
@@ -533,7 +532,7 @@ export default function CartPage() {
           )}
 
           {/* Empty Cart */}
-          {!isLoading && isLoggedIn && !error && cartItems.length === 0 && renderEmptyState(
+          {!isLoading && !authLoading && isLoggedIn && !error && cartItems.length === 0 && renderEmptyState(
             "Your cart is empty",
             "Add some fresh produce to get started!",
             <ShoppingBag className="w-8 h-8 text-gray-400" />,
@@ -545,7 +544,7 @@ export default function CartPage() {
           )}
 
           {/* Cart Content */}
-          {!isLoading && isLoggedIn && !error && cartItems.length > 0 && (
+          {!isLoading && !authLoading && isLoggedIn && !error && cartItems.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Cart Items */}
               <div className="lg:col-span-2 space-y-4">
@@ -762,67 +761,105 @@ export default function CartPage() {
       </Dialog>
 
       {/* Order Confirmation Modal */}
-      <Dialog open={showOrderConfirmation} onOpenChange={setShowOrderConfirmation}>
-        <DialogContent className="max-w-md p-6">
-          <DialogTitle className="text-xl font-bold text-gray-900 mb-2">Confirm Your Order</DialogTitle>
-          <DialogDescription className="text-base text-gray-600 mb-6">
-            {sellerGroups.length > 1 ? (
-              <>
-                You are buying from <span className="font-semibold text-gray-900">{sellerGroups.length} different sellers</span>. 
-                Your order will be placed separately for each seller. Once each seller confirms your order, we will notify you.
-              </>
-            ) : (
-              <>
-                You are buying from <span className="font-semibold text-gray-900">1 seller</span>. 
-                Once the seller confirms your order, we will notify you.
-              </>
-            )}
-          </DialogDescription>
-          
-          {/* Seller List */}
-          {sellerGroups.length > 1 && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 max-h-48 overflow-y-auto">
-              <p className="text-sm font-semibold text-gray-700 mb-2">Sellers:</p>
-              <ul className="space-y-2">
-                {sellerGroups.map((group, index) => (
-                  <li key={group.seller?.id || index} className="flex items-center gap-2 text-sm text-gray-600">
-                    <Package className="w-4 h-4 text-[#5a9c3a] flex-shrink-0" />
-                    <span className="font-medium">{getSellerName(group.seller)}</span>
-                    <span className="text-gray-400">({group.items.length} {group.items.length === 1 ? 'item' : 'items'})</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Order Summary */}
-          <div className="border-t border-gray-200 pt-4 mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600">Total Items:</span>
-              <span className="font-semibold text-gray-900">{cartItems.length}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-bold text-gray-900">Total Amount:</span>
-              <span className="text-xl font-bold text-[#5a9c3a]">${grandTotal.toFixed(2)}</span>
+      <Dialog open={showOrderConfirmation} onOpenChange={(open) => {
+        // Prevent closing while placing order
+        if (!isPlacingOrder) {
+          setShowOrderConfirmation(open)
+        }
+      }}>
+        <DialogContent className="max-w-lg p-0 overflow-hidden">
+          <div className="bg-gradient-to-br from-[#5a9c3a] to-[#0d7a3f] p-6 text-white">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-bold text-white">Confirm Your Order</DialogTitle>
+                <p className="text-white/90 text-sm mt-1">Review your order details</p>
+              </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col gap-3">
-            <Button 
-              onClick={handleConfirmOrder}
-              className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold h-11"
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Confirm & Place Order
-            </Button>
-            <Button 
-              onClick={() => setShowOrderConfirmation(false)}
-              variant="outline"
-              className="w-full border-gray-300 hover:border-gray-400 text-gray-700 h-11"
-            >
-              Cancel
-            </Button>
+          <div className="p-6 space-y-6">
+            {/* Order Info */}
+            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Total Items</span>
+                <span className="font-semibold text-gray-900">{cartItems.length}</span>
+              </div>
+              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                <span className="text-lg font-bold text-gray-900">Total Amount</span>
+                <span className="text-2xl font-bold text-[#5a9c3a]">${grandTotal.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Seller Info */}
+            {sellerGroups.length > 1 ? (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-2 mb-3">
+                  <Package className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900 text-sm mb-1">
+                      Ordering from {sellerGroups.length} sellers
+                    </p>
+                    <p className="text-xs text-blue-700">
+                      Your order will be placed separately for each seller. You'll be notified once each seller confirms.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-2 max-h-32 overflow-y-auto">
+                  {sellerGroups.map((group, index) => (
+                    <div key={group.seller?.id || index} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5">
+                      <span className="text-gray-700 font-medium">{getSellerName(group.seller)}</span>
+                      <span className="text-gray-500">{group.items.length} {group.items.length === 1 ? 'item' : 'items'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-green-900 text-sm mb-1">
+                      Ordering from {getSellerName(sellerGroups[0]?.seller)}
+                    </p>
+                    <p className="text-xs text-green-700">
+                      Once the seller confirms your order, we will notify you.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-3 pt-2">
+              <Button 
+                onClick={handleConfirmOrder}
+                disabled={isPlacingOrder}
+                className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold h-12 text-base shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isPlacingOrder ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Placing Order...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Confirm & Place Order
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={() => setShowOrderConfirmation(false)}
+                variant="outline"
+                disabled={isPlacingOrder}
+                className="w-full border-gray-300 hover:border-gray-400 text-gray-700 h-11 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -849,15 +886,14 @@ export default function CartPage() {
               )}
             </DialogDescription>
             <div className="flex flex-col gap-3">
-              <Button 
-                onClick={() => {
-                  setIsOrderPlaced(false)
-                  // Optionally redirect to orders page or clear cart
-                }}
-                className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white"
-              >
-                Continue Shopping
-              </Button>
+              <Link href="/products" className="w-full">
+                <Button 
+                  onClick={() => setIsOrderPlaced(false)}
+                  className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white"
+                >
+                  Continue Shopping
+                </Button>
+              </Link>
               <Button 
                 onClick={() => setIsOrderPlaced(false)}
                 variant="outline"

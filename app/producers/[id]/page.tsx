@@ -133,8 +133,8 @@ export default function ProducerDetailPage() {
 
   const location = formatLocation(store.location)
   const productsCount = store.products_count || store.products?.length || 0
-  const certifications = store.certifications?.map(c => c.certification?.name).filter(Boolean) || []
-  const isOrganic = certifications.some(c => c.toLowerCase().includes('organic'))
+  const certifications = store.certifications?.map((c: any) => c.certification?.name).filter(Boolean) || []
+  const isOrganic = certifications.some((c: string) => c.toLowerCase().includes('organic'))
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -420,7 +420,7 @@ export default function ProducerDetailPage() {
                       Certifications
                     </h3>
                     <div className="space-y-2">
-                      {certifications.map((cert, idx) => (
+                      {certifications.map((cert: string, idx: number) => (
                         <Badge key={idx} variant="outline" className="mr-2 mb-2 border-[#5a9c3a]/30 text-[#5a9c3a] bg-[#5a9c3a]/5">
                           {isOrganic && cert.toLowerCase().includes('organic') && (
                             <Leaf className="w-3 h-3 mr-1 inline" />

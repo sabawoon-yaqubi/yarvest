@@ -79,7 +79,7 @@ function ProductsContent() {
           <InfiniteScrollFetcher<ApiProduct>
             url="/products"
             limit={12}
-            gridClassName={searchQuery ? "hidden" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-6 gap-6"}
+            gridClassName={searchQuery ? "hidden" : "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-6"}
             renderItem={(product) => (
               <ApiProductCard
                 key={product.id}

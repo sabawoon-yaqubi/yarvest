@@ -20,6 +20,7 @@ import { HowItWorks } from "@/components/how-it-works"
 import { HarvestingProductsSection } from "@/components/harvesting-products-section"
 import { VolunteersSection } from "@/components/volunteers-section"
 import { CouriersSection } from "@/components/couriers-section"
+import { LeaderboardSection } from "@/components/leaderboard-section"
 import { useState, useEffect } from "react"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 
@@ -80,6 +81,7 @@ export default function Home() {
             <VolunteersSection />
             {/* <FeaturedShops /> */}
             <ProducersSection />
+            <LeaderboardSection />
             <TestimonialsSection />
             <EventsSection />
             <StatsSection />

@@ -1,41 +1,45 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { 
-  Search, 
-  Filter,
+  Search,
   Package,
   Truck,
   CheckCircle,
   Clock,
   XCircle,
   Eye,
-  Download,
   Loader2,
   User,
   Mail,
   Phone,
   MapPin,
-  ShoppingCart
+  ShoppingCart,
+  Printer
 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { fetchOrders, updateOrderStatus, transformOrder, type Order } from "@/lib/orders-api"
+import { fetchOrders, updateOrderStatus, transformOrder, acceptOrder, rejectOrder, type Order } from "@/lib/orders-api"
+import { useRouter } from "next/navigation"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 
 
 const statusConfig = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: Clock },
+  confirmed: { label: "Confirmed", color: "bg-green-100 text-green-800", icon: CheckCircle },
   processing: { label: "Processing", color: "bg-blue-100 text-blue-800", icon: Package },
   shipped: { label: "Shipped", color: "bg-purple-100 text-purple-800", icon: Truck },
   delivered: { label: "Delivered", color: "bg-green-100 text-green-800", icon: CheckCircle },
+  completed: { label: "Completed", color: "bg-green-100 text-green-800", icon: CheckCircle },
   cancelled: { label: "Cancelled", color: "bg-red-100 text-red-800", icon: XCircle },
 }
 
 export default function OrdersPage() {
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [transformedOrders, setTransformedOrders] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -44,6 +48,12 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showAcceptModal, setShowAcceptModal] = useState(false)
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [acceptNote, setAcceptNote] = useState("")
+  const [shareAddress, setShareAddress] = useState(false)
+  const [sharePhone, setSharePhone] = useState(false)
+  const [rejectReason, setRejectReason] = useState("")
 
   // Fetch orders on mount
   useEffect(() => {
@@ -76,9 +86,11 @@ export default function OrdersPage() {
   const stats = {
     total: transformedOrders.length,
     pending: transformedOrders.filter(o => o.status === "pending").length,
+    confirmed: transformedOrders.filter(o => o.status === "confirmed").length,
     processing: transformedOrders.filter(o => o.status === "processing").length,
     shipped: transformedOrders.filter(o => o.status === "shipped").length,
     delivered: transformedOrders.filter(o => o.status === "delivered").length,
+    completed: transformedOrders.filter(o => o.status === "completed").length,
     revenue: transformedOrders.filter(o => o.status !== "cancelled").reduce((sum, o) => {
       const orderTotal = typeof o.total === 'number' ? o.total : parseFloat(String(o.total)) || 0
       return sum + orderTotal
@@ -119,8 +131,135 @@ export default function OrdersPage() {
   }
 
   const handleViewDetails = (order: any) => {
+    router.push(`/admin/orders/${order.originalOrder?.unique_id || order.id}`)
+  }
+
+  const handleAcceptClick = (order: any) => {
     setSelectedOrder(order)
-    setShowDetailsModal(true)
+    setAcceptNote("")
+    setShareAddress(false)
+    setSharePhone(false)
+    setShowAcceptModal(true)
+  }
+
+  const handleRejectClick = (order: any) => {
+    setSelectedOrder(order)
+    setRejectReason("")
+    setShowRejectModal(true)
+  }
+
+  const handleAcceptOrder = async () => {
+    if (!selectedOrder) return
+    
+    setIsUpdating(true)
+    try {
+      const uniqueId = selectedOrder.originalOrder?.unique_id || selectedOrder.id
+      await acceptOrder(uniqueId, {
+        note: acceptNote,
+        share_address: shareAddress,
+        share_phone: sharePhone,
+      })
+      
+      // Refresh orders
+      const fetchedOrders = await fetchOrders()
+      setOrders(fetchedOrders)
+      const transformed = fetchedOrders.map(o => transformOrder(o))
+      setTransformedOrders(transformed)
+      
+      setShowAcceptModal(false)
+      setSelectedOrder(null)
+    } catch (error) {
+      console.error('Error accepting order:', error)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleRejectOrder = async () => {
+    if (!selectedOrder) return
+    
+    setIsUpdating(true)
+    try {
+      const uniqueId = selectedOrder.originalOrder?.unique_id || selectedOrder.id
+      await rejectOrder(uniqueId, {
+        reason: rejectReason,
+      })
+      
+      // Refresh orders
+      const fetchedOrders = await fetchOrders()
+      setOrders(fetchedOrders)
+      const transformed = fetchedOrders.map(o => transformOrder(o))
+      setTransformedOrders(transformed)
+      
+      setShowRejectModal(false)
+      setSelectedOrder(null)
+    } catch (error) {
+      console.error('Error rejecting order:', error)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handlePrint = (order: any) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+    
+    const orderData = order.originalOrder || order
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Order ${order.id}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #5a9c3a; }
+          .section { margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        </style>
+      </head>
+      <body>
+        <h1>Order ${order.id}</h1>
+        <div class="section">
+          <h2>Customer Information</h2>
+          <p><strong>Name:</strong> ${order.customer}</p>
+          <p><strong>Email:</strong> ${order.email}</p>
+          ${order.phone ? `<p><strong>Phone:</strong> ${order.phone}</p>` : ''}
+        </div>
+        <div class="section">
+          <h2>Order Items</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items?.map((item: any) => `
+                <tr>
+                  <td>${item.name}</td>
+                  <td>${item.quantity}</td>
+                  <td>$${item.price?.toFixed(2) || '0.00'}</td>
+                  <td>$${item.total?.toFixed(2) || '0.00'}</td>
+                </tr>
+              `).join('') || ''}
+            </tbody>
+          </table>
+        </div>
+        <div class="section">
+          <h2>Total: $${order.total?.toFixed(2) || '0.00'}</h2>
+          <p><strong>Status:</strong> ${order.status}</p>
+          <p><strong>Date:</strong> ${order.date}</p>
+        </div>
+      </body>
+      </html>
+    `
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.print()
   }
 
   if (isLoading) {
@@ -135,96 +274,80 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <>
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
-          <p className="text-gray-500 mt-1">Manage and track customer orders</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Orders</h1>
+          <p className="text-gray-500 mt-1 text-sm">{stats.total} total orders</p>
         </div>
-        <Button variant="outline" className="gap-2">
-          <Download className="w-4 h-4" />
-          Export Orders
-        </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <Card className="border-2 border-gray-100">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">Total Orders</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-gray-100">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">Pending</p>
-            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-gray-100">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">Processing</p>
-            <p className="text-2xl font-bold text-blue-600">{stats.processing}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-gray-100">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">Shipped</p>
-            <p className="text-2xl font-bold text-purple-600">{stats.shipped}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-gray-100">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">Delivered</p>
-            <p className="text-2xl font-bold text-green-600">{stats.delivered}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-2 border-gray-100">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-500 mb-1">Revenue</p>
-            <p className="text-2xl font-bold text-[#5a9c3a]">${stats.revenue.toFixed(2)}</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Pending</p>
+          <p className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.pending}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Confirmed</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.confirmed}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Completed</p>
+          <p className="text-xl sm:text-2xl font-bold text-[#5a9c3a]">{stats.completed}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Processing</p>
+          <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.processing}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Shipped</p>
+          <p className="text-xl sm:text-2xl font-bold text-purple-600">{stats.shipped}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Revenue</p>
+          <p className="text-xl sm:text-2xl font-bold text-[#5a9c3a]">${stats.revenue.toFixed(2)}</p>
+        </div>
       </div>
 
       {/* Filters */}
-      <Card className="border-2 border-gray-100">
-        <CardContent className="p-4">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <Input
-                placeholder="Search orders by ID, customer, or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 rounded-lg border-2 border-gray-200 bg-white text-sm focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a]"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+      <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+            <Input
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 sm:pl-10 h-9 sm:h-10 border"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a] h-9 sm:h-10"
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
 
       {/* Orders Table */}
-      <Card className="border-2 border-gray-100">
-        <CardHeader>
-          <CardTitle>Orders ({filteredOrders.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Orders ({filteredOrders.length})</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 font-semibold text-gray-900">Order ID</th>
@@ -281,29 +404,49 @@ export default function OrdersPage() {
                               size="sm"
                               onClick={() => handleViewDetails(order)}
                               disabled={isUpdating}
+                              title="View Details"
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePrint(order)}
+                              title="Print Order"
+                            >
+                              <Printer className="w-4 h-4" />
+                            </Button>
                             {order.status === "pending" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleStatusUpdate(order.id, "processing")}
-                                className="text-blue-600 hover:text-blue-700"
-                                disabled={isUpdating}
-                              >
-                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Process"}
-                              </Button>
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleAcceptClick(order)}
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  disabled={isUpdating}
+                                >
+                                  Accept
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRejectClick(order)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  disabled={isUpdating}
+                                >
+                                  Reject
+                                </Button>
+                              </>
                             )}
-                            {order.status === "processing" && (
+                            {(order.status === "confirmed" || order.status === "processing" || order.status === "shipped" || order.status === "delivered") && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleStatusUpdate(order.id, "shipped")}
-                                className="text-purple-600 hover:text-purple-700"
+                                onClick={() => handleStatusUpdate(order.id, "completed")}
+                                className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                 disabled={isUpdating}
                               >
-                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ship"}
+                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Mark Completed"}
                               </Button>
                             )}
                           </div>
@@ -315,8 +458,125 @@ export default function OrdersPage() {
               </tbody>
             </table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+      <Dialog open={showAcceptModal} onOpenChange={setShowAcceptModal}>
+        <DialogContent className="max-w-md p-6">
+          <DialogHeader className="pb-4">
+            <DialogTitle>Accept Order</DialogTitle>
+            <DialogDescription>
+              Accept order {selectedOrder?.id} and send confirmation to the buyer
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="note">Note (Optional)</Label>
+              <Textarea
+                id="note"
+                placeholder="Add a note for the buyer..."
+                value={acceptNote}
+                onChange={(e) => setAcceptNote(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+            <div className="space-y-3">
+              <Label>Share Contact Information</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="share-address"
+                  checked={shareAddress}
+                  onChange={(e) => setShareAddress(e.target.checked)}
+                />
+                <Label htmlFor="share-address" className="font-normal cursor-pointer">
+                  Share my address with buyer
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="share-phone"
+                  checked={sharePhone}
+                  onChange={(e) => setSharePhone(e.target.checked)}
+                />
+                <Label htmlFor="share-phone" className="font-normal cursor-pointer">
+                  Share my phone number with buyer
+                </Label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="pt-4 gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowAcceptModal(false)}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAcceptOrder}
+              disabled={isUpdating}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isUpdating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Accepting...
+                </>
+              ) : (
+                "Accept Order"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Order Modal */}
+      <Dialog open={showRejectModal} onOpenChange={setShowRejectModal}>
+        <DialogContent className="max-w-md p-6">
+          <DialogHeader className="pb-4">
+            <DialogTitle>Reject Order</DialogTitle>
+            <DialogDescription>
+              Reject order {selectedOrder?.id}. The buyer will be notified via email.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="reason">Reason (Optional)</Label>
+              <Textarea
+                id="reason"
+                placeholder="Provide a reason for rejection..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter className="pt-4 gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowRejectModal(false)}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRejectOrder}
+              disabled={isUpdating}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isUpdating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Rejecting...
+                </>
+              ) : (
+                "Reject Order"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Order Details Modal */}
       {selectedOrder && (
@@ -416,41 +676,9 @@ export default function OrdersPage() {
 
             {/* Footer */}
             <DialogFooter className="px-6 py-4 bg-gray-50 border-t border-gray-200 gap-2">
-              {selectedOrder.status === "pending" && (
+              {(selectedOrder.status === "confirmed" || selectedOrder.status === "processing" || selectedOrder.status === "shipped" || selectedOrder.status === "delivered") && (
                 <Button
-                  onClick={() => handleStatusUpdate(selectedOrder.id, "processing")}
-                  className="bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#0A5D31] text-white h-9 px-6 text-sm font-semibold"
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Mark as Processing"
-                  )}
-                </Button>
-              )}
-              {selectedOrder.status === "processing" && (
-                <Button
-                  onClick={() => handleStatusUpdate(selectedOrder.id, "shipped")}
-                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-600 text-white h-9 px-6 text-sm font-semibold"
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Mark as Shipped"
-                  )}
-                </Button>
-              )}
-              {selectedOrder.status === "shipped" && (
-                <Button
-                  onClick={() => handleStatusUpdate(selectedOrder.id, "delivered")}
+                  onClick={() => handleStatusUpdate(selectedOrder.id, "completed")}
                   className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-600 text-white h-9 px-6 text-sm font-semibold"
                   disabled={isUpdating}
                 >
@@ -460,7 +688,7 @@ export default function OrdersPage() {
                       Updating...
                     </>
                   ) : (
-                    "Mark as Delivered"
+                    "Mark Completed"
                   )}
                 </Button>
               )}
@@ -469,6 +697,7 @@ export default function OrdersPage() {
         </Dialog>
       )}
     </div>
+    </>
   )
 }
 

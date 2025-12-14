@@ -545,16 +545,12 @@ export function AddressModal({ open, onOpenChange, onSuccess, address }: Address
               />
               <button
                 type="button"
-                onClick={() => {
-                  if (searchQuery.trim()) {
-                    handleSearch(searchQuery)
-                  }
-                }}
-                disabled={!searchQuery.trim() || isSearching}
+                onClick={handleGetCurrentLocation}
+                disabled={isSearching}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Search address"
+                title="Get current address"
               >
-                <Send className="w-5 h-5 text-[#5a9c3a]" />
+                <Navigation className="w-5 h-5 text-[#5a9c3a]" />
               </button>
             </div>
           </div>

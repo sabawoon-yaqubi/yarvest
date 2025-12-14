@@ -41,12 +41,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased`}>
+      <body className={`${_geist.className} ${_geistMono.className} font-sans antialiased`}>
         <AuthInitializer />
         <EmailVerificationBlocker />
         <FirstTimeAddressPrompt />
-          {children}
-        <Toaster position="top-right" richColors />
+        {children}
+        <Toaster 
+          position="top-right" 
+          richColors 
+          duration={3000}
+          closeButton
+          toastOptions={{
+            duration: 3000,
+          }}
+        />
         <Analytics />
       </body>
     </html>
