@@ -138,7 +138,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className={`${_geist.className} ${_geistMono.className} font-sans antialiased`}>
+      <body >
         <AuthInitializer />
         <EmailVerificationBlocker />
         <FirstTimeAddressPrompt />

@@ -89,11 +89,9 @@ export default function VolunteersMapPage() {
   }
 
   // Convert addresses to coordinates using Nominatim API
-  const geocodeAddress = async (location: string): Promise<[number, number] | null> => {
-    const defaultCenter: [number, number] = [39.8283, -98.5795]
-    
+  const geocodeAddress = async (location: string, index: number = 0): Promise<[number, number] | null> => {
     if (!location || location === "Unknown Location" || location === "Location not specified") {
-      return null // Return null instead of default to skip invalid locations
+      return null
     }
 
     try {
@@ -110,7 +108,7 @@ export default function VolunteersMapPage() {
       )
 
       if (!response.ok) {
-        console.warn('Geocoding failed for:', location)
+        console.warn('Geocoding failed for:', location, 'Status:', response.status)
         return null
       }
 
@@ -123,13 +121,18 @@ export default function VolunteersMapPage() {
         // Validate coordinates
         if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
           // Add small random offset to prevent exact overlap (within ~100m)
-          const offsetLat = lat + (Math.random() - 0.5) * 0.001
-          const offsetLng = lng + (Math.random() - 0.5) * 0.001
+          // Use index to create consistent but different offsets
+          const offsetLat = lat + (Math.sin(index) * 0.001)
+          const offsetLng = lng + (Math.cos(index) * 0.001)
+          console.log(`✅ Geocoded: ${location} -> ${offsetLat.toFixed(6)}, ${offsetLng.toFixed(6)}`)
           return [offsetLat, offsetLng]
+        } else {
+          console.warn('Invalid coordinates for:', location, lat, lng)
         }
+      } else {
+        console.warn('No geocoding results for:', location)
       }
       
-      console.warn('No geocoding results for:', location)
       return null
     } catch (error) {
       console.error('Geocoding error for location:', location, error)
@@ -159,8 +162,9 @@ export default function VolunteersMapPage() {
       for (let i = 0; i < allVolunteers.length; i += batchSize) {
         const batch = allVolunteers.slice(i, i + batchSize)
         
-        const batchPromises = batch.map(async (volunteer) => {
-          const coords = await geocodeAddress(volunteer.location)
+        const batchPromises = batch.map(async (volunteer, batchIndex) => {
+          const globalIndex = i + batchIndex
+          const coords = await geocodeAddress(volunteer.location, globalIndex)
           
           if (coords) {
             return {
@@ -318,7 +322,7 @@ export default function VolunteersMapPage() {
                 <p className="text-gray-600 font-medium mb-2">Loading volunteers...</p>
               </div>
             </div>
-          ) : geocodingProgress.total > 0 && geocodingProgress.current < geocodingProgress.total && resolvedLocations.length === 0 ? (
+          ) : filteredMapLocations.length === 0 && geocodingProgress.total > 0 && geocodingProgress.current < geocodingProgress.total ? (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-[#5a9c3a]/10 rounded-full mb-4">
@@ -351,14 +355,23 @@ export default function VolunteersMapPage() {
               </div>
             </div>
           ) : (
-            isMounted && (
-              <MapView
-                locations={filteredMapLocations}
-                center={mapCenter}
-                zoom={6}
-                showHeatMap={false}
-                title="Volunteers"
-              />
+            isMounted && filteredMapLocations.length > 0 && (
+              <div className="h-full w-full">
+                <MapView
+                  locations={filteredMapLocations}
+                  center={mapCenter}
+                  zoom={filteredMapLocations.length === 1 ? 10 : 6}
+                  showHeatMap={false}
+                  title="Volunteers"
+                />
+                {geocodingProgress.total > 0 && geocodingProgress.current < geocodingProgress.total && (
+                  <div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-4 py-2 border border-gray-200">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-semibold text-[#5a9c3a]">{geocodingProgress.current}</span> / {geocodingProgress.total} locations loaded
+                    </p>
+                  </div>
+                )}
+              </div>
             )
           )}
         </div>
@@ -367,3 +380,4 @@ export default function VolunteersMapPage() {
     </div>
   )
 }
+
