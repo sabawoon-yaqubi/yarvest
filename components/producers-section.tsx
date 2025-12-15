@@ -46,7 +46,7 @@ export function ProducersSection() {
             <div className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] flex flex-col bg-card border border-border rounded-2xl cursor-pointer h-full">
               <div className="relative group overflow-hidden bg-secondary h-48">
                 <img
-                  src={producer.image || "/placeholder.svg"}
+                  src={producer.image || "/placeholder.png"}
                   alt={producer.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />

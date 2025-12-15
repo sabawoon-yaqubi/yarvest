@@ -85,7 +85,7 @@ export default function EventsPage() {
                   >
                     <div className="relative group overflow-hidden bg-gray-100 h-64">
                       <img
-                        src={event.image || "/placeholder.svg"}
+                        src={event.image || "/placeholder.png"}
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />

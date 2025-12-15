@@ -66,11 +66,11 @@ export function ProductDetailsModal({
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
   const [imgError, setImgError] = useState(false)
-  const [imgSrc, setImgSrc] = useState("/placeholder.svg")
+  const [imgSrc, setImgSrc] = useState("/placeholder.png")
 
   useEffect(() => {
     if (product) {
-      setImgSrc(product.image || "/placeholder.svg")
+      setImgSrc(product.image || "/placeholder.png")
       setImgError(false)
     }
   }, [product])
@@ -89,7 +89,7 @@ export function ProductDetailsModal({
   const handleImageError = () => {
     if (!imgError) {
       setImgError(true)
-      setImgSrc("/placeholder.svg")
+      setImgSrc("/placeholder.png")
     }
   }
 

@@ -203,11 +203,11 @@ export default function ShopsPage() {
                       <div className="overflow-hidden transition-all duration-300 rounded-3xl shadow-sm bg-white flex flex-col h-full cursor-not-allowed pointer-events-none">
                         <div className="relative group overflow-hidden bg-secondary h-64">
                           <img
-                            src={shop.logo || "/placeholder.svg"}
+                            src={shop.logo || "/placeholder.png"}
                             alt={shop.name}
                             className="w-full h-full object-cover transition-transform duration-300 grayscale"
                             onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg"
+                              e.currentTarget.src = "/placeholder.png"
                             }}
                           />
                           {shop.store_type && (

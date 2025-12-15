@@ -205,7 +205,7 @@ export default function ProductsPage() {
               {/* Product Image */}
               <div className="relative h-48 bg-gray-50 overflow-hidden">
                 <img
-                  src={product.main_image ? getImageUrl(product.main_image) : "/placeholder.svg"}
+                  src={product.main_image ? getImageUrl(product.main_image) : "/placeholder.png"}
                   alt={product.name || "Product"}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />

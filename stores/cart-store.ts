@@ -44,10 +44,12 @@ export const useCartStore = create<CartState>()(
         set({ isLoading: true, error: null })
         try {
           const items = await getCartItems()
+          // Calculate totals once
+          const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
           set({ 
             items, 
             totalItems: items.length,
-            totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+            totalQuantity,
             isLoading: false 
           })
         } catch (error: any) {
@@ -80,18 +82,22 @@ export const useCartStore = create<CartState>()(
             // Update existing item
             const updatedItems = [...get().items]
             updatedItems[existingItemIndex] = newItem
+            // Calculate total quantity once
+            const totalQuantity = updatedItems.reduce((sum, item) => sum + item.quantity, 0)
             set({ 
               items: updatedItems,
-              totalQuantity: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+              totalQuantity,
               isLoading: false 
             })
           } else {
             // Add new item
             const updatedItems = [...get().items, newItem]
+            // Calculate total quantity once
+            const totalQuantity = updatedItems.reduce((sum, item) => sum + item.quantity, 0)
             set({ 
               items: updatedItems,
               totalItems: updatedItems.length,
-              totalQuantity: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+              totalQuantity,
               isLoading: false 
             })
           }
@@ -118,9 +124,11 @@ export const useCartStore = create<CartState>()(
           const items = get().items.map(item => 
             item.id === cartItemId ? updatedItem : item
           )
+          // Calculate total quantity once
+          const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
           set({ 
             items,
-            totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+            totalQuantity,
             isLoading: false 
           })
         } catch (error: any) {
@@ -144,10 +152,12 @@ export const useCartStore = create<CartState>()(
         try {
           await removeFromCart(cartItemId)
           const items = get().items.filter(item => item.id !== cartItemId)
+          // Calculate total quantity once
+          const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
           set({ 
             items,
             totalItems: items.length,
-            totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+            totalQuantity,
             isLoading: false 
           })
         } catch (error: any) {

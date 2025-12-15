@@ -54,7 +54,7 @@ export function ApiProducerCard({
     >
       <div className="relative overflow-hidden bg-gray-100 h-40">
         <img
-          src={producer.image || "/placeholder.svg"}
+          src={producer.image || "/placeholder.png"}
           alt={producer.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />

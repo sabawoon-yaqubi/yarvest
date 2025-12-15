@@ -11,7 +11,7 @@ export function ProductCardSkeleton({ count = 1, className = "" }: ProductCardSk
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <Card
+        <div
           key={i}
           className={`overflow-hidden animate-pulse bg-white border border-gray-100 rounded-3xl ${className}`}
         >
@@ -35,7 +35,7 @@ export function ProductCardSkeleton({ count = 1, className = "" }: ProductCardSk
               <div className="h-6 bg-amber-100 rounded-xl w-16" />
             </div>
           </div>
-        </Card>
+        </div>
       ))}
     </>
   )

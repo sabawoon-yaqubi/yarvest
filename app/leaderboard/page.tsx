@@ -112,7 +112,7 @@ export default function LeaderboardPage() {
                 {leaderboardData.length >= 3 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                     {leaderboardData.slice(0, 3).map((producer, index) => {
-                      const imageUrl = producer.logo || producer.user?.image || "/placeholder.svg"
+                      const imageUrl = producer.logo || producer.user?.image || "/placeholder.png"
                       return (
                         <Card
                           key={producer.id}
@@ -127,7 +127,7 @@ export default function LeaderboardPage() {
                             className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-white shadow-lg"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement
-                              target.src = "/placeholder.svg"
+                              target.src = "/placeholder.png"
                             }}
                           />
                           <h3 className="font-bold text-lg text-foreground mb-1">{producer.user?.full_name || "User"}</h3>
@@ -147,7 +147,7 @@ export default function LeaderboardPage() {
                   </div>
                   <div>
                     {leaderboardData.map((producer) => {
-                      const imageUrl = producer.logo || producer.user?.image || "/placeholder.svg"
+                      const imageUrl = producer.logo || producer.user?.image || "/placeholder.png"
                       return (
                         <div
                           key={producer.id}
@@ -164,7 +164,7 @@ export default function LeaderboardPage() {
                             className="w-9 h-9 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement
-                              target.src = "/placeholder.svg"
+                              target.src = "/placeholder.png"
                             }}
                           />
                           {/* Info */}

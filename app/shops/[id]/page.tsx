@@ -204,11 +204,11 @@ export default function StoreDetailPage() {
                 <div className="flex-shrink-0">
                   <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden bg-secondary border-2 border-border">
                     <img
-                      src={store.logo || "/placeholder.svg"}
+                      src={store.logo || "/placeholder.png"}
                       alt={store.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg"
+                        e.currentTarget.src = "/placeholder.png"
                       }}
                     />
                   </div>
@@ -293,11 +293,11 @@ export default function StoreDetailPage() {
                           >
                             <div className="aspect-square rounded-lg overflow-hidden bg-secondary mb-2">
                               <img
-                                src={product.image || "/placeholder.svg"}
+                                src={product.image || "/placeholder.png"}
                                 alt={product.name}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                                 onError={(e) => {
-                                  e.currentTarget.src = "/placeholder.svg"
+                                  e.currentTarget.src = "/placeholder.png"
                                 }}
                               />
                             </div>
@@ -429,7 +429,7 @@ export default function StoreDetailPage() {
                               alt={store.user.full_name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.currentTarget.src = "/placeholder.svg"
+                                e.currentTarget.src = "/placeholder.png"
                               }}
                             />
                           </div>

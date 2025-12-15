@@ -40,7 +40,7 @@ export function ProductModal({
 }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1)
   const [imgError, setImgError] = useState(false)
-  const [imgSrc, setImgSrc] = useState("/placeholder.svg")
+  const [imgSrc, setImgSrc] = useState("/placeholder.png")
   const [fullProductData, setFullProductData] = useState<ApiProduct | null>(product)
   const { items, removeItem } = useCartStore()
   const fetchedProductIdRef = useRef<string | null>(null)
@@ -252,7 +252,7 @@ export function ProductModal({
   const handleImageError = () => {
     if (!imgError) {
       setImgError(true)
-      setImgSrc("/placeholder.svg")
+      setImgSrc("/placeholder.png")
     }
   }
 

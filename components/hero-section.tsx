@@ -18,10 +18,12 @@ export function HeroSection() {
       {/* Background with gradient overlay */}
       <div className="absolute inset-0">
         <img
-          src="https://conveyancinghome.com.au/wp-content/uploads/2022/06/homegrown-fruits-and-vegetables-2.jpg"
+          src="https://www.pennington.com/-/media/Project/OneWeb/Pennington/Images/garden/blog/how-to-grow-tasty-homegrown-vegetables/how-to-grow-tasty-homegrown-tomatoes.jpg?h=617&iar=0&w=1200&hash=6796412BBDA9C344CCBE8B81F87E1928"
           alt="Fresh produce"
           className="w-full h-full object-cover object-center brightness-110 contrast-110 saturate-110"
           loading="eager"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#5a9c3a]/75 via-[#5a9c3a]/70 to-[#5a9c3a]/65"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"></div>

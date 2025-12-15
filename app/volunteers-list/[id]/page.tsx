@@ -274,14 +274,14 @@ export default function VolunteerDetailPage() {
                 <div className="flex-shrink-0">
                   <div className="relative">
                     <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-green-50 to-emerald-50 border-4 border-[#5a9c3a]/20 mx-auto md:mx-0">
-                      {imageUrl && imageUrl !== "/placeholder.svg" ? (
+                      {imageUrl && imageUrl !== "/placeholder.png" ? (
                         <img
                           src={imageUrl}
                           alt={volunteer.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.svg"
+                            target.src = "/placeholder.png"
                           }}
                         />
                       ) : (

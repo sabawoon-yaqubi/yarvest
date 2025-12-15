@@ -142,7 +142,7 @@ export function LeaderboardSection() {
       {/* Top 3 Podium */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
         {topThree.map((producer, index) => {
-          const imageUrl = producer.logo || producer.user?.image || "/placeholder.svg"
+          const imageUrl = producer.logo || producer.user?.image || "/placeholder.png"
           return (
             <Card
               key={producer.id}
@@ -157,7 +157,7 @@ export function LeaderboardSection() {
                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 sm:mb-3 object-cover border-2 sm:border-4 border-white shadow-lg"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
-                  target.src = "/placeholder.svg"
+                  target.src = "/placeholder.png"
                 }}
               />
               <h3 className="font-bold text-base sm:text-lg text-foreground mb-1 truncate px-2">{producer.user?.full_name || "User"}</h3>
@@ -177,7 +177,7 @@ export function LeaderboardSection() {
           </div>
           <div className="divide-y divide-border">
             {rest.map((producer) => {
-              const imageUrl = producer.logo || producer.user?.image || "/placeholder.svg"
+              const imageUrl = producer.logo || producer.user?.image || "/placeholder.png"
               return (
                 <div
                   key={producer.id}
@@ -192,7 +192,7 @@ export function LeaderboardSection() {
                     className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement
-                      target.src = "/placeholder.svg"
+                      target.src = "/placeholder.png"
                     }}
                   />
                   <div className="flex-1 min-w-0">

@@ -231,11 +231,12 @@ export default function ProducersPage() {
                           {/* Image Section */}
                           <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 h-56">
                             <img
-                              src={producer.image || "/placeholder.svg"}
+                              src={producer.image || "/placeholder.png"}
                               alt={producer.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              className="w-full h-full object-contain bg-white group-hover:scale-105 transition-transform duration-500"
+                              style={{ display: "block" }}
                               onError={(e) => {
-                                e.currentTarget.src = "/placeholder.svg"
+                                e.currentTarget.src = "/placeholder.png"
                               }}
                             />
                             {/* Gradient Overlay */}
@@ -367,7 +368,7 @@ export default function ProducersPage() {
                         price={product.price}
                         unit={product.unit}
                         code={product.code || ""}
-                        image={product.image || "/placeholder.svg"}
+                        image={product.image || "/placeholder.png"}
                         producer={product.producer || "Unknown Producer"}
                         rating={product.rating || 0}
                         reviews={product.reviews || 0}

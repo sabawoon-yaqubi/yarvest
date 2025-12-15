@@ -90,9 +90,9 @@ export function ApiCategoryCard({
               </div>
             )}
             <img
-              src={imgError ? "/placeholder.svg" : imageUrl}
+              src={imgError ? "/placeholder.png" : imageUrl}
               alt={category.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 bg-white"
               onError={handleImageError}
               onLoad={handleImageLoad}
             />
@@ -119,7 +119,7 @@ export function ApiCategoryCard({
             </div>
           )}
           <img
-            src={imgError ? "/placeholder.svg" : imageUrl}
+            src={imgError ? "/placeholder.png" : imageUrl}
             alt={category.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             onError={handleImageError}
@@ -173,7 +173,7 @@ export function ApiCategoryCard({
             </div>
           )}
           <img
-            src={imgError ? "/placeholder.svg" : imageUrl}
+            src={imgError ? "/placeholder.png" : imageUrl}
             alt={category.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
             onError={handleImageError}

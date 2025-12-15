@@ -69,14 +69,14 @@ export function VolunteersSection() {
                   {/* Image and Verified Badge */}
                   <div className="relative mb-4">
                     <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-green-50 to-emerald-50 border-3 border-[#5a9c3a]/20 group-hover:border-[#5a9c3a]/50 transition-all duration-300 group-hover:scale-105 shadow-md">
-                      {imageUrl && imageUrl !== "/placeholder.svg" ? (
+                      {imageUrl && imageUrl !== "/placeholder.png" ? (
                         <img
                           src={imageUrl}
                           alt={volunteer.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.svg"
+                            target.src = "/placeholder.png"
                           }}
                         />
                       ) : (

@@ -328,7 +328,7 @@ export default function SearchPage() {
                     <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-row bg-white border-2 border-gray-100 rounded-2xl">
                       <div className="relative w-48 h-48 bg-gray-50 flex-shrink-0 group cursor-pointer" onClick={() => handleProductClick(product)}>
                         <img
-                          src={product.main_image || "/placeholder.svg"}
+                          src={product.main_image || "/placeholder.png"}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />

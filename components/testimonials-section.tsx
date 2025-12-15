@@ -38,7 +38,7 @@ export function TestimonialsSection() {
             </p>
             <div className="flex items-center gap-3 pt-4 border-t border-border">
               <img
-                src={getImageUrl(testimonial.image) || "/placeholder.svg"}
+                src={getImageUrl(testimonial.image) || "/placeholder.png"}
                 alt={testimonial.full_name}
                 className="w-12 h-12 rounded-full object-cover"
               />

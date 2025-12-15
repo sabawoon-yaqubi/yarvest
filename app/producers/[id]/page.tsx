@@ -176,11 +176,11 @@ export default function ProducerDetailPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-[#5a9c3a] to-[#0d7a3f] rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
                     <div className="relative w-36 h-36 lg:w-44 lg:h-44 rounded-3xl overflow-hidden bg-white border-4 border-white shadow-2xl ring-4 ring-[#5a9c3a]/10">
                       <img
-                        src={store.logo || store.image || "/placeholder.svg"}
+                        src={store.logo || store.image || "/placeholder.png"}
                         alt={store.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.currentTarget.src = "/placeholder.svg"
+                          e.currentTarget.src = "/placeholder.png"
                         }}
                       />
                     </div>

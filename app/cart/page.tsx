@@ -37,7 +37,7 @@ import {
   MapPin,
   CheckCircle
 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import Link from "next/link"
 import { useCartStore } from "@/stores/cart-store"
 import { useAuthStore } from "@/stores/auth-store"
@@ -77,27 +77,48 @@ export default function CartPage() {
   // Initialize delivery types for new sellers (default to 'pickup' - delivery is coming soon)
   useEffect(() => {
     if (cartItems.length > 0) {
-      cartItems.forEach(item => {
+      // Only process items that don't have delivery types set
+      const itemsToProcess = cartItems.filter(item => {
         const sellerId = item.seller?.id || 'unknown'
-        if (!deliveryTypes[sellerId]) {
-          setDeliveryType(sellerId, 'pickup')
-        }
+        return !deliveryTypes[sellerId]
       })
+      
+      if (itemsToProcess.length > 0) {
+        itemsToProcess.forEach(item => {
+          const sellerId = item.seller?.id || 'unknown'
+          setDeliveryType(sellerId, 'pickup')
+        })
+      }
     }
-  }, [cartItems, deliveryTypes, setDeliveryType])
+  }, [cartItems.length, deliveryTypes, setDeliveryType])
 
   // Fetch cart when user logs in
   useEffect(() => {
     if (!authLoading && isLoggedIn) {
       fetchCart()
     }
-  }, [isLoggedIn, authLoading])
+  }, [isLoggedIn, authLoading, fetchCart])
 
   // ============================================
   // EVENT HANDLERS
   // ============================================
   
-  const handleUpdateQuantity = async (id: number, newQuantity: number) => {
+  const handleRemoveItem = useCallback(async (id: number) => {
+    setRemovingItems(prev => new Set(prev).add(id))
+    try {
+      await removeItem(id)
+    } catch (error: any) {
+      console.error('Failed to remove item:', error)
+    } finally {
+      setRemovingItems(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(id)
+        return newSet
+      })
+    }
+  }, [removeItem])
+
+  const handleUpdateQuantity = useCallback(async (id: number, newQuantity: number) => {
     if (newQuantity <= 0) {
       handleRemoveItem(id)
       return
@@ -115,24 +136,9 @@ export default function CartPage() {
         return newSet
       })
     }
-  }
+  }, [updateItemQuantity, handleRemoveItem])
 
-  const handleRemoveItem = async (id: number) => {
-    setRemovingItems(prev => new Set(prev).add(id))
-    try {
-      await removeItem(id)
-    } catch (error: any) {
-      console.error('Failed to remove item:', error)
-    } finally {
-      setRemovingItems(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(id)
-        return newSet
-      })
-    }
-  }
-
-  const handleProductClick = async (productUniqueId: string) => {
+  const handleProductClick = useCallback(async (productUniqueId: string) => {
     try {
       const response = await api.get(`/products/${productUniqueId}`)
       if (response.data.success && response.data.data) {
@@ -150,21 +156,21 @@ export default function CartPage() {
         console.error('Error fetching product:', error)
       }
     }
-  }
+  }, [])
 
-  const handleAddToCart = async (product: ApiProduct, quantity: number) => {
+  const handleAddToCart = useCallback(async (product: ApiProduct, quantity: number) => {
     try {
       await addItem(product.id, quantity)
       setIsProductModalOpen(false)
     } catch (error) {
       console.error('Error adding to cart:', error)
     }
-  }
+  }, [addItem])
 
-  const handleOrderNow = () => {
+  const handleOrderNow = useCallback(() => {
     if (cartItems.length === 0) return
     setShowOrderConfirmation(true)
-  }
+  }, [cartItems.length])
 
   const handleConfirmOrder = async () => {
     setIsPlacingOrder(true)
@@ -308,56 +314,79 @@ export default function CartPage() {
   }
 
   // ============================================
-  // DATA PROCESSING & CALCULATIONS
+  // DATA PROCESSING & CALCULATIONS (Memoized)
   // ============================================
   
-  // Group cart items by seller
-  const itemsBySeller = cartItems.reduce((acc, item) => {
-    const sellerId = item.seller?.id || 'unknown'
-    if (!acc[sellerId]) {
-      acc[sellerId] = {
-        seller: item.seller,
-        items: []
-      }
-    }
-    acc[sellerId].items.push(item)
-    return acc
-  }, {} as Record<string | number, { seller: any; items: typeof cartItems }>)
-
-  const sellerGroups = Object.values(itemsBySeller)
-
-  // All groups are pickup only (delivery coming soon)
-  const pickupGroups = sellerGroups.filter(group => {
-    const sellerId = group.seller?.id || 'unknown'
-    const deliveryType = deliveryTypes[sellerId] || 'pickup'
-    // Force pickup if somehow delivery is selected
-    if (deliveryType === 'delivery') {
-      setDeliveryType(sellerId, 'pickup')
-    }
-    return true
-  })
-
-  // Calculate subtotals
-  const calculateSubtotal = (groups: typeof sellerGroups) => {
-    return groups.reduce((sum, group) => 
-      sum + group.items.reduce((itemSum, item) => itemSum + item.price * item.quantity, 0), 0
-    )
-  }
-
-  const pickupSubtotal = calculateSubtotal(pickupGroups)
-  const grandTotal = pickupSubtotal
-
-  // Helper flags
-  const hasPickupGroups = pickupGroups.length > 0
-
-  // Get seller display name
-  const getSellerName = (seller: any) => {
+  // Get seller display name (memoized)
+  const getSellerName = useCallback((seller: any) => {
     if (seller?.full_name) return seller.full_name
     if (seller?.first_name || seller?.last_name) {
       return `${seller.first_name || ''} ${seller.last_name || ''}`.trim()
     }
     return seller?.email || 'Unknown Seller'
-  }
+  }, [])
+
+  // Group cart items by seller with pre-calculated values (memoized)
+  const sellerGroups = useMemo(() => {
+    const itemsBySeller = cartItems.reduce((acc, item) => {
+      const sellerId = item.seller?.id || 'unknown'
+      if (!acc[sellerId]) {
+        acc[sellerId] = {
+          seller: item.seller,
+          items: []
+        }
+      }
+      acc[sellerId].items.push(item)
+      return acc
+    }, {} as Record<string | number, { seller: any; items: typeof cartItems }>)
+
+    // Pre-calculate subtotals and category groupings
+    return Object.values(itemsBySeller).map(group => {
+      const groupSubtotal = group.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      
+      // Group items by category
+      const itemsByCategory = group.items.reduce((acc, item) => {
+        const categoryName = item.category?.name || 'Uncategorized'
+        if (!acc[categoryName]) {
+          acc[categoryName] = []
+        }
+        acc[categoryName].push(item)
+        return acc
+      }, {} as Record<string, typeof group.items>)
+
+      return {
+        ...group,
+        groupSubtotal,
+        itemsByCategory: Object.entries(itemsByCategory)
+      }
+    })
+  }, [cartItems])
+
+  // All groups are pickup only (delivery coming soon) - memoized
+  const pickupGroups = useMemo(() => {
+    return sellerGroups.filter(group => {
+      const sellerId = group.seller?.id || 'unknown'
+      const deliveryType = deliveryTypes[sellerId] || 'pickup'
+      // Force pickup if somehow delivery is selected
+      if (deliveryType === 'delivery') {
+        setDeliveryType(sellerId, 'pickup')
+      }
+      return true
+    })
+  }, [sellerGroups, deliveryTypes, setDeliveryType])
+
+  // Calculate subtotals (memoized)
+  const calculateSubtotal = useCallback((groups: typeof sellerGroups) => {
+    return groups.reduce((sum, group) => 
+      sum + group.items.reduce((itemSum, item) => itemSum + item.price * item.quantity, 0), 0
+    )
+  }, [])
+
+  const pickupSubtotal = useMemo(() => calculateSubtotal(pickupGroups), [pickupGroups, calculateSubtotal])
+  const grandTotal = useMemo(() => pickupSubtotal, [pickupSubtotal])
+
+  // Helper flags (memoized)
+  const hasPickupGroups = useMemo(() => pickupGroups.length > 0, [pickupGroups.length])
 
   // ============================================
   // RENDER HELPERS
@@ -374,7 +403,7 @@ export default function CartPage() {
     </div>
   )
 
-  const renderCartItem = (item: typeof cartItems[0]) => {
+  const renderCartItem = useCallback((item: typeof cartItems[0]) => {
     const isUpdating = updatingItems.has(item.id)
     const isRemoving = removingItems.has(item.id)
     const imageUrl = getImageUrl(item.image, item.name)
@@ -397,6 +426,7 @@ export default function CartPage() {
               src={imageUrl}
               alt={item.name}
               className="w-16 h-16 object-cover rounded-lg"
+              loading="lazy"
             />
           </button>
 
@@ -475,7 +505,7 @@ export default function CartPage() {
         </div>
       </div>
     )
-  }
+  }, [updatingItems, removingItems, handleProductClick, handleRemoveItem, handleUpdateQuantity])
 
   // ============================================
   // MAIN RENDER
@@ -551,17 +581,6 @@ export default function CartPage() {
                 {sellerGroups.map((group, groupIndex) => {
                   const sellerId = group.seller?.id || 'unknown'
                   const deliveryType = deliveryTypes[sellerId] || 'pickup'
-                  const groupSubtotal = group.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-                  
-                  // Group items by category
-                  const itemsByCategory = group.items.reduce((acc, item) => {
-                    const categoryName = item.category?.name || 'Uncategorized'
-                    if (!acc[categoryName]) {
-                      acc[categoryName] = []
-                    }
-                    acc[categoryName].push(item)
-                    return acc
-                  }, {} as Record<string, typeof group.items>)
                   
                   return (
                     <div key={sellerId || groupIndex} className="space-y-3">
@@ -604,13 +623,13 @@ export default function CartPage() {
                         {/* Summary Row */}
                         <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-sm">
                           <span className="text-gray-600">
-                            {group.items.length} {group.items.length === 1 ? 'item' : 'items'} • ${groupSubtotal.toFixed(2)}
+                            {group.items.length} {group.items.length === 1 ? 'item' : 'items'} • ${group.groupSubtotal.toFixed(2)}
                           </span>
                         </div>
                       </div>
                       
                       {/* Items by Category */}
-                      {Object.entries(itemsByCategory).map(([categoryName, categoryItems]) => (
+                      {group.itemsByCategory.map(([categoryName, categoryItems]) => (
                         <div key={categoryName} className="space-y-2">
                           {/* Category Header */}
                           <div className="px-2">
@@ -621,7 +640,11 @@ export default function CartPage() {
                           
                           {/* Category Items */}
                           <div className="space-y-2">
-                            {categoryItems.map((item) => renderCartItem(item))}
+                            {categoryItems.map((item) => (
+                              <div key={item.id}>
+                                {renderCartItem(item)}
+                              </div>
+                            ))}
                           </div>
                         </div>
                       ))}

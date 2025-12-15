@@ -220,7 +220,7 @@ export default function FavoritesPage() {
                       src={
                         item.main_image
                           ? getImageUrl(item.main_image)
-                          : "/placeholder.svg"
+                          : "/placeholder.png"
                       }
                       alt={item.name}
                       className="w-full h-full object-cover"

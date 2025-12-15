@@ -6,60 +6,62 @@ import { Footer } from "@/components/footer"
 import { HeroSection } from "@/components/hero-section"
 import { FreshFoodCategories } from "@/components/fresh-food-categories"
 import { ProductShowcase } from "@/components/product-showcase"
-import { DealsSection } from "@/components/deals-section"
-import { TrendingProducts } from "@/components/trending-products"
-import { FeaturedShops } from "@/components/featured-shops"
-import { ProducersSection } from "@/components/producers-section"
-import { PartnersSection } from "@/components/partners-section"
-import { EventsSection } from "@/components/events-section"
-import { SponsorsSection } from "@/components/sponsors-section"
-import { TestimonialsSection } from "@/components/testimonials-section"
-import { NewsletterSection } from "@/components/newsletter-section"
-import { StatsSection } from "@/components/stats-section"
-import { HowItWorks } from "@/components/how-it-works"
-import { HarvestingProductsSection } from "@/components/harvesting-products-section"
-import { VolunteersSection } from "@/components/volunteers-section"
-import { CouriersSection } from "@/components/couriers-section"
-import { LeaderboardSection } from "@/components/leaderboard-section"
+import dynamic from "next/dynamic"
 import { useState, useEffect } from "react"
 import { useApiFetch } from "@/hooks/use-api-fetch"
+
+// Lazy load heavy components below the fold
+const DealsSection = dynamic(() => import("@/components/deals-section").then(mod => ({ default: mod.DealsSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const TrendingProducts = dynamic(() => import("@/components/trending-products").then(mod => ({ default: mod.TrendingProducts })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const ProducersSection = dynamic(() => import("@/components/producers-section").then(mod => ({ default: mod.ProducersSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const PartnersSection = dynamic(() => import("@/components/partners-section").then(mod => ({ default: mod.PartnersSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const EventsSection = dynamic(() => import("@/components/events-section").then(mod => ({ default: mod.EventsSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const TestimonialsSection = dynamic(() => import("@/components/testimonials-section").then(mod => ({ default: mod.TestimonialsSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const NewsletterSection = dynamic(() => import("@/components/newsletter-section").then(mod => ({ default: mod.NewsletterSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const StatsSection = dynamic(() => import("@/components/stats-section").then(mod => ({ default: mod.StatsSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const HowItWorks = dynamic(() => import("@/components/how-it-works").then(mod => ({ default: mod.HowItWorks })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const VolunteersSection = dynamic(() => import("@/components/volunteers-section").then(mod => ({ default: mod.VolunteersSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const CouriersSection = dynamic(() => import("@/components/couriers-section").then(mod => ({ default: mod.CouriersSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
+const LeaderboardSection = dynamic(() => import("@/components/leaderboard-section").then(mod => ({ default: mod.LeaderboardSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-2xl" />
+})
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true) // Desktop: open by default, mobile: closed
   const [isMounted, setIsMounted] = useState(false)
   const [showLoader, setShowLoader] = useState(true)
-  const [minDisplayTimeElapsed, setMinDisplayTimeElapsed] = useState(false)
 
-  // Track when component mounts on client
+  // Track when component mounts on client and hide loader quickly
   useEffect(() => {
     setIsMounted(true)
-  }, [])
-
-  // Fetch data for sections that use API
-  const { loading: dealsLoading } = useApiFetch('/special-deals', { enabled: true })
-  const { loading: trendingLoading } = useApiFetch('/trending-products', { enabled: true })
-  const { loading: producersLoading } = useApiFetch('/stores/producers', { enabled: true })
-  const { loading: partnersLoading } = useApiFetch('/partners', { enabled: true })
-
-  // Minimum display time for loader (800ms) to ensure it's visible
-  useEffect(() => {
+    // Hide loader faster - no artificial delays
     const timer = setTimeout(() => {
-      setMinDisplayTimeElapsed(true)
-    }, 800)
-
+      setShowLoader(false)
+    }, 100)
     return () => clearTimeout(timer)
   }, [])
-
-  // Hide loader when all data is loaded AND minimum display time has elapsed
-  useEffect(() => {
-    if (isMounted && minDisplayTimeElapsed && !dealsLoading && !trendingLoading && !producersLoading && !partnersLoading) {
-      // Small delay to ensure smooth transition
-      const timer = setTimeout(() => {
-        setShowLoader(false)
-      }, 200)
-      return () => clearTimeout(timer)
-    }
-  }, [isMounted, minDisplayTimeElapsed, dealsLoading, trendingLoading, producersLoading, partnersLoading])
 
 
 

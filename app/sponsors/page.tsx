@@ -64,7 +64,7 @@ export default function SponsorsPage() {
                   <div className="group cursor-pointer h-full">
                     <div className="relative overflow-hidden rounded-2xl h-48 shadow-md hover:shadow-xl transition-all duration-300 bg-secondary border-2 border-transparent hover:border-[#5a9c3a]">
                       <img
-                        src={partner.logo || partner.image || "/placeholder.svg"}
+                        src={partner.logo || partner.image || "/placeholder.png"}
                         alt={partner.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />

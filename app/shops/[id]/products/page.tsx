@@ -102,7 +102,7 @@ export default function StoreProductsPage() {
                       alt={storeDetail.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg"
+                        e.currentTarget.src = "/placeholder.png"
                       }}
                     />
                   </div>
@@ -135,11 +135,11 @@ export default function StoreProductsPage() {
                       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
                         <div className="aspect-square rounded-t-lg overflow-hidden bg-secondary">
                           <img
-                            src={product.image || "/placeholder.svg"}
+                            src={product.image || "/placeholder.png"}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                             onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg"
+                              e.currentTarget.src = "/placeholder.png"
                             }}
                           />
                         </div>

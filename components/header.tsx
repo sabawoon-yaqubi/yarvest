@@ -4,7 +4,7 @@ import { Menu, Search, ShoppingCart, MapPin, ChevronDown, User, LogOut, Settings
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { AuthModal } from "@/components/auth-modal"
 import { AddressModal } from "@/components/address-modal"
@@ -48,33 +48,8 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
-  // Load addresses from store
-  useEffect(() => {
-    if (isLoggedIn && user) {
-      fetchAddresses()
-    } else {
-      loadLocalAddresses()
-    }
-  }, [isLoggedIn, user])
-
-  // Load cart when user logs in
-  useEffect(() => {
-    if (isLoggedIn) {
-      fetchCart()
-    }
-  }, [isLoggedIn, fetchCart])
-
-  // Update delivery address display when active address changes
-  useEffect(() => {
-    if (activeAddress) {
-      const formatted = formatAddress(activeAddress)
-      setDeliveryAddress(formatted)
-    } else {
-      setDeliveryAddress("Add your address")
-    }
-  }, [activeAddress])
-
-  const formatAddress = (address: any) => {
+  // Memoize formatAddress function
+  const formatAddress = useCallback((address: any) => {
     if (!address) return "Add your address"
     const parts = [
       address.street_address,
@@ -82,36 +57,67 @@ export function Header({ toggleSidebar }: HeaderProps) {
       address.state,
     ].filter(Boolean)
     return parts.join(", ") || "Add your address"
-  }
+  }, [])
 
-  const handleLocationClick = () => {
-    // Allow both logged-in and non-logged-in users to select address
-    setAddressModalOpen(true)
-  }
-
-  const handleAddressSuccess = () => {
+  // Load addresses from store (optimized to only run when needed)
+  useEffect(() => {
     if (isLoggedIn && user) {
       fetchAddresses()
     } else {
       loadLocalAddresses()
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, user?.id]) // Only depend on user.id instead of entire user object
 
-  const handleLogout = async () => {
+  // Load cart when user logs in (optimized)
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchCart()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]) // Removed fetchCart from dependencies to prevent unnecessary calls
+
+  // Update delivery address display when active address changes (memoized)
+  const deliveryAddressDisplay = useMemo(() => {
+    if (activeAddress) {
+      return formatAddress(activeAddress)
+    }
+    return "Add your address"
+  }, [activeAddress, formatAddress])
+
+  useEffect(() => {
+    setDeliveryAddress(deliveryAddressDisplay)
+  }, [deliveryAddressDisplay])
+
+  const handleLocationClick = useCallback(() => {
+    // Allow both logged-in and non-logged-in users to select address
+    setAddressModalOpen(true)
+  }, [])
+
+  const handleAddressSuccess = useCallback(() => {
+    if (isLoggedIn && user) {
+      fetchAddresses()
+    } else {
+      loadLocalAddresses()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, user?.id]) // Store functions are stable, don't need to be in deps
+
+  const handleLogout = useCallback(async () => {
     setLogoutDialogOpen(false)
     // Redirect immediately to home
     router.push("/")
     router.refresh()
     // Then logout in background
     await logout()
-  }
+  }, [router, logout])
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
       setMobileSearchOpen(false)
     }
-  }
+  }, [searchQuery, router])
 
   return (
     <>

@@ -45,12 +45,8 @@ export function useApiFetch<T>(
       setLoading(true)
       setError(null)
       
-      // Start the API call and a minimum delay in parallel
-      const [response] = await Promise.all([
-        api.get<ApiResponse<T>>(url),
-        // Minimum 1 second delay to show skeleton - makes loading state more visible
-        new Promise(resolve => setTimeout(resolve, 1000))
-      ])
+      // Fetch data without artificial delay for better performance
+      const response = await api.get<ApiResponse<T>>(url)
       
       if (response.data.success && response.data.data) {
         setData(response.data.data)

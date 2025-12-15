@@ -1,16 +1,16 @@
 "use client"
 
-import { Card } from "@/components/ui/card"
+import { memo } from "react"
 
 interface CartItemSkeletonProps {
   count?: number
 }
 
-export function CartItemSkeleton({ count = 3 }: CartItemSkeletonProps) {
+export const CartItemSkeleton = memo(function CartItemSkeleton({ count = 3 }: CartItemSkeletonProps) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <Card
+        <div
           key={i}
           className="p-6 rounded-3xl border-2 border-gray-100 animate-pulse bg-white"
         >
@@ -44,11 +44,11 @@ export function CartItemSkeleton({ count = 3 }: CartItemSkeletonProps) {
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       ))}
     </>
   )
-}
+})
 
 
 

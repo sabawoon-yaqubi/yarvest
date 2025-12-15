@@ -144,7 +144,7 @@ export default function EventDetailPage() {
               {/* Event Image */}
               <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg">
                 <img
-                  src={event.image || "/placeholder.svg"}
+                  src={event.image || "/placeholder.png"}
                   alt={event.name}
                   className="w-full h-[450px] object-cover"
                 />

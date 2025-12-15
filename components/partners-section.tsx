@@ -59,7 +59,7 @@ export function PartnersSection() {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
-                    target.src = "/placeholder.svg"
+                    target.src = "/placeholder.png"
                   }}
                 />
                 {partner.partener_type && (

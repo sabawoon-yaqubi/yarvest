@@ -308,7 +308,7 @@ export default function ProductDetailPage() {
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
-                    target.src = "/placeholder.svg"
+                    target.src = "/placeholder.png"
                   }}
                 />
               </div>

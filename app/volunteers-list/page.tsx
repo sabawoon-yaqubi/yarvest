@@ -115,14 +115,14 @@ export default function VolunteersListPage() {
                       <div className="p-6 flex flex-col h-full">
                         <div className="flex items-start gap-4 mb-4">
                           <div className="w-16 h-16 bg-[#5a9c3a]/10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-gray-100 group-hover:border-[#5a9c3a]/30 transition-colors">
-                            {imageUrl && imageUrl !== "/placeholder.svg" ? (
+                            {imageUrl && imageUrl !== "/placeholder.png" ? (
                               <img
                                 src={imageUrl}
                                 alt={volunteer.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement
-                                  target.src = "/placeholder.svg"
+                                  target.src = "/placeholder.png"
                                 }}
                               />
                             ) : (

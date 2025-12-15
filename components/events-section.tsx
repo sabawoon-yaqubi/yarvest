@@ -35,7 +35,7 @@ export function EventsSection() {
             >
               <div className="relative group overflow-hidden bg-secondary h-52">
                 <img
-                  src={event.image || "/placeholder.svg"}
+                  src={event.image || "/placeholder.png"}
                   alt={event.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
