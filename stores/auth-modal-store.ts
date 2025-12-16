@@ -23,3 +23,4 @@ export const useAuthModalStore = create<AuthModalState>((set) => ({
     set({ mode })
   },
 }))
+
