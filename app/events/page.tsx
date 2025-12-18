@@ -82,45 +82,41 @@ export default function EventsPage() {
                 return (
                   <div
                     key={event.id}
-                    className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-2xl border border-gray-200 bg-white flex flex-col h-full group"
+                    className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] flex flex-col bg-card border border-border rounded-2xl"
                   >
-                    <div className="relative group overflow-hidden bg-gray-100 h-64">
-                      <img
-                        src={getImageUrl(event.image, event.title)}
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute top-4 left-4 bg-[#5a9c3a] text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase shadow-lg">
+                    <div className="relative group overflow-hidden bg-secondary h-52">
+                      <div className="w-full h-full flex items-center justify-center bg-white">
+                        <img
+                          src={getImageUrl(event.image, event.title)}
+                          alt={event.title}
+                          className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+                      <div className="absolute top-3 left-3 bg-[#5a9c3a] text-white px-3 py-1 rounded-full text-xs font-bold uppercase">
                         {event.category}
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-                    <div className="p-6 flex flex-col flex-1">
-                      <Link href={`/events/${event.unique_id || event.id}`} className="hover:underline focus:outline-none">
-                        <h3 className="font-bold text-xl text-gray-900 mb-3 leading-tight line-clamp-2 cursor-pointer">
-                          {event.title}
-                        </h3>
-                      </Link>
-                      <p className="text-sm text-gray-600 mb-6 line-clamp-2 leading-relaxed">{event.description}</p>
+                    <div className="p-5 flex flex-col flex-1">
+                      <h3 className="font-bold text-lg text-foreground mb-4 leading-snug">{event.title}</h3>
 
-                      <div className="space-y-3 mb-6 pb-6 border-b border-gray-200 flex-1">
-                        <div className="flex items-center gap-3 text-gray-700">
+                      <div className="space-y-2 mb-5 text-sm text-muted-foreground flex-1">
+                        <div className="flex items-center gap-3">
                           <Calendar className="w-4 h-4 text-[#5a9c3a] flex-shrink-0" />
-                          <span className="text-sm font-medium">{event.date}</span>
+                          <span className="font-medium">{event.date}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-gray-700">
+                        <div className="flex items-center gap-3">
                           <MapPin className="w-4 h-4 text-[#5a9c3a] flex-shrink-0" />
-                          <span className="text-sm font-medium line-clamp-1">{event.location}</span>
+                          <span className="font-medium">{event.location}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-gray-700">
+                        {/* <div className="flex items-center gap-3">
                           <Users className="w-4 h-4 text-[#5a9c3a] flex-shrink-0" />
-                          <span className="text-sm font-medium">{event.attendees} attending</span>
-                        </div>
+                          <span className="font-medium">{event.attendees} attending</span>
+                        </div> */}
                       </div>
 
-                      <Link href={`/events/${event.unique_id || event.id}`} className="w-full">
-                        <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl mt-auto h-11 transition-all shadow-md hover:shadow-lg">
-                          View Details
+                      <Link href={`/events/${event.unique_id || event.id}`} className="mt-auto">
+                        <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl transition-all h-10">
+                          Learn More
                         </Button>
                       </Link>
                     </div>

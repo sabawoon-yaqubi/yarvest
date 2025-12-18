@@ -86,7 +86,7 @@ export default function ProductDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const { items, updateItemQuantity, removeItem } = useCartStore()
   const { handleAddToCart } = useCartHandler()
-  const { isLoggedIn } = useAuthStore()
+  const { isLoggedIn, user } = useAuthStore()
   const { toggleItem, isFavorite: isFavoriteInStore, fetchProductIds } = useWishlistStore()
 
   // Fetch product details
@@ -173,6 +173,9 @@ export default function ProductDetailPage() {
   const mainImageUrl = product ? getImageUrl(allImages[selectedImageIndex] || product.main_image, product.name) : ''
   const inStock = product ? product.stock > 0 : false
 
+  // Check if this is the seller's own product
+  const isOwnProduct = isLoggedIn && user && product?.seller && product.seller.id === user.id
+
   // Check if product is in cart
   const cartItem = items.find(item => item.product_id === product?.id)
   const cartQuantity = cartItem?.quantity || 0
@@ -209,9 +212,9 @@ export default function ProductDetailPage() {
   }
 
   const handleAddToCartClick = () => {
-    if (inStock && apiProduct) {
-      handleAddToCart(apiProduct, quantity)
-    }
+    // Prevent sellers from adding their own products to cart
+    if (isOwnProduct || !inStock || !apiProduct) return
+    handleAddToCart(apiProduct, quantity)
   }
 
   const handleToggleFavorite = async () => {
@@ -448,35 +451,52 @@ export default function ProductDetailPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1">
+                  <div className="flex flex-col gap-3">
+                    {isOwnProduct && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                          <p className="text-sm font-medium text-blue-900">
+                            This is your product. You cannot add it to your cart.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="h-8 w-8"
+                          disabled={isOwnProduct}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <span className="font-bold min-w-[2rem] text-center">{quantity}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                          disabled={quantity >= product.stock || isOwnProduct}
+                          className="h-8 w-8 disabled:opacity-50"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="h-8 w-8"
+                        onClick={handleAddToCartClick}
+                        disabled={!inStock || isOwnProduct}
+                        className={`flex-1 h-10 ${
+                          isOwnProduct 
+                            ? 'bg-blue-500/80 hover:bg-blue-500/80 text-white cursor-not-allowed' 
+                            : 'bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white'
+                        }`}
                       >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <span className="font-bold min-w-[2rem] text-center">{quantity}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                        disabled={quantity >= product.stock}
-                        className="h-8 w-8 disabled:opacity-50"
-                      >
-                        <Plus className="w-4 h-4" />
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        {isOwnProduct ? 'Your Product' : inStock ? 'Add to Cart' : 'Out of Stock'}
                       </Button>
                     </div>
-                    <Button
-                      onClick={handleAddToCartClick}
-                      disabled={!inStock}
-                      className="flex-1 bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white h-10"
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      Add to Cart
-                    </Button>
                   </div>
                 )}
                 <Button

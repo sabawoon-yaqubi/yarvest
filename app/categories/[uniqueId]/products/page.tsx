@@ -3,21 +3,19 @@
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
-import { ProductCard } from "@/components/product-card"
+import { ApiProductCard, ApiProduct } from "@/components/api-product-card"
 import { Button } from "@/components/ui/button"
 import { Package, ArrowLeft } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { transformProducts, type TransformedProduct } from "@/lib/product-api"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { CategoryDetailsSkeleton } from "@/components/category-details-skeleton"
 import { ProductFilters } from "@/components/product-filters"
 import { ProductSearchSort } from "@/components/product-search-sort"
 import { ProductViewControls } from "@/components/product-view-controls"
 import { CategoryHeader } from "@/components/category-header"
-
-// Use TransformedProduct from product-api.ts
-type Product = TransformedProduct
+import { useCartHandler } from "@/hooks/use-cart-handler"
+import { calculateProductPrices } from "@/lib/product-utils"
 
 interface Category {
   id: number
@@ -29,7 +27,7 @@ interface Category {
 
 interface CategoryProductsResponse {
   category: Category
-  products: any[]
+  products: ApiProduct[]
   count: number
 }
 
@@ -46,6 +44,7 @@ export default function CategoryProductsPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000])
   const [sortBy, setSortBy] = useState("featured")
   const [isMounted, setIsMounted] = useState(false)
+  const { handleAddToCart } = useCartHandler()
 
   // Track when component mounts on client
   useEffect(() => {
@@ -60,15 +59,10 @@ export default function CategoryProductsPage() {
 
   // Extract category and products from response
   const category = responseData?.category || null
-  const rawProducts = responseData?.products || []
+  const products = responseData?.products || []
   
   // Use loading state - show skeleton when loading or not mounted yet
   const isLoading = loading || !isMounted
-
-  // Transform products using the API utility function
-  const products = useMemo(() => {
-    return transformProducts(rawProducts)
-  }, [rawProducts])
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
@@ -84,14 +78,11 @@ export default function CategoryProductsPage() {
         // Search filter
         const matchesSearch = !hasSearchQuery || 
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.producer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.code?.toLowerCase().includes(searchQuery.toLowerCase())
+          product.seller?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.sku?.toLowerCase().includes(searchQuery.toLowerCase())
         
-        // Price filter - handle edge cases
-        let price = typeof product.price === "number" ? product.price : parseFloat(product.price.toString())
-        if (isNaN(price) || price < 0) {
-          price = 0
-        }
+        // Price filter - use calculateProductPrices to get final price
+        const { price } = calculateProductPrices(product)
         const matchesPrice = price >= priceRange[0] && price <= priceRange[1]
         
         return matchesSearch && matchesPrice
@@ -101,33 +92,26 @@ export default function CategoryProductsPage() {
     // Sort products
     return filtered.sort((a, b) => {
       if (sortBy === "price-low") {
-        const priceA = typeof a.price === "number" ? a.price : parseFloat(a.price.toString()) || 0
-        const priceB = typeof b.price === "number" ? b.price : parseFloat(b.price.toString()) || 0
+        const priceA = calculateProductPrices(a).price
+        const priceB = calculateProductPrices(b).price
         return priceA - priceB
       }
       if (sortBy === "price-high") {
-        const priceA = typeof a.price === "number" ? a.price : parseFloat(a.price.toString()) || 0
-        const priceB = typeof b.price === "number" ? b.price : parseFloat(b.price.toString()) || 0
+        const priceA = calculateProductPrices(a).price
+        const priceB = calculateProductPrices(b).price
         return priceB - priceA
       }
       if (sortBy === "rating") {
-        return (b.rating || 0) - (a.rating || 0)
+        const ratingA = a.reviews?.average_rating || 0
+        const ratingB = b.reviews?.average_rating || 0
+        return ratingB - ratingA
       }
       return 0
     })
   }, [products, searchQuery, priceRange, sortBy])
 
-  const toggleFavorite = (id: number) => {
-    setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]))
-  }
-
-  const handleProductClick = (id: number) => {
-    router.push(`/products/${id}`)
-  }
-
-  const handleAddToCart = (id: number) => {
-    // Add to cart logic here
-    console.log("Add to cart:", id)
+  const toggleFavorite = (productId: number) => {
+    setFavorites((prev) => (prev.includes(productId) ? prev.filter((fav) => fav !== productId) : [...prev, productId]))
   }
 
   // Auto-scroll to top when products load
@@ -273,23 +257,12 @@ export default function CategoryProductsPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredProducts.map((product) => (
-                    <ProductCard
+                    <ApiProductCard
                       key={product.id}
-                      id={product.id}
-                      name={product.name}
-                      price={product.price}
-                      unit={product.unit}
-                      code={product.code || ""}
-                      image={product.image || null}
-                      producer={product.producer || "Unknown Producer"}
-                      rating={product.rating || 0}
-                      reviews={product.reviews || 0}
-                      badge={product.badge}
-                      organic={product.organic}
-                      isFavorite={favorites.includes(product.id)}
-                      onToggleFavorite={toggleFavorite}
+                      product={product}
                       onAddToCart={handleAddToCart}
-                      onClick={handleProductClick}
+                      onToggleFavorite={toggleFavorite}
+                      isFavorite={favorites.includes(product.id)}
                     />
                   ))}
                 </div>

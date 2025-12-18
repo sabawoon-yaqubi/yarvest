@@ -7,8 +7,9 @@ import "leaflet/dist/leaflet.css"
 import "leaflet.heat"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Star, MapPin, CheckCircle, Package } from "lucide-react"
+import { Star, MapPin, CheckCircle, Package, ShoppingCart, Plus } from "lucide-react"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 // Add custom styles for popups and map container
 if (typeof window !== "undefined") {
@@ -125,16 +126,23 @@ if (typeof window !== "undefined") {
       color: white !important;
       border-color: #5a9c3a !important;
     }
-    /* Ensure popup appears above top bar */
+    /* Ensure popup appears above top bar but below header */
     .leaflet-popup {
-      z-index: 1000 !important;
+      z-index: 999 !important;
     }
     .leaflet-popup-pane {
-      z-index: 1000 !important;
+      z-index: 999 !important;
     }
     /* Adjust popup positioning to avoid top bar */
     .leaflet-popup-tip-container {
-      z-index: 1001 !important;
+      z-index: 1000 !important;
+    }
+    /* Ensure map controls don't cover header */
+    .leaflet-top {
+      z-index: 100 !important;
+    }
+    .leaflet-bottom {
+      z-index: 100 !important;
     }
     /* Ensure popup content is clickable */
     .custom-popup .leaflet-popup-content-wrapper {
@@ -309,11 +317,14 @@ interface Location {
   products?: number
   productsList?: Array<{
     id: number
+    unique_id?: string
     name: string
     price: number
     image?: string
     link?: string
+    product?: any // Full product object for cart functionality
   }>
+  onAddToCart?: (product: any, quantity?: number) => void
   image?: string
   productImage?: string // Product image for map pin
   link?: string
@@ -326,6 +337,7 @@ interface MapViewProps {
   zoom?: number
   showHeatMap?: boolean
   title?: string
+  onAddToCart?: (product: any, quantity?: number) => void
 }
 
 // Heat map layer component - dynamically import useMap to avoid SSR issues
@@ -420,7 +432,7 @@ const HeatMapLayer = dynamic(
   { ssr: false }
 )
 
-export function MapView({ locations, center = [39.8283, -98.5795], zoom = 4, showHeatMap = true, title }: MapViewProps) {
+export function MapView({ locations, center = [39.8283, -98.5795], zoom = 4, showHeatMap = true, title, onAddToCart }: MapViewProps) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -553,13 +565,13 @@ export function MapView({ locations, center = [39.8283, -98.5795], zoom = 4, sho
               >
                 <Popup className="custom-popup" maxWidth={320}>
                   <div className="p-0 min-w-[280px]">
-                    {/* Header with image */}
+                    {/* Header with seller image (smaller) */}
                     <div className="relative">
-                      {location.productImage && (
-                        <div className="w-full h-32 overflow-hidden bg-gradient-to-br from-[#5a9c3a]/20 to-[#0d7a3f]/20">
+                      {location.image && (
+                        <div className="w-full h-20 overflow-hidden bg-gradient-to-br from-[#5a9c3a]/20 to-[#0d7a3f]/20">
                           <img
-                            src={location.productImage}
-                            alt={location.name || 'Product image'}
+                            src={location.image}
+                            alt={location.name || 'Seller image'}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement
@@ -568,11 +580,11 @@ export function MapView({ locations, center = [39.8283, -98.5795], zoom = 4, sho
                           />
                         </div>
                       )}
-                      {location.image && !location.productImage && (
-                        <div className="w-full h-24 overflow-hidden bg-gradient-to-br from-[#5a9c3a]/20 to-[#0d7a3f]/20">
+                      {!location.image && location.productImage && (
+                        <div className="w-full h-20 overflow-hidden bg-gradient-to-br from-[#5a9c3a]/20 to-[#0d7a3f]/20">
                           <img
-                            src={location.image}
-                            alt={location.name || 'Seller image'}
+                            src={location.productImage}
+                            alt={location.name || 'Product image'}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement
@@ -611,15 +623,15 @@ export function MapView({ locations, center = [39.8283, -98.5795], zoom = 4, sho
                       
                       {/* Rating and Products Count */}
                       <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-                        {location.rating && (
-                          <div className="flex items-center gap-1.5">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="font-bold text-gray-900 text-sm">{location.rating.toFixed(1)}</span>
-                            {location.reviews && (
-                              <span className="text-xs text-gray-500">({location.reviews})</span>
-                            )}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-bold text-gray-900 text-sm">
+                            {(location.rating || 0).toFixed(1)} ★
+                          </span>
+                          {location.reviews && location.reviews > 0 && (
+                            <span className="text-xs text-gray-500">({location.reviews})</span>
+                          )}
+                        </div>
                         {location.products && (
                           <div className="flex items-center gap-1.5 text-sm text-gray-600">
                             <Package className="w-4 h-4 text-[#5a9c3a]" />
@@ -640,33 +652,52 @@ export function MapView({ locations, center = [39.8283, -98.5795], zoom = 4, sho
                         <div className="mt-3 pt-3 border-t border-gray-200">
                           <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide flex items-center gap-1">
                             <Package className="w-3 h-3" />
-                            Featured Products:
+                            Products ({location.productsList.length}):
                           </p>
-                          <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                          <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
                             {location.productsList.slice(0, 5).map((product) => (
-                              <Link
+                              <div
                                 key={product.id}
-                                href={product.link || '#'}
                                 className="flex items-center gap-2 p-2 hover:bg-[#5a9c3a]/5 rounded-lg transition-all group border border-transparent hover:border-[#5a9c3a]/20"
                               >
-                                {product.image && (
-                                  <img
-                                    src={product.image}
-                                    alt={product.name || 'Product'}
-                                    className="w-12 h-12 rounded-lg object-cover shadow-sm group-hover:shadow-md transition-shadow"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement
-                                      target.style.display = 'none'
+                                <Link
+                                  href={product.link || '#'}
+                                  className="flex items-center gap-2 flex-1 min-w-0"
+                                >
+                                  {product.image && (
+                                    <img
+                                      src={product.image}
+                                      alt={product.name || 'Product'}
+                                      className="w-12 h-12 rounded-lg object-cover shadow-sm group-hover:shadow-md transition-shadow flex-shrink-0"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement
+                                        target.style.display = 'none'
+                                      }}
+                                    />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium text-gray-900 group-hover:text-[#5a9c3a] truncate transition-colors">
+                                      {product.name}
+                                    </p>
+                                    <p className="text-xs text-[#5a9c3a] font-bold">${product.price.toFixed(2)}</p>
+                                  </div>
+                                </Link>
+                                {onAddToCart && product.product && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      onAddToCart(product.product, 1)
                                     }}
-                                  />
+                                    className="h-8 w-8 p-0 hover:bg-[#5a9c3a] hover:text-white flex-shrink-0 transition-all duration-200"
+                                    title="Add to cart"
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                  </Button>
                                 )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium text-gray-900 group-hover:text-[#5a9c3a] truncate transition-colors">
-                                    {product.name}
-                                  </p>
-                                  <p className="text-xs text-[#5a9c3a] font-bold">${product.price.toFixed(2)}</p>
-                                </div>
-                              </Link>
+                              </div>
                             ))}
                             {location.productsList.length > 5 && (
                               <p className="text-xs text-gray-500 text-center pt-1 font-medium">
@@ -680,8 +711,7 @@ export function MapView({ locations, center = [39.8283, -98.5795], zoom = 4, sho
                       {location.link && (
                         <Link
                           href={location.link}
-                          className="mt-4 w-full text-center text-sm font-semibold bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] px-4 py-2.5 rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                          style={{ color: 'white' }}
+                          className="mt-4 w-full text-center text-sm font-semibold bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] px-4 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-white hover:scale-[1.02] active:scale-[0.98]"
                         >
                           View Seller Profile
                           <span>→</span>

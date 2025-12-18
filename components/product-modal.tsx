@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Heart, ShoppingCart, Truck, Shield, Minus, Plus, X, Package, User, Tag, Star, CheckCircle, Trash2 } from "lucide-react"
+import { Heart, ShoppingCart, Truck, Shield, Minus, Plus, Ban, Package, User, Tag, Star, CheckCircle, Trash2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { getImageUrl } from "@/lib/utils"
 import { calculateProductPrices } from "@/lib/product-utils"
@@ -13,6 +13,7 @@ import { ApiProductCard } from "@/components/api-product-card"
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 import api from "@/lib/axios"
 import { useCartStore } from "@/stores/cart-store"
+import { useAuthStore } from "@/stores/auth-store"
 
 // Re-export types for convenience
 export type { ApiProduct, ProductModalProps } from "@/types/product"
@@ -43,6 +44,7 @@ export function ProductModal({
   const [imgSrc, setImgSrc] = useState("/placeholder.png")
   const [fullProductData, setFullProductData] = useState<ApiProduct | null>(product)
   const { items, removeItem } = useCartStore()
+  const { user, isLoggedIn } = useAuthStore()
   const fetchedProductIdRef = useRef<string | null>(null)
   
   // Fetch full product details when modal opens
@@ -100,6 +102,16 @@ export function ProductModal({
   
   // Use full product data if available, otherwise use product prop
   const displayProduct = fullProductData || product
+  
+  // Check if this is the seller's own product
+  const isOwnProduct = Boolean(
+    isLoggedIn && 
+    user && 
+    displayProduct?.seller && 
+    displayProduct.seller.id && 
+    user.id && 
+    String(displayProduct.seller.id) === String(user.id)
+  )
   
   // Check if product is in cart
   const cartItem = items.find(item => item.product_id === displayProduct?.id)
@@ -258,6 +270,11 @@ export function ProductModal({
   }
 
   const handleAddToCart = () => {
+    // Prevent sellers from adding their own products to cart
+    if (isOwnProduct || !displayProduct) {
+      console.log('Cannot add own product to cart')
+      return
+    }
     onAddToCart?.(displayProduct, quantity)
   }
 
@@ -389,34 +406,48 @@ export function ProductModal({
               </div>
 
               {/* Quantity Selector */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1 w-fit">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="h-8 w-8 rounded-md hover:bg-white"
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <span className="w-12 text-center font-semibold">{quantity}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setQuantity(Math.min(displayProduct.stock, quantity + 1))}
-                    className="h-8 w-8 rounded-md hover:bg-white"
-                    disabled={quantity >= displayProduct.stock}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
+              {!isOwnProduct && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                  <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1 w-fit">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="h-8 w-8 rounded-md hover:bg-white"
+                      disabled={quantity <= 1}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <span className="w-12 text-center font-semibold">{quantity}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setQuantity(Math.min(displayProduct.stock, quantity + 1))}
+                      className="h-8 w-8 rounded-md hover:bg-white"
+                      disabled={quantity >= displayProduct.stock}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Own Product Notice */}
+              {isOwnProduct && (
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    <p className="text-sm font-medium text-blue-900">
+                      This is your product. You cannot add it to your cart.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">
-                {isInCart ? (
+                {isInCart && !isOwnProduct ? (
                   <Button
                     onClick={handleRemoveFromCart}
                     className="flex-1 gap-2 h-12 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold"
@@ -426,12 +457,27 @@ export function ProductModal({
                   </Button>
                 ) : (
                   <Button
-                    onClick={handleAddToCart}
-                    disabled={!inStock}
-                    className="flex-1 gap-2 h-12 bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white rounded-lg font-semibold"
+                    onClick={(e) => {
+                      if (isOwnProduct) {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        return
+                      }
+                      handleAddToCart()
+                    }}
+                    disabled={!inStock || isOwnProduct}
+                    className={`flex-1 gap-2 h-12 rounded-lg font-semibold transition-all duration-200 ${
+                      isOwnProduct
+                        ? 'bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed shadow-none hover:bg-gray-100 pointer-events-none'
+                        : 'bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white shadow-md hover:shadow-lg'
+                    }`}
                   >
-                    <ShoppingCart className="w-5 h-5" />
-                    {inStock ? "Add to Cart" : "Out of Stock"}
+                    {isOwnProduct ? (
+                      <Ban className="w-5 h-5 text-gray-400" strokeWidth={2.5} />
+                    ) : (
+                      <ShoppingCart className="w-5 h-5" />
+                    )}
+                    {isOwnProduct ? "Your Product" : inStock ? "Add to Cart" : "Out of Stock"}
                   </Button>
                 )}
                 {onToggleFavorite && (

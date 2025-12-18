@@ -19,10 +19,26 @@ import { transformProducts, transformProduct, transformProductDetails, type Tran
 import { ProducerCardSkeleton } from "@/components/producer-card-skeleton"
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 import { ApiDataFetcher } from "@/components/api-data-fetcher"
+import { Location } from "@/types/producer"
 
 interface SellersResponse {
   sellers?: any[]
   data?: any[]
+}
+
+// Helper function to format location
+const formatLocation = (location: string | Location | null | undefined): string => {
+  if (!location) return 'Location not available'
+  if (typeof location === 'string') {
+    return location
+  }
+  // Handle location object
+  if (location.full_location) {
+    return location.full_location
+  }
+  // Build location from parts
+  const parts = [location.city, location.state, location.country].filter(Boolean)
+  return parts.length > 0 ? parts.join(', ') : 'Location not available'
 }
 
 export default function ProducersPage() {
@@ -226,104 +242,61 @@ export default function ProducersPage() {
               {/* Success state */}
               {!allProducersLoading && !allProducersError && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredProducers.map((producer) => {
                       const producerReviewData = producersWithReviews.find(p => p.id === producer.id)
                       return (
-                        <div
-                          key={producer.id}
-                          className="overflow-hidden hover:shadow-2xl transition-all duration-500 rounded-2xl border-2 border-gray-100 bg-white flex flex-col h-full group cursor-pointer transform hover:-translate-y-2"
+                        <Link 
+                          key={producer.id} 
+                          href={producer.unique_id ? `/producers/${producer.unique_id}` : `/producers/${producer.id}`}
                         >
-                          {/* Image Section */}
-                          <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 h-56">
-                            <img
-                              src={producer.image || "/placeholder.png"}
-                              alt={producer.name}
-                              className="w-full h-full object-contain bg-white group-hover:scale-105 transition-transform duration-500"
-                              style={{ display: "block" }}
-                              onError={(e) => {
-                                e.currentTarget.src = "/placeholder.png"
-                              }}
-                            />
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            
-                            
-                            {/* Rating Badge */}
-                            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                              <span className="font-bold text-gray-900 text-sm">{producer.rating || 0}</span>
+                          <div className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] flex flex-col bg-card border border-border rounded-2xl cursor-pointer h-full">
+                            <div className="relative group overflow-hidden bg-secondary h-48">
+                              <div className="absolute inset-0 flex items-center justify-center bg-white">
+                                <img
+                                  src={producer.image || "/placeholder.png"}
+                                  alt={producer.name}
+                                  className="max-h-full max-w-full w-auto h-auto object-contain group-hover:scale-110 transition-transform duration-300"
+                                  style={{ aspectRatio: '1/1' }}
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/placeholder.png"
+                                  }}
+                                />
+                              </div>
                             </div>
-                          </div>
-
-                          {/* Content Section */}
-                          <div className="p-6 flex flex-col flex-1">
-                            {/* Name and Specialty */}
-                            <div className="mb-3">
-                              <h3 className="font-bold text-2xl text-gray-900 mb-1 group-hover:text-[#5a9c3a] transition-colors">{producer.name || 'Producer'}</h3>
+                            <div className="p-5 flex flex-col flex-1">
+                              <h3 className="font-bold text-lg text-foreground mb-1">{producer.name || 'Producer'}</h3>
                               {producer.specialty && (
-                                <p className="text-sm font-semibold text-[#5a9c3a] uppercase tracking-wide">
-                                  {producer.specialty}
-                                </p>
+                                <p className="text-xs text-[#5a9c3a] font-semibold mb-2 uppercase tracking-wide">{producer.specialty}</p>
                               )}
-                            </div>
 
-                            {/* Description */}
-                            {producer.description && (
-                              <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{producer.description}</p>
-                            )}
-
-                            {/* Bottom Section - Fixed Position */}
-                            <div className="mt-auto pt-4 border-t border-gray-100">
-                              {/* Location */}
-                              <div className="flex items-center gap-2 text-gray-700 mb-3">
-                                <div className="p-1.5 bg-[#5a9c3a]/10 rounded-lg">
-                                  <MapPin className="w-4 h-4 text-[#5a9c3a]" />
-                                </div>
-                                <span className="text-sm font-medium">{producer.location || 'Location not available'}</span>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-4">
+                                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                                {formatLocation(producer.location)}
                               </div>
 
-                              {/* Stats Row - Reviews, Location, Item Count */}
-                              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-                                <div className="flex items-center gap-1">
-                                  {producerReviewData && producerReviewData.totalReviews > 0 ? (
-                                    <>
-                                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                      <span className="font-semibold text-sm text-gray-900">{producer.rating || 0}</span>
-                                      <span className="text-xs text-gray-500">({producerReviewData.totalReviews})</span>
-                                    </>
-                                  ) : (
-                                    <span className="text-xs text-gray-400">No reviews</span>
-                                  )}
+                              <div className="mt-auto pt-4 border-t border-border">
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-1">
+                                    {producer.rating > 0 ? (
+                                      <>
+                                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                        <span className="font-semibold text-sm text-foreground">{producer.rating}</span>
+                                      </>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground">No rating</span>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-muted-foreground font-medium">{producer.products || 0} items</span>
                                 </div>
-                                <span className="text-xs text-muted-foreground font-medium">{producer.products || 0} items</span>
-                              </div>
 
-                              {/* Action Buttons */}
-                              <div className="flex gap-2">
-                                <Link href={producer.unique_id ? `/producers/${producer.unique_id}` : `/producers/${producer.id}`} className="flex-1">
-                                  <Button 
-                                    className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl h-11"
-                                  >
-                                    <Package className="w-4 h-4 mr-2" />
-                                    View Shop
-                                  </Button>
-                                </Link>
-                                {producer.email && (
-                                  <Button 
-                                    variant="outline"
-                                    className="border-2 border-gray-200 hover:border-[#5a9c3a] hover:bg-[#5a9c3a] hover:text-white rounded-xl transition-all h-11 px-4"
-                                    onClick={() => {
-                                      window.location.href = `mailto:${producer.email}`
-                                    }}
-                                  >
-                                    <MessageSquare className="w-4 h-4" />
-                                  </Button>
-                                )}
+                                <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl transition-all h-10">
+                                  View Shop
+                                </Button>
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </Link>
                       )
                     })}
                   </div>

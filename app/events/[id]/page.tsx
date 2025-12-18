@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Calendar, MapPin, Users, ArrowLeft, CheckCircle2, User, Mail, Phone } from "lucide-react"
+import { Calendar, MapPin, Users, ArrowLeft, CheckCircle2, User, Mail, Phone, ExternalLink } from "lucide-react"
 import { useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
@@ -15,7 +15,7 @@ import { useApiFetch } from "@/hooks/use-api-fetch"
 import { BackendEvent } from "@/types/event"
 import api from "@/lib/axios"
 import { EventDetailSkeleton } from "@/components/event-detail-skeleton"
-import { getImageUrl } from "@/lib/utils"
+import { getImageUrl, formatExternalUrl } from "@/lib/utils"
 
 export default function EventDetailPage() {
   const params = useParams()
@@ -163,7 +163,7 @@ export default function EventDetailPage() {
               </div>
 
               {/* Event Info Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="p-6 bg-white border border-gray-200 hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -188,7 +188,7 @@ export default function EventDetailPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 bg-white border border-gray-200 hover:shadow-md transition-shadow">
+                {/* <Card className="p-6 bg-white border border-gray-200 hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Users className="w-7 h-7 text-purple-600" />
@@ -198,19 +198,50 @@ export default function EventDetailPage() {
                       <p className="font-semibold text-gray-900 text-base">{attendancesCount} registered</p>
                     </div>
                   </div>
-                </Card>
+                </Card> */}
               </div>
             </div>
 
-            {/* Right Column - Sign Up Form */}
+            {/* Right Column - Sign Up Form or External Link */}
             <div className="lg:col-span-1">
               <Card className="sticky top-8 bg-white border border-gray-200 shadow-lg rounded-2xl p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Join This Event</h2>
-                <p className="text-sm text-gray-600 mb-6">
-                  Register now to secure your spot at this amazing event!
-                </p>
+                {event.link ? (
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                      <ExternalLink className="w-8 h-8 text-[#5a9c3a]" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">External Event</h2>
+                    <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                      This event is hosted on an external website. Click the button below to visit the event page.
+                    </p>
+                    {(() => {
+                      const formattedLink = formatExternalUrl(event.link)
+                      return formattedLink ? (
+                        <a
+                          href={formattedLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full"
+                        >
+                          <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl h-12 text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                            <ExternalLink className="w-5 h-5" />
+                            Visit External Website
+                          </Button>
+                        </a>
+                      ) : null
+                    })()}
+                    <p className="text-xs text-gray-500 text-center mt-4 pt-2 border-t border-gray-100">
+                      You will be redirected to an external website in a new tab.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Join This Event</h2>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Register now to secure your spot at this amazing event!
+                    </p>
 
-                {signUpSuccess ? (
+                    {signUpSuccess ? (
                   <div className="py-6 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                       <CheckCircle2 className="w-10 h-10 text-green-600" />
@@ -300,6 +331,8 @@ export default function EventDetailPage() {
                       By registering, you agree to receive event updates via email.
                     </p>
                   </form>
+                    )}
+                  </>
                 )}
               </Card>
             </div>

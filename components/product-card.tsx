@@ -152,23 +152,20 @@ export function ProductCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation()
                   if (cartItem) {
                     if (isQuantityOne) {
                       // Remove item completely when quantity is 1
-                      try {
-                        await removeItem(cartItem.id)
-                      } catch (error) {
+                      // Fire and forget - cart store handles updates
+                      removeItem(cartItem.id).catch(error => {
                         console.error('Failed to remove item:', error)
-                      }
+                      })
                     } else {
-                      // Decrease quantity
-                      try {
-                        await updateItemQuantity(cartItem.id, cartQuantity - 1)
-                      } catch (error) {
+                      // Decrease quantity - Fire and forget for instant feedback
+                      updateItemQuantity(cartItem.id, cartQuantity - 1).catch(error => {
                         console.error('Failed to update quantity:', error)
-                      }
+                      })
                     }
                   }
                 }}
@@ -186,14 +183,14 @@ export function ProductCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation()
                   if (cartItem && cartQuantity < stock) {
-                    try {
-                      await updateItemQuantity(cartItem.id, cartQuantity + 1)
-                    } catch (error) {
+                    // Fire and forget - cart store handles optimistic updates
+                    // Don't await to prevent blocking rapid clicks
+                    updateItemQuantity(cartItem.id, cartQuantity + 1).catch(error => {
                       console.error('Failed to update quantity:', error)
-                    }
+                    })
                   }
                 }}
                 disabled={cartQuantity >= stock}

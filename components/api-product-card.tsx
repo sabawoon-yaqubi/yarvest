@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Star, Plus, Minus, Heart, Trash2 } from "lucide-react"
+import { Star, Plus, Minus, Heart, Trash2, Ban } from "lucide-react"
 import { getImageUrl } from "@/lib/utils"
 import { calculateProductPrices } from "@/lib/product-utils"
 import { ApiProduct, ApiProductCardProps } from "@/types/product"
@@ -27,11 +27,21 @@ export function ApiProductCard({
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const { items, updateItemQuantity, removeItem } = useCartStore()
   const { handleAddToCart } = useCartHandler()
-  const { isLoggedIn } = useAuthStore()
+  const { isLoggedIn, user } = useAuthStore()
   const { toggleItem, isFavorite: isFavoriteInStore, fetchProductIds } = useWishlistStore()
   
   // Determine if favorite: use prop if provided, otherwise use store
   const isFavorite = propIsFavorite || (isLoggedIn ? isFavoriteInStore(product.id) : false)
+  
+  // Check if this is the seller's own product
+  const isOwnProduct = Boolean(
+    isLoggedIn && 
+    user && 
+    product.seller && 
+    product.seller.id && 
+    user.id && 
+    String(product.seller.id) === String(user.id)
+  )
   
   // Fetch wishlist product IDs on mount if logged in
   useEffect(() => {
@@ -69,7 +79,8 @@ export function ApiProductCard({
 
   const handleAddToCartClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!inStock || isAddingToCart || isInCart) return
+    // Prevent sellers from adding their own products to cart
+    if (isOwnProduct || !inStock || isAddingToCart || isInCart) return
     
     setIsAddingToCart(true)
     try {
@@ -88,25 +99,25 @@ export function ApiProductCard({
     }
   }
 
-  const handleIncreaseQuantity = async (e: React.MouseEvent) => {
+  const handleIncreaseQuantity = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (cartItem && cartQuantity < product.stock) {
-      try {
-        await updateItemQuantity(cartItem.id, cartQuantity + 1)
-      } catch (error) {
+      // Fire and forget - cart store handles optimistic updates
+      // Don't await to prevent blocking rapid clicks
+      updateItemQuantity(cartItem.id, cartQuantity + 1).catch(error => {
         console.error('Failed to update quantity:', error)
-      }
+      })
     }
   }
 
-  const handleDecreaseQuantity = async (e: React.MouseEvent) => {
+  const handleDecreaseQuantity = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (cartItem && cartQuantity > 1) {
-      try {
-        await updateItemQuantity(cartItem.id, cartQuantity - 1)
-      } catch (error) {
+      // Fire and forget - cart store handles optimistic updates
+      // Don't await to prevent blocking rapid clicks
+      updateItemQuantity(cartItem.id, cartQuantity - 1).catch(error => {
         console.error('Failed to update quantity:', error)
-      }
+      })
     }
   }
 
@@ -146,12 +157,9 @@ export function ApiProductCard({
             <div className="absolute inset-0 bg-white  animate-pulse" />
           )}
           <img
-          style={{
-            background: "white",
-            }}
             src={imageUrl}
             alt={product.name}
-            className={`w-full h-full rounded-2xl object-contain p-3 transition-all duration-300 group-hover:scale-105 ${
+            className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
               isImageLoading ? "opacity-0" : "opacity-100"
             }`}
             loading="lazy"
@@ -207,7 +215,7 @@ export function ApiProductCard({
           )}
 
           {/* Add to Cart Button */}
-          {isInCart ? (
+          {isInCart && !isOwnProduct ? (
             <div 
               className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 px-2 py-1"
               onClick={(e) => e.stopPropagation()}
@@ -244,16 +252,30 @@ export function ApiProductCard({
           ) : (
             <button
               onClick={handleAddToCartClick}
-              disabled={!inStock || isAddingToCart}
-              className={`absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 z-10 ${isAddingToCart ? 'opacity-75' : ''}`}
-              aria-label="Add to cart"
+              disabled={!inStock || isAddingToCart || isOwnProduct}
+              className={`absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 z-10 ${
+                isOwnProduct 
+                  ? 'bg-gray-100 border border-gray-300 cursor-not-allowed shadow-none' 
+                  : 'bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] text-white shadow-md hover:shadow-lg hover:scale-105'
+              } ${isAddingToCart ? 'opacity-75' : ''} disabled:cursor-not-allowed disabled:hover:scale-100`}
+              aria-label={isOwnProduct ? "Your product" : "Add to cart"}
+              title={isOwnProduct ? "This is your product" : undefined}
             >
               {isAddingToCart ? (
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : isOwnProduct ? (
+                <Ban className="h-4 w-4 text-gray-400" strokeWidth={2.5} />
               ) : (
                 <Plus className="h-4 w-4" strokeWidth={2.5} />
               )}
             </button>
+          )}
+          
+          {/* Own Product Badge */}
+          {isOwnProduct && (
+            <div className="absolute top-3 left-3 z-10 bg-blue-500/95 backdrop-blur-sm text-white px-2 py-1 rounded-lg shadow-lg border border-blue-400 text-xs font-semibold">
+              Your Product
+            </div>
           )}
         </div>
 

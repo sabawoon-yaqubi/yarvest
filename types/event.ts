@@ -13,6 +13,7 @@ export interface BackendEvent {
   description?: string
   image: string | null
   event_type?: string | null
+  link?: string | null
   attendances_count?: number
   attendances?: EventAttendance[]
   created_at?: string
@@ -40,6 +41,7 @@ export interface ApiEvent {
   location: string
   description?: string
   image: string | null
+  link?: string | null
   attendees: number
   category: string
   created_at?: string
@@ -57,6 +59,7 @@ export function transformEvent(backendEvent: BackendEvent): ApiEvent {
     location: backendEvent.location,
     description: backendEvent.description,
     image: backendEvent.image,
+    link: backendEvent.link,
     attendees: backendEvent.attendances_count || 0,
     category: backendEvent.event_type || 'Event',
     created_at: backendEvent.created_at,

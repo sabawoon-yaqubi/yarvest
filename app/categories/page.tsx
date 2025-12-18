@@ -7,32 +7,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, Package, ArrowRight, Sparkles, TrendingUp } from "lucide-react"
+import { Search, ArrowRight, Sparkles, TrendingUp, Package } from "lucide-react"
 import { useState, useMemo } from "react"
 import { useApiFetch } from "@/hooks/use-api-fetch"
 import { ApiCategory } from "@/components/api-category-card"
-import { ApiProductCard, ApiProduct } from "@/components/api-product-card"
 import { getImageUrl } from "@/lib/utils"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export default function CategoriesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const router = useRouter()
 
   // Fetch categories
   const { data: categoriesData, loading: categoriesLoading, error: categoriesError } = useApiFetch<ApiCategory[]>('/categories?limit=50')
 
-  // Fetch products for selected category
-  const { data: categoryProductsData, loading: productsLoading } = useApiFetch<{ category: ApiCategory; products: ApiProduct[]; count: number }>(
-    selectedCategory ? `/categories/${selectedCategory}/products` : '',
-    { enabled: !!selectedCategory }
-  )
-
   const categories = categoriesData || []
-  const categoryProducts = categoryProductsData?.products || []
 
   // Filter categories based on search query
   const filteredCategories = useMemo(() => {
@@ -41,25 +31,9 @@ export default function CategoriesPage() {
     )
   }, [categories, searchQuery])
 
-  // Get featured products from all categories (first 4 products from each category)
-  const featuredProducts = useMemo(() => {
-    if (selectedCategory) return []
-    
-    // Group products by category and take first 4 from each
-    const productsByCategory = new Map<number, ApiProduct[]>()
-    
-    // We'll need to fetch products for each category, but for now show all products
-    // In a real implementation, you'd fetch products for each category
-    return []
-  }, [selectedCategory])
-
   const handleCategoryClick = (category: ApiCategory) => {
-    setSelectedCategory(category.unique_id)
-  }
-
-  const handleBackToCategories = () => {
-    setSelectedCategory(null)
-    setSearchQuery("")
+    // Navigate directly to products page, bypassing intermediate page
+    router.push(`/categories/${category.unique_id}/products`)
   }
 
   return (
@@ -70,20 +44,16 @@ export default function CategoriesPage() {
         <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl mx-auto w-full">
           {/* Header Section */}
           <div className="mb-8 sm:mb-12 text-center">
-            {!selectedCategory && (
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#5a9c3a] to-[#0d7a3f] rounded-3xl mb-6 shadow-lg shadow-[#5a9c3a]/20">
-                <Sparkles className="w-10 h-10 text-white" />
-              </div>
-            )}
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#5a9c3a] to-[#0d7a3f] rounded-3xl mb-6 shadow-lg shadow-[#5a9c3a]/20">
+              <Sparkles className="w-10 h-10 text-white" />
+            </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 mb-4 tracking-tight">
-              {selectedCategory ? categoryProductsData?.category?.name || 'Category' : 'Shop by Category'}
+              Shop by Category
             </h1>
             <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              {selectedCategory 
-                ? `Browse our curated collection of products in this category` 
-                : 'Discover our wide range of fresh, locally sourced products'}
+              Discover our wide range of fresh, locally sourced products
             </p>
-            {!selectedCategory && categories.length > 0 && (
+            {categories.length > 0 && (
               <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-gray-200/50">
                 <TrendingUp className="w-4 h-4 text-[#5a9c3a]" />
                 <span className="text-sm font-medium text-gray-700">
@@ -93,41 +63,25 @@ export default function CategoriesPage() {
             )}
           </div>
 
-          {/* Back Button (when viewing category products) */}
-          {selectedCategory && (
-            <div className="mb-8">
-              <Button
-                variant="ghost"
-                onClick={handleBackToCategories}
-                className="group text-[#5a9c3a] hover:text-[#0d7a3f] hover:bg-[#5a9c3a]/10 px-4 py-2 rounded-xl transition-all duration-200"
-              >
-                <ArrowRight className="w-4 h-4 mr-2 rotate-180 group-hover:-translate-x-1 transition-transform" />
-                <span className="font-medium">Back to Categories</span>
-              </Button>
-            </div>
-          )}
-
           {/* Search Bar */}
-          {!selectedCategory && (
-            <div className="mb-8 sm:mb-10 flex justify-center">
-              <div className="relative w-full max-w-3xl">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#5a9c3a]/20 to-[#0d7a3f]/20 rounded-2xl blur-xl opacity-50" />
-                <div className="relative">
-                  <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
-                  <Input
-                    type="text"
-                    placeholder="Search categories by name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-14 pr-5 py-4 h-16 text-base sm:text-lg rounded-2xl border-2 border-gray-200/80 focus:border-[#5a9c3a] focus:ring-4 focus:ring-[#5a9c3a]/10 bg-white/90 backdrop-blur-sm shadow-lg shadow-gray-200/50 hover:border-gray-300 transition-all duration-200"
-                  />
-                </div>
+          <div className="mb-8 sm:mb-10 flex justify-center">
+            <div className="relative w-full max-w-3xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#5a9c3a]/20 to-[#0d7a3f]/20 rounded-2xl blur-xl opacity-50" />
+              <div className="relative">
+                <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+                <Input
+                  type="text"
+                  placeholder="Search categories by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-14 pr-5 py-4 h-16 text-base sm:text-lg rounded-2xl border-2 border-gray-200/80 focus:border-[#5a9c3a] focus:ring-4 focus:ring-[#5a9c3a]/10 bg-white/90 backdrop-blur-sm shadow-lg shadow-gray-200/50 hover:border-gray-300 transition-all duration-200"
+                />
               </div>
             </div>
-          )}
+          </div>
 
           {/* Results Count */}
-          {searchQuery && categories.length > 0 && !selectedCategory && (
+          {searchQuery && categories.length > 0 && (
             <div className="mb-6 text-center">
               <p className="text-sm sm:text-base text-gray-600 inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-gray-200/50">
                 Showing <span className="font-bold text-[#5a9c3a]">{filteredCategories.length}</span> of <span className="font-semibold">{categories.length}</span> categories
@@ -135,88 +89,8 @@ export default function CategoriesPage() {
             </div>
           )}
 
-          {/* Category Products View */}
-          {selectedCategory ? (
-            <div>
-              {productsLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                  {[...Array(8)].map((_, i) => (
-                    <Card key={i} className="p-4 sm:p-6 animate-pulse border-0 shadow-md">
-                      <div className="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl mb-4" />
-                      <div className="h-5 bg-gray-200 rounded-lg mb-3" />
-                      <div className="h-4 bg-gray-200 rounded-lg w-2/3" />
-                    </Card>
-                  ))}
-                </div>
-              ) : categoryProducts.length > 0 ? (
-                <>
-                  <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5a9c3a] to-[#0d7a3f] flex items-center justify-center">
-                        <Package className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Total Products</p>
-                        <p className="text-xl font-bold text-gray-900">
-                          <span className="text-[#5a9c3a]">{categoryProducts.length}</span> items
-                        </p>
-                      </div>
-                    </div>
-                    <Link href={`/categories/${selectedCategory}/products`}>
-                      <Button 
-                        variant="outline" 
-                        className="text-[#5a9c3a] border-2 border-[#5a9c3a] hover:bg-[#5a9c3a] hover:text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                      >
-                        View All Products
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                    {categoryProducts.slice(0, 8).map((product) => (
-                      <ApiProductCard
-                        key={product.id}
-                        product={product}
-                      />
-                    ))}
-                  </div>
-                  {categoryProducts.length > 8 && (
-                    <div className="mt-10 text-center">
-                      <Link href={`/categories/${selectedCategory}/products`}>
-                        <Button className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white px-10 py-6 rounded-2xl text-base font-semibold shadow-lg shadow-[#5a9c3a]/20 hover:shadow-xl hover:shadow-[#5a9c3a]/30 transition-all duration-300">
-                          View All {categoryProducts.length} Products
-                          <ArrowRight className="w-5 h-5 ml-2" />
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-16 sm:py-24">
-                  <div className="flex items-center justify-center mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl shadow-inner flex items-center justify-center">
-                      <Package className="w-6 h-6 text-gray-400" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">No products found</h3>
-                  <p className="text-base text-gray-600 mb-8 max-w-md mx-auto">
-                    This category doesn't have any products yet. Check back soon!
-                  </p>
-                  <Button 
-                    onClick={handleBackToCategories} 
-                    variant="outline" 
-                    className="rounded-xl px-6 py-2.5 border-2 hover:bg-gray-50 font-medium"
-                  >
-                    <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
-                    Back to Categories
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            /* Categories Grid */
-            <>
-              {categoriesLoading ? (
+          {/* Categories Grid */}
+          {categoriesLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {[...Array(12)].map((_, i) => (
                     <Card key={i} className="p-0 animate-pulse border-0 shadow-lg overflow-hidden rounded-3xl">
@@ -300,8 +174,19 @@ export default function CategoriesPage() {
                               {category.name}
                             </h3>
                             <div className="flex items-center gap-2 text-white/90 text-sm">
-                              <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
-                              <span className="font-medium">Explore Collection</span>
+                              {category.products_count !== undefined && category.products_count > 0 ? (
+                                <>
+                                  <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+                                  <span className="font-medium">
+                                    {category.products_count} {category.products_count === 1 ? 'item' : 'items'} available
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+                                  <span className="font-medium">Explore Collection</span>
+                                </>
+                              )}
                             </div>
                           </div>
 
@@ -317,9 +202,7 @@ export default function CategoriesPage() {
                   })}
                 </div>
               )}
-            </>
-          )}
-        </div>
+          </div>
       </main>
       <Footer />
     </div>

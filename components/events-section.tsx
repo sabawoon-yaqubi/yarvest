@@ -59,10 +59,10 @@ export function EventsSection() {
                     <MapPin className="w-4 h-4 text-[#5a9c3a] flex-shrink-0" />
                     <span className="font-medium">{event.location}</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  {/* <div className="flex items-center gap-3">
                     <Users className="w-4 h-4 text-[#5a9c3a] flex-shrink-0" />
                     <span className="font-medium">{event.attendees} attending</span>
-                  </div>
+                  </div> */}
                 </div>
 
                 <Link href={`/events/${event.unique_id || event.id}`} className="mt-auto">
