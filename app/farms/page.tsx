@@ -39,9 +39,19 @@ export default function FarmsPage() {
   useEffect(() => {
     async function loadFarms() {
       try {
-        const response = await fetch("/farms_fixed.csv", { cache: "no-store" })
+        // Add timestamp to bypass cache
+        const timestamp = new Date().getTime()
+        const response = await fetch(`/farms_fixed.csv?t=${timestamp}`, { 
+          cache: "no-store",
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        })
         const csvText = await response.text()
         const parsedFarms = parseFarmsCSV(csvText)
+        console.log(`Loaded ${parsedFarms.length} farms from CSV`)
         setFarms(parsedFarms)
       } catch (error) {
         console.error("Error loading farms:", error)
