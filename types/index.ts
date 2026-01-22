@@ -50,4 +50,3 @@ export type {
   FAQCategory,
   FAQData,
 } from "./faq"
-

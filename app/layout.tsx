@@ -8,6 +8,7 @@ import { FirstTimeAddressPrompt } from "@/components/first-time-address-prompt"
 import { EmailVerificationBlocker } from "@/components/email-verification-blocker"
 import { MarkerInitializer } from "@/components/marker-initializer"
 import { AuthModalProvider } from "@/components/auth-modal-provider"
+import { ShareBanner } from "@/components/share-banner"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -144,6 +145,7 @@ export default function RootLayout({
         <FirstTimeAddressPrompt />
         <MarkerInitializer />
         <AuthModalProvider />
+        <ShareBanner />
         {children}
         <Toaster 
           position="top-right" 

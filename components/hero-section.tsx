@@ -3,12 +3,8 @@
 import { Button } from "@/components/ui/button";
 import {
   ShoppingBag,
-  ArrowRight,
-  CheckCircle,
-  Truck,
-  Leaf,
-  Users,
   Store,
+  Leaf,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -32,7 +28,7 @@ export function HeroSection() {
 
       {/* Content */}
       <div className="relative max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24 lg:py-32">
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Leaf className="w-4 h-4" />
@@ -40,20 +36,13 @@ export function HeroSection() {
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white">
-            Fresh. Local.{" "}
-            <span className="text-yellow-300 drop-shadow-lg">Delicious.</span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight text-white">
+            Share your produce & tools with your{" "}
+            <span className="text-yellow-300 drop-shadow-lg">neighbors</span>
           </h1>
 
-          {/* Description */}
-          <p className="text-lg md:text-xl text-white/95 max-w-xl mb-8 leading-relaxed">
-            Connect with local farms and neighbors. Discover fresh, locally-grown produce 
-            directly from verified farmers in your community. Support your neighbors while 
-            eating the freshest food available.
-          </p>
-
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/products">
               <Button
                 size="lg"
@@ -72,44 +61,6 @@ export function HeroSection() {
                 List Produce
               </Button>
             </Link>
-
-          </div>
-
-          {/* Features */}
-          <div className="hidden md:grid grid-cols-3 gap-6 pt-8 border-t border-white/20">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg">
-                <Truck className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-white font-semibold text-sm">
-                  Fast Delivery
-                </p>
-                <p className="text-white/70 text-xs">Same day available</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-white font-semibold text-sm">
-                  Verified Farmers
-                </p>
-                <p className="text-white/70 text-xs">100% trusted</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-white font-semibold text-sm">
-                  Community First
-                </p>
-                <p className="text-white/70 text-xs">Supporting local</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

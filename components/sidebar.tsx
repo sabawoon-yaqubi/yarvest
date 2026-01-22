@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Store, Calendar, ShoppingBag, Users, Trophy, ChevronDown, Users2, Truck, Package, Heart, Gift, HelpCircle, Newspaper, X, Leaf } from "lucide-react"
+import { Home, Store, Calendar, ShoppingBag, Users, Trophy, ChevronDown, Users2, Truck, Package, Heart, Gift, HelpCircle, Newspaper, X, Leaf, Handshake } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -15,11 +15,12 @@ const menuItems = [
   { icon: ShoppingBag, label: "Products", href: "/products" },
   { icon: Users, label: "Producers", href: "/producers" },
   { icon: ShoppingBag, label: "Harvesting Tools", href: "/harvesting-products" },
-  { icon: Store, label: "Stores", href: "/shops" },
+  { icon: Handshake, label: "Partners", href: "/partners" },
   { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
 ]
 
 const moreMenuItems = [
+  { icon: Store, label: "Stores", href: "/shops" },
   { icon: Truck, label: "Couriers", href: "/couriers-list" },
   { icon: Package, label: "Volunteers", href: "/volunteers-list" },
   { icon: Leaf, label: "Farms", href: "/farms" },
