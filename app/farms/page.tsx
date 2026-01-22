@@ -1,98 +1,131 @@
-"use client"
+"use client";
 
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
-import { Footer } from "@/components/footer"
-import { useState, useEffect, useMemo } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Filter, X, Map as MapIcon, List, Leaf, Phone, Globe, Navigation } from "lucide-react"
-import { parseFarmsCSV, getUniqueStates, getUniqueProduceTypes, type Farm } from "@/lib/farms-data"
-import dynamic from "next/dynamic"
+import { Header } from "@/components/header";
+import { Sidebar } from "@/components/sidebar";
+import { Footer } from "@/components/footer";
+import { useState, useEffect, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  MapPin,
+  Filter,
+  X,
+  Map as MapIcon,
+  List,
+  Leaf,
+  Phone,
+  Globe,
+  Navigation,
+} from "lucide-react";
+import {
+  parseFarmsCSV,
+  getUniqueStates,
+  getUniqueProduceTypes,
+  type Farm,
+} from "@/lib/farms-data";
+import dynamic from "next/dynamic";
 
 // Dynamically import map to avoid SSR issues
-const FarmsMap = dynamic(() => import("@/components/farms-map").then(mod => ({ default: mod.FarmsMap })), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-[600px] bg-gray-50 rounded-xl">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#5a9c3a] border-t-transparent mx-auto mb-4"></div>
-        <p className="text-gray-600 font-medium">Loading map...</p>
+const FarmsMap = dynamic(
+  () =>
+    import("@/components/farms-map").then((mod) => ({ default: mod.FarmsMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-[600px] bg-gray-50 rounded-xl">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#5a9c3a] border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading map...</p>
+        </div>
       </div>
-    </div>
-  )
-})
+    ),
+  }
+);
 
 export default function FarmsPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [farms, setFarms] = useState<Farm[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedState, setSelectedState] = useState<string>("")
-  const [selectedProduce, setSelectedProduce] = useState<string>("")
-  const [viewMode, setViewMode] = useState<"list" | "map">("list")
-  const [showFilters, setShowFilters] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [farms, setFarms] = useState<Farm[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedProduce, setSelectedProduce] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Load farms data
   useEffect(() => {
     async function loadFarms() {
       try {
-        const response = await fetch("/farms_fixed.csv", { cache: "no-store" })
-        const csvText = await response.text()
-        const parsedFarms = parseFarmsCSV(csvText)
-        setFarms(parsedFarms)
+        // Add timestamp to bypass cache
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/farms_fixed.csv?t=${timestamp}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+        });
+        const csvText = await response.text();
+        const parsedFarms = parseFarmsCSV(csvText);
+        console.log(`Loaded ${parsedFarms.length} farms from CSV`);
+        setFarms(parsedFarms);
       } catch (error) {
-        console.error("Error loading farms:", error)
+        console.error("Error loading farms:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    loadFarms()
-  }, [])
+    loadFarms();
+  }, []);
 
   // Get unique states and produce types
-  const states = useMemo(() => getUniqueStates(farms), [farms])
-  const produceTypes = useMemo(() => getUniqueProduceTypes(farms), [farms])
+  const states = useMemo(() => getUniqueStates(farms), [farms]);
+  const produceTypes = useMemo(() => getUniqueProduceTypes(farms), [farms]);
 
   // Filter farms
   const filteredFarms = useMemo(() => {
-    return farms.filter(farm => {
+    return farms.filter((farm) => {
       // Search filter
       if (searchQuery) {
-        const query = searchQuery.toLowerCase()
+        const query = searchQuery.toLowerCase();
         const matchesSearch =
           farm.name.toLowerCase().includes(query) ||
           farm.city.toLowerCase().includes(query) ||
           farm.state.toLowerCase().includes(query) ||
           farm.produce.toLowerCase().includes(query) ||
-          farm.full_address.toLowerCase().includes(query)
-        
-        if (!matchesSearch) return false
+          farm.full_address.toLowerCase().includes(query);
+
+        if (!matchesSearch) return false;
       }
 
       // State filter
       if (selectedState && farm.state !== selectedState) {
-        return false
+        return false;
       }
 
       // Produce filter
-      if (selectedProduce && !farm.produce.toLowerCase().includes(selectedProduce.toLowerCase())) {
-        return false
+      if (
+        selectedProduce &&
+        !farm.produce.toLowerCase().includes(selectedProduce.toLowerCase())
+      ) {
+        return false;
       }
 
-      return true
-    })
-  }, [farms, searchQuery, selectedState, selectedProduce])
+      return true;
+    });
+  }, [farms, searchQuery, selectedState, selectedProduce]);
 
   const clearFilters = () => {
-    setSearchQuery("")
-    setSelectedState("")
-    setSelectedProduce("")
-  }
+    setSearchQuery("");
+    setSelectedState("");
+    setSelectedProduce("");
+  };
 
-  const hasActiveFilters = searchQuery || selectedState || selectedProduce
+  const hasActiveFilters = searchQuery || selectedState || selectedProduce;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -108,22 +141,30 @@ export default function FarmsPage() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-900">Find Farms</h1>
-                <p className="text-gray-600 mt-1">Discover local farms and U-Pick locations near you</p>
+                <p className="text-gray-600 mt-1">
+                  Discover local farms and U-Pick locations near you
+                </p>
               </div>
             </div>
-            
+
             {/* Stats */}
             <div className="flex flex-wrap gap-4 mt-6">
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="text-2xl font-bold text-[#5a9c3a]">{farms.length}</div>
+                <div className="text-2xl font-bold text-[#5a9c3a]">
+                  {farms.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Farms</div>
               </div>
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="text-2xl font-bold text-[#5a9c3a]">{filteredFarms.length}</div>
+                <div className="text-2xl font-bold text-[#5a9c3a]">
+                  {filteredFarms.length}
+                </div>
                 <div className="text-sm text-gray-600">Showing</div>
               </div>
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="text-2xl font-bold text-[#5a9c3a]">{states.length}</div>
+                <div className="text-2xl font-bold text-[#5a9c3a]">
+                  {states.length}
+                </div>
                 <div className="text-sm text-gray-600">States</div>
               </div>
             </div>
@@ -187,7 +228,10 @@ export default function FarmsPage() {
               )}
 
               {selectedState && (
-                <Badge variant="secondary" className="h-10 px-4 flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="h-10 px-4 flex items-center gap-2"
+                >
                   State: {selectedState}
                   <X
                     className="h-3 w-3 cursor-pointer"
@@ -197,7 +241,10 @@ export default function FarmsPage() {
               )}
 
               {selectedProduce && (
-                <Badge variant="secondary" className="h-10 px-4 flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="h-10 px-4 flex items-center gap-2"
+                >
                   Produce: {selectedProduce}
                   <X
                     className="h-3 w-3 cursor-pointer"
@@ -270,7 +317,9 @@ export default function FarmsPage() {
               {filteredFarms.length === 0 ? (
                 <Card className="p-12 text-center">
                   <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No farms found</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No farms found
+                  </h3>
                   <p className="text-gray-600 mb-4">
                     Try adjusting your filters or search query
                   </p>
@@ -293,40 +342,81 @@ export default function FarmsPage() {
         <Footer />
       </main>
     </div>
-  )
+  );
 }
 
 // Farm Card Component
 function FarmCard({ farm }: { farm: Farm }) {
+  // Utility function to truncate long text
+  const truncateText = (text: string, maxLength: number = 100): string => {
+    if (!text) return "";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3).trim() + "...";
+  };
+
   const produceList = farm.produce
-    ? farm.produce.split(",").map((p) => p.trim()).filter(Boolean)
-    : []
+    ? farm.produce
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean)
+    : [];
 
   // Get address for Google Maps directions
   const getDirectionsUrl = () => {
-    const address = farm.full_address || `${farm.address}, ${farm.city}, ${farm.state} ${farm.zip}`.trim()
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
-  }
+    const address =
+      farm.full_address ||
+      `${farm.address}, ${farm.city}, ${farm.state} ${farm.zip}`.trim();
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+      address
+    )}`;
+  };
 
   // Parse farm type (can be comma-separated)
   const farmTypes = farm.farm_type
-    ? farm.farm_type.split(",").map((t) => t.trim()).filter(Boolean)
-    : []
+    ? farm.farm_type
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean)
+    : [];
+
+  // Truncate long fields for better UI
+  const truncatedName = truncateText(farm.name, 60);
+  const truncatedAddress = truncateText(
+    farm.full_address || farm.address || "",
+    80
+  );
+  const truncatedCityState =
+    farm.city && farm.state
+      ? truncateText(`${farm.city}, ${farm.state}`, 50)
+      : truncateText(
+          farm.full_address || farm.address || "Location not specified",
+          50
+        );
 
   return (
     <Card className="hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-xl mb-2 group-hover:text-[#5a9c3a] transition-colors break-words line-clamp-2">
-              {farm.name}
+            <CardTitle
+              className="text-xl mb-2 group-hover:text-[#5a9c3a] transition-colors wrap-break-word line-clamp-2"
+              title={farm.name}
+            >
+              {truncatedName}
             </CardTitle>
             <div className="flex items-start gap-2 text-sm text-gray-600">
-              <MapPin className="h-4 w-4 text-[#5a9c3a] flex-shrink-0 mt-0.5" />
-              <span className="break-words">
-                {farm.city && farm.state
-                  ? `${farm.city}, ${farm.state}`
-                  : farm.full_address || farm.address || "Location not specified"}
+              <MapPin className="h-4 w-4 text-[#5a9c3a] shrink-0 mt-0.5" />
+              <span
+                className="wrap-break-word line-clamp-2"
+                title={
+                  farm.city && farm.state
+                    ? `${farm.city}, ${farm.state}`
+                    : farm.full_address ||
+                      farm.address ||
+                      "Location not specified"
+                }
+              >
+                {truncatedCityState}
               </span>
             </div>
           </div>
@@ -338,12 +428,19 @@ function FarmCard({ farm }: { farm: Farm }) {
           <div>
             <div className="flex flex-wrap gap-2">
               {farmTypes.slice(0, 3).map((type, idx) => (
-                <Badge key={idx} variant="outline" className="bg-[#5a9c3a]/10 text-[#5a9c3a] border-[#5a9c3a]/20 text-xs break-words">
+                <Badge
+                  key={idx}
+                  variant="outline"
+                  className="bg-[#5a9c3a]/10 text-[#5a9c3a] border-[#5a9c3a]/20 text-xs wrap-break-word"
+                >
                   {type}
                 </Badge>
               ))}
               {farmTypes.length > 3 && (
-                <Badge variant="outline" className="bg-[#5a9c3a]/10 text-[#5a9c3a] border-[#5a9c3a]/20 text-xs">
+                <Badge
+                  variant="outline"
+                  className="bg-[#5a9c3a]/10 text-[#5a9c3a] border-[#5a9c3a]/20 text-xs"
+                >
                   +{farmTypes.length - 3} more
                 </Badge>
               )}
@@ -353,14 +450,24 @@ function FarmCard({ farm }: { farm: Farm }) {
 
         {/* Produce */}
         {produceList.length > 0 && (
-          <div className="flex-shrink-0">
-            <p className="text-sm font-medium text-gray-700 mb-2">Available Produce:</p>
+          <div className="shrink-0">
+            <p className="text-sm font-medium text-gray-700 mb-2">
+              Available Produce:
+            </p>
             <div className="flex flex-wrap gap-2">
-              {produceList.slice(0, 5).map((produce, idx) => (
-                <Badge key={idx} variant="secondary" className="text-xs break-words">
-                  {produce}
-                </Badge>
-              ))}
+              {produceList.slice(0, 5).map((produce, idx) => {
+                const truncatedProduce = truncateText(produce, 20);
+                return (
+                  <Badge
+                    key={idx}
+                    variant="secondary"
+                    className="text-xs wrap-break-word"
+                    title={produce}
+                  >
+                    {truncatedProduce}
+                  </Badge>
+                );
+              })}
               {produceList.length > 5 && (
                 <Badge variant="secondary" className="text-xs">
                   +{produceList.length - 5} more
@@ -382,9 +489,7 @@ function FarmCard({ farm }: { farm: Farm }) {
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white"
-            >
+            <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
               <Navigation className="h-4 w-4 mr-2" />
               Get Directions
             </Button>
@@ -394,19 +499,25 @@ function FarmCard({ farm }: { farm: Farm }) {
           <div className="flex flex-wrap gap-3 text-xs">
             {farm.phone && (
               <div className="flex items-center gap-1.5 text-gray-600 min-w-0">
-                <Phone className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="truncate">{farm.phone}</span>
+                <Phone className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate" title={farm.phone}>
+                  {truncateText(farm.phone, 20)}
+                </span>
               </div>
             )}
             {farm.website && (
               <a
-                href={farm.website.startsWith("http") ? farm.website : `https://${farm.website}`}
+                href={
+                  farm.website.startsWith("http")
+                    ? farm.website
+                    : `https://${farm.website}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-[#5a9c3a] hover:underline flex-shrink-0"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Globe className="h-3.5 w-3.5" />
+                <Globe className="h-3.5 w-3.5 shrink-0" />
                 <span>Website</span>
               </a>
             )}
@@ -414,13 +525,15 @@ function FarmCard({ farm }: { farm: Farm }) {
 
           {/* Full Address */}
           {farm.full_address && (
-            <p className="text-xs text-gray-500 break-words line-clamp-2">
-              {farm.full_address}
+            <p
+              className="text-xs text-gray-500 wrap-break-word line-clamp-2 overflow-hidden text-ellipsis"
+              title={farm.full_address}
+            >
+              {truncatedAddress}
             </p>
           )}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-
