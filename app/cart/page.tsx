@@ -46,6 +46,7 @@ import { getImageUrl } from "@/lib/utils"
 import { CartItemSkeleton } from "@/components/cart-item-skeleton"
 import type { ApiProduct } from "@/types/product"
 import api from "@/lib/axios"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 // Constants
 const DELIVERY_FEE = 5.99
@@ -58,6 +59,7 @@ export default function CartPage() {
   const { isLoggedIn, isLoading: authLoading } = useAuthStore()
   const { deliveryTypes, setDeliveryType } = useDeliveryTypesStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const t = useSafeTranslations("cart")
   const [updatingItems, setUpdatingItems] = useState<Set<number>>(new Set())
   const [removingItems, setRemovingItems] = useState<Set<number>>(new Set())
   const [selectedProduct, setSelectedProduct] = useState<ApiProduct | null>(null)
@@ -441,7 +443,7 @@ export default function CartPage() {
                     {item.name}
                   </h3>
                 </button>
-                <p className="text-xs text-gray-500 mt-0.5">${item.price.toFixed(2)} each</p>
+                <p className="text-xs text-gray-500 mt-0.5">${item.price.toFixed(2)} {t("each")}</p>
               </div>
               
               {/* Remove Button */}
@@ -511,11 +513,11 @@ export default function CartPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
           {/* Page Header */}
           <div className="mb-6 md:mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{t("title")}</h1>
             <p className="text-gray-600 text-sm md:text-base">
               {cartItems.length > 0 
-                ? `${cartItems.length} ${cartItems.length === 1 ? 'item' : 'items'}`
-                : 'Your cart is empty'
+                ? t("itemsCount", { count: cartItems.length })
+                : t("emptyCart")
               }
             </p>
           </div>
@@ -529,37 +531,37 @@ export default function CartPage() {
 
           {/* Not Logged In */}
           {!isLoading && !isLoggedIn && renderEmptyState(
-            "Please log in",
-            "You need to be logged in to view your cart",
+            t("pleaseLogin"),
+            t("pleaseLoginMessage"),
             <ShoppingBag className="w-8 h-8 text-[#5a9c3a]" />,
             <Link href="/login">
               <Button className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
-                Log In
+                {t("logIn")}
               </Button>
             </Link>
           )}
 
           {/* Error State */}
           {!isLoading && !authLoading && isLoggedIn && error && renderEmptyState(
-            "Error loading cart",
+            t("errorLoading"),
             error,
             <ShoppingBag className="w-8 h-8 text-red-600" />,
             <Button 
               onClick={() => fetchCart()} 
               className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white"
             >
-              Try Again
+              {t("tryAgain")}
             </Button>
           )}
 
           {/* Empty Cart */}
           {!isLoading && !authLoading && isLoggedIn && !error && cartItems.length === 0 && renderEmptyState(
-            "Your cart is empty",
-            "Add some fresh produce to get started!",
+            t("emptyCart"),
+            t("emptyCartMessage"),
             <ShoppingBag className="w-8 h-8 text-gray-400" />,
             <Link href="/products">
               <Button className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
-                Browse Products
+                {t("browseProducts")}
               </Button>
             </Link>
           )}
@@ -595,18 +597,18 @@ export default function CartPage() {
                             <button
                               disabled
                               className="px-3 py-1.5 rounded-md text-xs font-medium opacity-50 cursor-not-allowed relative"
-                              title="Coming Soon"
+                              title={t("comingSoon")}
                             >
                               <Bike className="w-3.5 h-3.5 inline mr-1" />
-                              Delivery
-                              <span className="ml-1 text-[10px] bg-gray-200 text-gray-600 px-1 rounded">Soon</span>
+                              {t("delivery")}
+                              <span className="ml-1 text-[10px] bg-gray-200 text-gray-600 px-1 rounded">{t("comingSoon")}</span>
                             </button>
                             <button
                               onClick={() => setDeliveryType(sellerId, 'pickup')}
                               className="px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-[#5a9c3a] text-white shadow-sm hover:bg-[#0d7a3f]"
                             >
                               <Package className="w-3.5 h-3.5 inline mr-1" />
-                              Pickup
+                              {t("pickup")}
                             </button>
                           </div>
                         </div>
@@ -614,7 +616,7 @@ export default function CartPage() {
                         {/* Summary Row */}
                         <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-sm">
                           <span className="text-gray-600 font-medium">
-                            {group.items.length} {group.items.length === 1 ? 'item' : 'items'} • ${group.groupSubtotal.toFixed(2)}
+                            {group.items.length} {group.items.length === 1 ? t("item") : t("items")} • ${group.groupSubtotal.toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -647,7 +649,7 @@ export default function CartPage() {
               {/* Right Column: Order Summary */}
               <div className="lg:sticky lg:top-6 h-fit">
                 <div className="bg-white rounded-xl border border-gray-200 p-5 md:p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">{t("orderSummary")}</h3>
                   
                   {/* View on Map Button */}
                   <Button 
@@ -656,7 +658,7 @@ export default function CartPage() {
                     className="w-full mb-4 border-[#5a9c3a] text-[#5a9c3a] hover:bg-[#5a9c3a] hover:text-white"
                   >
                     <MapPin className="w-4 h-4 mr-2" />
-                    View on Map
+                    {t("viewOnMap")}
                   </Button>
                   
                   {/* Price Breakdown */}
@@ -664,7 +666,7 @@ export default function CartPage() {
                     {hasPickupGroups && (
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">
-                          Pickup ({pickupGroups.reduce((sum, g) => sum + g.items.length, 0)} {pickupGroups.reduce((sum, g) => sum + g.items.length, 0) === 1 ? 'item' : 'items'})
+                          {t("pickup")} ({pickupGroups.reduce((sum, g) => sum + g.items.length, 0)} {pickupGroups.reduce((sum, g) => sum + g.items.length, 0) === 1 ? t("item") : t("items")})
                         </span>
                         <span className="font-semibold text-gray-900">${pickupSubtotal.toFixed(2)}</span>
                       </div>
@@ -674,7 +676,7 @@ export default function CartPage() {
                   {/* Grand Total */}
                   <div className="border-t border-gray-200 pt-4 mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">Total</span>
+                      <span className="text-lg font-bold text-gray-900">{t("total")}</span>
                       <span className="text-2xl font-bold text-[#5a9c3a]">
                         ${grandTotal.toFixed(2)}
                       </span>
@@ -690,12 +692,12 @@ export default function CartPage() {
                     {isPlacingOrder ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Placing Order...
+                        {t("placingOrder")}
                       </>
                     ) : (
                       <>
                         <ShoppingCart className="w-4 h-4 mr-2" />
-                        Order Now
+                        {t("orderNow")}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </>
                     )}
@@ -703,7 +705,7 @@ export default function CartPage() {
                   
                   <Link href="/products">
                     <Button variant="outline" className="w-full h-11 border-gray-300 hover:border-[#5a9c3a]">
-                      Continue Shopping
+                      {t("continueShopping")}
                     </Button>
                   </Link>
                 </div>
@@ -734,7 +736,7 @@ export default function CartPage() {
               <div className="flex items-center justify-center h-full absolute inset-0 z-50 bg-white">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#5a9c3a] border-t-transparent mx-auto mb-4"></div>
-                  <p className="text-gray-600 font-medium">Loading map locations...</p>
+                  <p className="text-gray-600 font-medium">{t("loadingMap")}</p>
                 </div>
               </div>
             ) : (
@@ -749,8 +751,8 @@ export default function CartPage() {
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center p-6 bg-white rounded-lg shadow-lg border border-gray-200">
                       <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600 font-medium mb-1">No locations available</p>
-                      <p className="text-sm text-gray-500">Sellers may not have addresses set</p>
+                      <p className="text-gray-600 font-medium mb-1">{t("noLocations")}</p>
+                      <p className="text-sm text-gray-500">{t("noLocationsMessage")}</p>
                     </div>
                   </div>
                 )}
@@ -763,8 +765,8 @@ export default function CartPage() {
                   <div className="absolute inset-0 flex items-center justify-center z-50 bg-white/90">
                     <div className="text-center p-6 bg-white rounded-lg shadow-lg border border-gray-200">
                       <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600 font-medium mb-1">No locations available</p>
-                      <p className="text-sm text-gray-500">Sellers may not have addresses set</p>
+                      <p className="text-gray-600 font-medium mb-1">{t("noLocations")}</p>
+                      <p className="text-sm text-gray-500">{t("noLocationsMessage")}</p>
                     </div>
                   </div>
                 )}
@@ -788,8 +790,8 @@ export default function CartPage() {
                 <ShoppingCart className="w-6 h-6" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-bold text-white">Confirm Your Order</DialogTitle>
-                <p className="text-white/90 text-sm mt-1">Review your order details</p>
+                <DialogTitle className="text-2xl font-bold text-white">{t("confirmOrder")}</DialogTitle>
+                <p className="text-white/90 text-sm mt-1">{t("reviewOrder")}</p>
               </div>
             </div>
           </div>
@@ -798,11 +800,11 @@ export default function CartPage() {
             {/* Order Info */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total Items</span>
+                <span className="text-sm text-gray-600">{t("totalItems")}</span>
                 <span className="font-semibold text-gray-900">{cartItems.length}</span>
               </div>
               <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <span className="text-lg font-bold text-gray-900">Total Amount</span>
+                <span className="text-lg font-bold text-gray-900">{t("totalAmount")}</span>
                 <span className="text-2xl font-bold text-[#5a9c3a]">${grandTotal.toFixed(2)}</span>
               </div>
             </div>
@@ -814,10 +816,10 @@ export default function CartPage() {
                   <Package className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="font-semibold text-blue-900 text-sm mb-1">
-                      Ordering from {sellerGroups.length} sellers
+                      {t("orderingFromMultiple", { count: sellerGroups.length })}
                     </p>
                     <p className="text-xs text-blue-700">
-                      Your order will be placed separately for each seller. You'll be notified once each seller confirms.
+                      {t("multipleSellersMessage")}
                     </p>
                   </div>
                 </div>
@@ -825,7 +827,7 @@ export default function CartPage() {
                   {sellerGroups.map((group, index) => (
                     <div key={group.seller?.id || index} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5">
                       <span className="text-gray-700 font-medium">{getSellerName(group.seller)}</span>
-                      <span className="text-gray-500">{group.items.length} {group.items.length === 1 ? 'item' : 'items'}</span>
+                      <span className="text-gray-500">{group.items.length} {group.items.length === 1 ? t("item") : t("items")}</span>
                     </div>
                   ))}
                 </div>
@@ -836,10 +838,10 @@ export default function CartPage() {
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold text-green-900 text-sm mb-1">
-                      Ordering from {getSellerName(sellerGroups[0]?.seller)}
+                      {t("orderingFrom", { seller: getSellerName(sellerGroups[0]?.seller) })}
                     </p>
                     <p className="text-xs text-green-700">
-                      Once the seller confirms your order, we will notify you.
+                      {t("singleSellerMessage")}
                     </p>
                   </div>
                 </div>
@@ -856,12 +858,12 @@ export default function CartPage() {
                 {isPlacingOrder ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Placing Order...
+                    {t("placingOrder")}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="w-5 h-5 mr-2" />
-                    Confirm & Place Order
+                    {t("confirmPlaceOrder")}
                   </>
                 )}
               </Button>
@@ -871,7 +873,7 @@ export default function CartPage() {
                 disabled={isPlacingOrder}
                 className="w-full border-gray-300 hover:border-gray-400 text-gray-700 h-11 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           </div>
@@ -886,16 +888,15 @@ export default function CartPage() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-[#5a9c3a]/10 rounded-full mb-4">
               <CheckCircle className="w-12 h-12 text-[#5a9c3a]" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Order Placed Successfully!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">{t("orderPlacedSuccess")}</h2>
             <DialogDescription className="text-base text-gray-600 mb-6">
               {sellerGroups.length > 1 ? (
                 <>
-                  Your orders have been placed with {sellerGroups.length} different sellers. 
-                  Once each seller confirms your order, we will notify you.
+                  {t("orderPlacedMultiple", { count: sellerGroups.length })}
                 </>
               ) : (
                 <>
-                  Your order has been placed. Once the seller confirms the order, we will notify you.
+                  {t("orderPlacedSingle")}
                 </>
               )}
             </DialogDescription>
@@ -905,7 +906,7 @@ export default function CartPage() {
                   onClick={() => setIsOrderPlaced(false)}
                   className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white"
                 >
-                  Continue Shopping
+                  {t("continueShopping")}
                 </Button>
               </Link>
               <Button 
@@ -913,7 +914,7 @@ export default function CartPage() {
                 variant="outline"
                 className="w-full border-gray-300 hover:border-[#5a9c3a]"
               >
-                View Order Details
+                {t("viewOrderDetails")}
               </Button>
             </div>
           </div>

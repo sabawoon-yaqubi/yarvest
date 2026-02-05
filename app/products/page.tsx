@@ -6,12 +6,14 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Search, Package, Map, Filter } from "lucide-react"
 import { useState, useMemo, Suspense, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { InfiniteScrollFetcher } from "@/components/infinite-scroll-fetcher"
 import { ApiProductCard, ApiProduct } from "@/components/api-product-card"
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 import { FreshFoodCategories } from "@/components/fresh-food-categories"
 import { calculateProductPrices } from "@/lib/product-utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { useRouter } from "@/routing"
 
 function ProductsContent() {
   const [products, setProducts] = useState<ApiProduct[]>([])
@@ -19,6 +21,7 @@ function ProductsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const searchQuery = searchParams.get("q") || ""
+  const t = useSafeTranslations("products")
 
   // Calculate max price from products
   const maxPrice = useMemo(() => {
@@ -73,10 +76,10 @@ function ProductsContent() {
         <div className="inline-flex items-center justify-center w-24 h-24 bg-red-100 rounded-full mb-6">
           <Package className="w-12 h-12 text-red-600" />
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Error Loading Products</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">{t("errorLoading")}</h1>
         <p className="text-lg text-gray-600 mb-8">{error}</p>
         <Button onClick={retry} className="bg-[#5a9c3a] hover:bg-[#0d7a3f] rounded-xl">
-          Try Again
+          {t("tryAgain")}
         </Button>
       </div>
     </div>
@@ -89,10 +92,10 @@ function ProductsContent() {
           {/* Header Section */}
           <div className="mb-12 text-center">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4 tracking-tight">
-              Our Products
+              {t("title")}
             </h1>
             <p className="text-lg text-gray-600">
-              Discover fresh, locally sourced products
+              {t("subtitle")}
             </p>
           </div>
 
@@ -106,7 +109,7 @@ function ProductsContent() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap">
               {/* Results Count */}
               <div className="text-sm text-gray-600 order-1">
-                Showing <span className="font-semibold text-[#5a9c3a]">{filteredProducts.length}</span> of {products.length} products
+                {t("showingCount", { filtered: filteredProducts.length, total: products.length })}
               </div>
 
               {/* Right Section - Filters and Map */}
@@ -118,14 +121,14 @@ function ProductsContent() {
                     className={`w-full sm:w-auto flex items-center gap-2 ${showPriceFilter ? 'bg-[#5a9c3a] text-white border-[#5a9c3a]' : ''}`}
                   >
                     <Filter className="h-4 w-4" />
-                    Price Filter
+                    {t("priceFilter")}
                   </Button>
                   
                   {showPriceFilter && (
                     <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-20 min-w-[240px] w-[90vw] max-w-xs sm:min-w-[280px]">
                       <div className="mb-3">
                         <label className="text-sm font-medium text-gray-700 mb-2 block">
-                          Price Range: ${priceRange[0]} - ${priceRange[1]}
+                          {t("priceRange", { min: priceRange[0], max: priceRange[1] })}
                         </label>
                         <div className="flex gap-2">
                           <input
@@ -135,7 +138,7 @@ function ProductsContent() {
                             value={priceRange[0]}
                             onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5a9c3a]"
-                            placeholder="Min"
+                            placeholder={t("min")}
                           />
                           <input
                             type="number"
@@ -144,7 +147,7 @@ function ProductsContent() {
                             value={priceRange[1]}
                             onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5a9c3a]"
-                            placeholder="Max"
+                            placeholder={t("max")}
                           />
                         </div>
                         <input
@@ -166,14 +169,14 @@ function ProductsContent() {
                           size="sm"
                           className="flex-1"
                         >
-                          Reset
+                          {t("reset")}
                         </Button>
                         <Button
                           onClick={() => setShowPriceFilter(false)}
                           size="sm"
                           className="flex-1 bg-[#5a9c3a] hover:bg-[#0d7a3f]"
                         >
-                          Apply
+                          {t("apply")}
                         </Button>
                       </div>
                     </div>
@@ -186,7 +189,7 @@ function ProductsContent() {
                   className="flex items-center gap-2 border-[#5a9c3a] text-[#5a9c3a] hover:bg-[#5a9c3a] hover:text-white w-full sm:w-auto"
                 >
                   <Map className="h-4 w-4" />
-                  Map View
+                  {t("mapView")}
                 </Button>
               </div>
             </div>
@@ -210,8 +213,8 @@ function ProductsContent() {
                 <div className="inline-flex items-center justify-center w-24 h-24 bg-[#5a9c3a]/10 rounded-full mb-6">
                   <Package className="w-12 h-12 text-[#5a9c3a]" />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">No products available</h3>
-                <p className="text-gray-600">There are no products to display at the moment.</p>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2">{t("noProductsAvailable")}</h3>
+                <p className="text-gray-600">{t("noProductsMessage")}</p>
               </div>
             )}
             onSuccess={(data) => {
@@ -260,8 +263,8 @@ function ProductsContent() {
                       <Search className="w-6 h-6 text-[#5a9c3a]" />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">No products found</h3>
-                  <p className="text-gray-600 mb-8">Try adjusting your filters</p>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-2">{t("noProductsFound")}</h3>
+                  <p className="text-gray-600 mb-8">{t("tryAdjustingFilters")}</p>
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -270,7 +273,7 @@ function ProductsContent() {
                     }}
                     className="rounded-xl border-gray-300 hover:bg-[#5a9c3a]/10 hover:border-[#5a9c3a]"
                   >
-                    Clear Filters
+                    {t("clearFilters")}
                   </Button>
                 </div>
               ) : (

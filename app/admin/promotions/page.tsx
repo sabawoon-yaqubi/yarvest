@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 const mockPromotions = [
   {
@@ -81,6 +82,7 @@ const mockPromotions = [
 ]
 
 export default function PromotionsPage() {
+  const t = useSafeTranslations("admin.promotions")
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingPromo, setEditingPromo] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -142,8 +144,8 @@ export default function PromotionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Promotions & Free Products</h1>
-          <p className="text-gray-600">Create discounts, free products, and special offers for your customers</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">{t("title")}</h1>
+          <p className="text-gray-600">{t("subtitle")}</p>
         </div>
         <Button 
           className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white gap-2 shadow-lg"
@@ -165,7 +167,7 @@ export default function PromotionsPage() {
           }}
         >
           <Plus className="w-5 h-5" />
-          Create Promotion
+          {t("createPromotion")}
         </Button>
       </div>
 
@@ -175,7 +177,7 @@ export default function PromotionsPage() {
           <div className="relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
-              placeholder="Search promotions by name or code..."
+              placeholder={t("searchPromotions")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 h-12 border-2"
@@ -221,39 +223,39 @@ export default function PromotionsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500 mb-1">Promo Code</p>
+                <p className="text-xs text-gray-500 mb-1">{t("promoCode")}</p>
                 <p className="font-mono font-bold text-lg text-[#5a9c3a]">{promo.code}</p>
               </div>
               
               <div className="space-y-2 text-sm">
                 {promo.product && (
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Product:</span>
+                    <span className="text-gray-600">{t("product")}</span>
                     <span className="font-semibold text-gray-900">{promo.product}</span>
                   </div>
                 )}
                 {promo.category && (
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Category:</span>
+                    <span className="text-gray-600">{t("category")}</span>
                     <span className="font-semibold text-gray-900">{promo.category}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Discount:</span>
+                  <span className="text-gray-600">{t("discount")}</span>
                   <span className="font-semibold text-[#5a9c3a]">
-                    {promo.type === "free_product" ? "100% FREE" : 
-                     promo.type === "free_shipping" ? "Free Shipping" :
-                     `${promo.discount}% OFF`}
+                    {promo.type === "free_product" ? t("hundredPercentFree") : 
+                     promo.type === "free_shipping" ? t("freeShipping") :
+                     t("percentOff", { percent: promo.discount })}
                   </span>
                 </div>
                 {promo.minPurchase > 0 && (
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Min Purchase:</span>
+                    <span className="text-gray-600">{t("minPurchase")}</span>
                     <span className="font-semibold text-gray-900">${promo.minPurchase}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Usage:</span>
+                  <span className="text-gray-600">{t("usage")}</span>
                   <span className="font-semibold text-gray-900">{promo.used} / {promo.maxUses}</span>
                 </div>
               </div>
@@ -270,7 +272,7 @@ export default function PromotionsPage() {
                   onClick={() => handleEdit(promo)}
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  {t("edit")}
                 </Button>
                 <Button
                   variant="outline"
@@ -289,16 +291,16 @@ export default function PromotionsPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
-              {editingPromo ? "Edit Promotion" : "Create New Promotion"}
+              {editingPromo ? t("editPromotion") : t("createNewPromotion")}
             </DialogTitle>
             <DialogDescription>
-              Set up discounts, free products, or special offers for your customers
+              {t("setUpDiscounts")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-5 py-4">
             <div>
-              <Label htmlFor="name" className="text-base font-semibold">Promotion Name *</Label>
+              <Label htmlFor="name" className="text-base font-semibold">{t("promotionName")}</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -309,31 +311,31 @@ export default function PromotionsPage() {
             </div>
 
             <div>
-              <Label htmlFor="type" className="text-base font-semibold">Promotion Type *</Label>
+              <Label htmlFor="type" className="text-base font-semibold">{t("promotionType")}</Label>
               <select
                 id="type"
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 className="mt-2 w-full h-12 px-4 rounded-lg border-2 border-gray-200 bg-white text-sm font-medium focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a]"
               >
-                <option value="free_product">Free Product</option>
-                <option value="buy_x_get_y">Buy X Get Y Free</option>
-                <option value="percentage">Percentage Discount</option>
-                <option value="free_shipping">Free Shipping</option>
-                <option value="fixed_amount">Fixed Amount Discount</option>
+                <option value="free_product">{t("freeProduct")}</option>
+                <option value="buy_x_get_y">{t("buyXGetYFree")}</option>
+                <option value="percentage">{t("percentageDiscount")}</option>
+                <option value="free_shipping">{t("freeShipping")}</option>
+                <option value="fixed_amount">{t("fixedAmountDiscount")}</option>
               </select>
             </div>
 
             {formData.type === "free_product" && (
               <div>
-                <Label htmlFor="product" className="text-base font-semibold">Select Product *</Label>
+                <Label htmlFor="product" className="text-base font-semibold">{t("selectProduct")}</Label>
                 <select
                   id="product"
                   value={formData.product}
                   onChange={(e) => setFormData({ ...formData, product: e.target.value })}
                   className="mt-2 w-full h-12 px-4 rounded-lg border-2 border-gray-200 bg-white text-sm font-medium focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a]"
                 >
-                  <option value="">Select a product</option>
+                  <option value="">{t("selectAProduct")}</option>
                   <option value="Organic Heirloom Tomatoes">Organic Heirloom Tomatoes</option>
                   <option value="Fresh Local Carrots">Fresh Local Carrots</option>
                   <option value="Sweet Local Apples">Sweet Local Apples</option>
@@ -343,17 +345,17 @@ export default function PromotionsPage() {
 
             {formData.type === "percentage" && (
               <div>
-                <Label htmlFor="category" className="text-base font-semibold">Select Category</Label>
+                <Label htmlFor="category" className="text-base font-semibold">{t("selectCategory")}</Label>
                 <select
                   id="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="mt-2 w-full h-12 px-4 rounded-lg border-2 border-gray-200 bg-white text-sm font-medium focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a]"
                 >
-                  <option value="">All Products</option>
-                  <option value="Vegetables">Vegetables</option>
-                  <option value="Fruits">Fruits</option>
-                  <option value="Herbs">Herbs</option>
+                  <option value="">{t("allProducts")}</option>
+                  <option value="Vegetables">{t("vegetables")}</option>
+                  <option value="Fruits">{t("fruits")}</option>
+                  <option value="Herbs">{t("herbs")}</option>
                 </select>
               </div>
             )}
@@ -361,7 +363,7 @@ export default function PromotionsPage() {
             {(formData.type === "percentage" || formData.type === "fixed_amount") && (
               <div>
                 <Label htmlFor="discount" className="text-base font-semibold">
-                  {formData.type === "percentage" ? "Discount Percentage *" : "Discount Amount ($) *"}
+                  {formData.type === "percentage" ? t("discountPercentage") : t("discountAmount")}
                 </Label>
                 <Input
                   id="discount"
@@ -376,7 +378,7 @@ export default function PromotionsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="minPurchase" className="text-base font-semibold">Minimum Purchase ($)</Label>
+                <Label htmlFor="minPurchase" className="text-base font-semibold">{t("minimumPurchase")}</Label>
                 <Input
                   id="minPurchase"
                   type="number"
@@ -388,7 +390,7 @@ export default function PromotionsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="maxUses" className="text-base font-semibold">Max Uses *</Label>
+                <Label htmlFor="maxUses" className="text-base font-semibold">{t("maxUses")}</Label>
                 <Input
                   id="maxUses"
                   type="number"
@@ -402,7 +404,7 @@ export default function PromotionsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="startDate" className="text-base font-semibold">Start Date *</Label>
+                <Label htmlFor="startDate" className="text-base font-semibold">{t("startDate")}</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -412,7 +414,7 @@ export default function PromotionsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="endDate" className="text-base font-semibold">End Date *</Label>
+                <Label htmlFor="endDate" className="text-base font-semibold">{t("endDate")}</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -424,7 +426,7 @@ export default function PromotionsPage() {
             </div>
 
             <div>
-              <Label htmlFor="code" className="text-base font-semibold">Promo Code *</Label>
+              <Label htmlFor="code" className="text-base font-semibold">{t("promoCodeLabel")}</Label>
               <Input
                 id="code"
                 value={formData.code}
@@ -432,19 +434,19 @@ export default function PromotionsPage() {
                 placeholder="FREETOMATO"
                 className="mt-2 h-12 border-2 font-mono"
               />
-              <p className="text-xs text-gray-500 mt-1">Customers will use this code at checkout</p>
+              <p className="text-xs text-gray-500 mt-1">{t("customersWillUseCode")}</p>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddModal(false)} className="h-12">
-              Cancel
+              {t("cancel", { ns: "common" })}
             </Button>
             <Button 
               className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white h-12"
               onClick={handleSave}
             >
-              {editingPromo ? "Update Promotion" : "Create Promotion"}
+              {editingPromo ? t("updatePromotion") : t("createPromotionButton")}
             </Button>
           </DialogFooter>
         </DialogContent>

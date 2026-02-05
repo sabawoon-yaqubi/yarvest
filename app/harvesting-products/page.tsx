@@ -18,6 +18,7 @@ import {
 import dynamic from "next/dynamic"
 import api from "@/lib/axios"
 import { toast } from "sonner"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 // Dynamically import MapView to avoid SSR issues
 const MapView = dynamic(
@@ -67,6 +68,7 @@ export default function HarvestingProductsPage() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [isMapModalOpen, setIsMapModalOpen] = useState(false)
+  const t = useSafeTranslations("harvestingProducts")
 
   // Helper function to extract state from location
   const extractState = (location: string | null): string | null => {
@@ -174,11 +176,10 @@ export default function HarvestingProductsPage() {
                   <Wrench className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 tracking-tight">
-                  Harvesting Tools
+                  {t("title")}
                 </h1>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  Discover and rent premium harvesting tools from trusted community members. 
-                  Everything you need for a successful harvest.
+                  {t("subtitle")}
                 </p>
               </div>
 
@@ -190,7 +191,7 @@ export default function HarvestingProductsPage() {
                     <Search className="absolute left-5 w-5 h-5 text-gray-400 pointer-events-none" />
                     <Input
                       type="text"
-                      placeholder="Search for tools, equipment, or categories..."
+                      placeholder={t("searchPlaceholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-14 pr-6 py-4 text-base border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
@@ -199,7 +200,7 @@ export default function HarvestingProductsPage() {
                       type="submit"
                       className="mr-2 bg-[#5a9c3a] hover:bg-[#4d8236] text-white rounded-xl px-6 h-10 transition-all duration-200 shadow-sm hover:shadow-md"
                     >
-                      Search
+                      {t("search")}
                     </Button>
                   </div>
                 </div>
@@ -215,7 +216,7 @@ export default function HarvestingProductsPage() {
             {!loading && tools.length > 0 && (
               <div className="mb-8 flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-semibold text-foreground">{tools.length}</span> available tools
+                  {t("showing")} <span className="font-semibold text-foreground">{tools.length}</span> {t("availableTools")}
                 </p>
                 <Button
                   onClick={() => setIsMapModalOpen(true)}
@@ -223,7 +224,7 @@ export default function HarvestingProductsPage() {
                   className="border-2 border-[#5a9c3a] hover:bg-[#5a9c3a] hover:text-white text-[#5a9c3a] rounded-xl px-4 h-10 font-semibold transition-all duration-200"
                 >
                   <Map className="w-4 h-4 mr-2" />
-                  View on Map
+                  {t("viewOnMap")}
                 </Button>
               </div>
             )}
@@ -250,11 +251,11 @@ export default function HarvestingProductsPage() {
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 mb-6">
                   <Wrench className="w-10 h-10 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">No tools found</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{t("noToolsFound")}</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
                   {searchQuery 
-                    ? `We couldn't find any tools matching "${searchQuery}". Try a different search term.`
-                    : "No tools are currently available. Check back soon!"}
+                    ? t("noToolsMessage", { query: searchQuery })
+                    : t("noToolsAvailable")}
                 </p>
               </div>
             ) : (
@@ -288,12 +289,12 @@ export default function HarvestingProductsPage() {
                       {loading ? (
                         <>
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Loading more tools...
+                          {t("loadingMoreTools")}
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-5 h-5 mr-2" />
-                          Load More Tools
+                          {t("loadMoreTools")}
                         </>
                       )}
                     </Button>
@@ -315,9 +316,9 @@ export default function HarvestingProductsPage() {
                 <Map className="w-5 h-5 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-bold">Tools Map View</DialogTitle>
+                <DialogTitle className="text-2xl font-bold">{t("toolsMapView")}</DialogTitle>
                 <DialogDescription>
-                  View all available harvesting tools on the map
+                  {t("toolsMapDescription")}
                 </DialogDescription>
               </div>
             </div>
@@ -342,8 +343,8 @@ export default function HarvestingProductsPage() {
               <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-gray-200">
                 <div className="text-center">
                   <Map className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 font-medium">No location data available for tools</p>
-                  <p className="text-sm text-gray-500 mt-2">Location coordinates are needed to display tools on the map</p>
+                  <p className="text-gray-600 font-medium">{t("noLocationData")}</p>
+                  <p className="text-sm text-gray-500 mt-2">{t("locationCoordinatesNeeded")}</p>
                 </div>
               </div>
             )}

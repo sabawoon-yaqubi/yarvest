@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Users, Star, MapPin, Calendar, DollarSign, Clock, Award, TrendingUp, Shield, Phone, Mail, Map } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 const harvesters = [
   {
@@ -162,9 +163,10 @@ const testimonials = [
 export default function HarvestersPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null)
+  const t = useSafeTranslations("harvesters")
 
-  const specialties = ["All", "Fruit Picking", "Vegetable Harvesting", "Organic Farms", "Large Scale", "Vineyard Work"]
-  const filteredHarvesters = selectedSpecialty && selectedSpecialty !== "All"
+  const specialties = [t("all"), t("fruitPicking"), t("vegetableHarvesting"), t("organicFarms"), t("largeScale"), t("vineyardWork")]
+  const filteredHarvesters = selectedSpecialty && selectedSpecialty !== t("all")
     ? harvesters.filter(h => h.specialties.some(s => s.includes(selectedSpecialty)))
     : harvesters
 
@@ -180,37 +182,37 @@ export default function HarvestersPage() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-[#5a9c3a]/10 rounded-full mb-6">
                 <Users className="w-10 h-10 text-[#5a9c3a]" />
               </div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-4">Harvesters</h1>
+              <h1 className="text-5xl font-bold text-gray-900 mb-4">{t("title")}</h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
-                Connect with experienced harvesters to help with your farm operations
+                {t("subtitle")}
               </p>
               <div className="flex items-center justify-center gap-4 text-sm text-gray-600 mb-6">
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-[#5a9c3a]" />
-                  <span>{harvesters.length} Professional Teams</span>
+                  <span>{t("professionalTeams", { count: harvesters.length })}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-[#5a9c3a]" />
-                  <span>4.8+ Average Rating</span>
+                  <span>{t("averageRating")}</span>
                 </div>
               </div>
               <Link href="/harvesters/map">
                 <Button className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all">
                   <Map className="w-5 h-5 mr-2" />
-                  View on Map
+                  {t("viewOnMap")}
                 </Button>
               </Link>
             </div>
 
             {/* How It Works */}
             <Card className="p-8 mb-12 rounded-2xl border-2 border-gray-200 bg-gradient-to-br from-[#5a9c3a]/5 to-white">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">How It Works</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">{t("howItWorks")}</h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
-                  { step: "1", title: "Post Your Need", desc: "Describe your harvesting requirements and timeline" },
-                  { step: "2", title: "Get Matched", desc: "We'll connect you with qualified harvesters in your area" },
-                  { step: "3", title: "Review & Hire", desc: "Compare profiles, reviews, and rates to find the best fit" },
-                  { step: "4", title: "Get Harvested", desc: "Professional team handles your harvest efficiently" },
+                  { step: "1", title: t("postYourNeed"), desc: t("postYourNeedDescription") },
+                  { step: "2", title: t("getMatched"), desc: t("getMatchedDescription") },
+                  { step: "3", title: t("reviewHire"), desc: t("reviewHireDescription") },
+                  { step: "4", title: t("getHarvested"), desc: t("getHarvestedDescription") },
                 ].map((item) => (
                   <div key={item.step} className="text-center">
                     <div className="w-16 h-16 bg-[#5a9c3a] text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
@@ -225,9 +227,14 @@ export default function HarvestersPage() {
 
             {/* Benefits */}
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Why Choose Our Harvesters</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">{t("whyChooseOurHarvesters")}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {benefits.map((benefit, idx) => (
+                {[
+                  { icon: Shield, title: t("professionalTeamsTitle"), description: t("professionalTeamsDescription") },
+                  { icon: Award, title: t("experiencedWorkers"), description: t("experiencedWorkersDescription") },
+                  { icon: Clock, title: t("flexibleScheduling"), description: t("flexibleSchedulingDescription") },
+                  { icon: TrendingUp, title: t("qualityGuaranteed"), description: t("qualityGuaranteedDescription") },
+                ].map((benefit, idx) => (
                   <Card key={idx} className="p-6 rounded-2xl border-2 border-gray-200 hover:border-[#5a9c3a] transition-all text-center">
                     <div className="w-14 h-14 bg-[#5a9c3a]/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                       <benefit.icon className="w-7 h-7 text-[#5a9c3a]" />
@@ -244,10 +251,10 @@ export default function HarvestersPage() {
               {specialties.map((specialty) => (
                 <Button
                   key={specialty}
-                  variant={selectedSpecialty === specialty || (!selectedSpecialty && specialty === "All") ? "default" : "outline"}
-                  onClick={() => setSelectedSpecialty(specialty === "All" ? null : specialty)}
+                  variant={selectedSpecialty === specialty || (!selectedSpecialty && specialty === t("all")) ? "default" : "outline"}
+                  onClick={() => setSelectedSpecialty(specialty === t("all") ? null : specialty)}
                   className={`rounded-full ${
-                    selectedSpecialty === specialty || (!selectedSpecialty && specialty === "All")
+                    selectedSpecialty === specialty || (!selectedSpecialty && specialty === t("all"))
                       ? "bg-[#5a9c3a] text-white"
                       : ""
                   }`}
@@ -278,11 +285,11 @@ export default function HarvestersPage() {
                     <div className="space-y-2 mb-4 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" />
-                        <span>Team: {harvester.teamSize}</span>
+                        <span>{t("team")} {harvester.teamSize}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4" />
-                        <span>Rate: {harvester.hourlyRate}/hr</span>
+                        <span>{t("rate")} {harvester.hourlyRate}/hr</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
@@ -290,11 +297,11 @@ export default function HarvestersPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Award className="w-4 h-4" />
-                        <span>{harvester.completedJobs} jobs completed</span>
+                        <span>{harvester.completedJobs} {t("jobsCompleted")}</span>
                       </div>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">Specialties:</p>
+                      <p className="text-sm font-semibold text-gray-700 mb-2">{t("specialties")}</p>
                       <div className="flex flex-wrap gap-2">
                         {harvester.specialties.map((spec, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
@@ -304,7 +311,7 @@ export default function HarvestersPage() {
                       </div>
                     </div>
                     <div className="mb-4">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">Certifications:</p>
+                      <p className="text-sm font-semibold text-gray-700 mb-2">{t("certifications")}</p>
                       <div className="flex flex-wrap gap-2">
                         {harvester.certifications.map((cert, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
@@ -314,7 +321,7 @@ export default function HarvestersPage() {
                       </div>
                     </div>
                     <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
-                      Hire Harvester
+                      {t("hireHarvester")}
                     </Button>
                   </div>
                 </Card>
@@ -323,7 +330,7 @@ export default function HarvestersPage() {
 
             {/* Testimonials */}
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">What Farm Owners Say</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">{t("whatFarmOwnersSay")}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {testimonials.map((testimonial, idx) => (
                   <Card key={idx} className="p-6 rounded-2xl border-2 border-gray-200">
@@ -344,12 +351,12 @@ export default function HarvestersPage() {
 
             {/* CTA Section */}
             <Card className="p-8 rounded-2xl border-2 border-[#5a9c3a] bg-gradient-to-br from-[#5a9c3a]/5 to-white text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Become a Harvester</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{t("becomeHarvester")}</h2>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                Join our network of professional harvesters and help local farms bring their produce to market. Apply today to start earning.
+                {t("becomeHarvesterDescription")}
               </p>
               <Button size="lg" className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white px-8">
-                Apply Now
+                {t("applyNow")}
               </Button>
             </Card>
           </div>

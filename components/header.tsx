@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useSafeTranslations, useSafeLocale } from "@/hooks/use-safe-translations"
+import { getLocalizedPath } from "@/lib/locale-utils"
+import { type Locale } from '@/i18n'
 import { AuthModal } from "@/components/auth-modal"
 import { AddressModal } from "@/components/address-modal"
+import { LanguageSwitcher } from "@/components/language-switcher"
 import { useAddressStore } from "@/stores/address-store"
 import { useAuthStore } from "@/stores/auth-store"
 import { useCartStore } from "@/stores/cart-store"
@@ -34,11 +38,14 @@ interface HeaderProps {
 }
 
 export function Header({ toggleSidebar }: HeaderProps) {
+  const t = useSafeTranslations('header')
+  const tCommon = useSafeTranslations('common')
+  const locale = useSafeLocale()
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
   const router = useRouter()
-  const [deliveryAddress, setDeliveryAddress] = useState("Add your address")
+  const [deliveryAddress, setDeliveryAddress] = useState(t('addAddress'))
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const { activeAddress, fetchAddresses, loadLocalAddresses } = useAddressStore()
   const { totalQuantity, fetchCart } = useCartStore()
@@ -50,14 +57,14 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
   // Memoize formatAddress function
   const formatAddress = useCallback((address: any) => {
-    if (!address) return "Add your address"
+    if (!address) return t('addAddress')
     const parts = [
       address.street_address,
       address.city,
       address.state,
     ].filter(Boolean)
-    return parts.join(", ") || "Add your address"
-  }, [])
+    return parts.join(", ") || t('addAddress')
+  }, [t])
 
   // Load addresses from store (optimized to only run when needed)
   useEffect(() => {
@@ -82,8 +89,8 @@ export function Header({ toggleSidebar }: HeaderProps) {
     if (activeAddress) {
       return formatAddress(activeAddress)
     }
-    return "Add your address"
-  }, [activeAddress, formatAddress])
+    return t('addAddress')
+  }, [activeAddress, formatAddress, t])
 
   useEffect(() => {
     setDeliveryAddress(deliveryAddressDisplay)
@@ -106,18 +113,18 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const handleLogout = useCallback(async () => {
     setLogoutDialogOpen(false)
     // Redirect immediately to home
-    router.push("/")
+    router.push(getLocalizedPath('/', locale as Locale))
     router.refresh()
     // Then logout in background
     await logout()
-  }, [router, logout])
+  }, [router, logout, locale])
 
   const handleSearch = useCallback(() => {
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      router.push(`${getLocalizedPath('/search', locale as Locale)}?q=${encodeURIComponent(searchQuery.trim())}`)
       setMobileSearchOpen(false)
     }
-  }, [searchQuery, router])
+  }, [searchQuery, router, locale])
 
   return (
     <>
@@ -130,7 +137,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 z-10" />
                 <Input
                   type="text"
-                  placeholder="Search..."
+                  placeholder={tCommon('search')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -146,7 +153,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 onClick={handleSearch}
                 className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white px-4 py-2.5 rounded-lg"
               >
-                Search
+                {tCommon('search')}
               </Button>
               <Button
                 variant="outline"
@@ -156,7 +163,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 }}
                 className="px-3 py-2.5"
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
             </div>
           </div>
@@ -181,7 +188,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 z-10" />
               <Input
                 type="text"
-                placeholder="Search home grown fruits, vegetables, and more"
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -216,7 +223,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
             </button>
 
             {/* Cart */}
-            <Link href="/cart" className="flex items-center gap-2 hover:bg-gray-100 rounded-lg px-3 md:px-4 py-2.5 transition-all relative group">
+            <Link href={getLocalizedPath('/cart', locale as Locale)} className="flex items-center gap-2 hover:bg-gray-100 rounded-lg px-3 md:px-4 py-2.5 transition-all relative group">
               <div className="relative">
                 <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-900 group-hover:text-[#5a9c3a] transition-colors" />
                 {totalQuantity > 0 && (
@@ -225,14 +232,17 @@ export function Header({ toggleSidebar }: HeaderProps) {
                   </span>
                 )}
               </div>
-              <span className="text-sm font-medium text-gray-900 hidden sm:inline">{totalQuantity > 0 ?'' : 'Cart'}</span>
+              <span className="text-sm font-medium text-gray-900 hidden sm:inline">{totalQuantity > 0 ?'' : t('cart')}</span>
             </Link>
+
+            {/* Language Switcher */}
+            <LanguageSwitcher />
 
             {/* User Menu */}
             {isLoggedIn && user ? (
               <div className="flex items-center gap-0">
                 <Link 
-                  href="/dashboard" 
+                  href={getLocalizedPath('/dashboard', locale as Locale)}
                   className="flex items-center gap-1 hover:bg-gray-100 rounded-lg px-2 md:px-3 py-2 transition-colors"
                 >
                   <User className="w-5 h-5 text-gray-900" />
@@ -259,9 +269,9 @@ export function Header({ toggleSidebar }: HeaderProps) {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="my-2" />
                     <DropdownMenuItem asChild className="px-3 py-2.5 rounded-lg cursor-pointer focus:bg-gray-100 focus:text-gray-900">
-                      <Link href="/settings" className="flex items-center w-full">
+                      <Link href={getLocalizedPath('/settings', locale as Locale)} className="flex items-center w-full">
                         <Settings className="mr-3 h-4 w-4 text-gray-600" />
-                        <span className="text-sm font-medium">Settings</span>
+                        <span className="text-sm font-medium">{t('settings')}</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="my-2" />
@@ -271,7 +281,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                       className="px-3 py-2.5 rounded-lg cursor-pointer focus:bg-red-50 focus:text-red-600"
                     >
                       <LogOut className="mr-3 h-4 w-4" />
-                      <span className="text-sm font-medium">Logout</span>
+                      <span className="text-sm font-medium">{t('logout')}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -286,7 +296,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                   className="flex items-center gap-1.5 hover:bg-gray-100 rounded-lg px-2 md:px-3 py-2 transition-colors"
                 >
                   <User className="w-5 h-5 text-gray-900" />
-                  <span className="text-sm text-gray-900 font-medium hidden sm:inline">Login</span>
+                  <span className="text-sm text-gray-900 font-medium hidden sm:inline">{t('login')}</span>
                 </button>
                 <Button
                   onClick={() => {
@@ -295,7 +305,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                   }}
                   className="hidden sm:flex bg-[#0A8542] hover:bg-[#097038] text-white text-sm px-4 py-2"
                 >
-                  Sign up
+                  {t('signUp')}
                 </Button>
               </div>
             )}
@@ -321,9 +331,9 @@ export function Header({ toggleSidebar }: HeaderProps) {
       <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl">Logout?</DialogTitle>
+            <DialogTitle className="text-xl">{t('logoutConfirm')}</DialogTitle>
             <DialogDescription className="text-base pt-2">
-              Are you sure you want to logout?
+              {t('logoutConfirmMessage')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -332,14 +342,14 @@ export function Header({ toggleSidebar }: HeaderProps) {
               onClick={() => setLogoutDialogOpen(false)}
               className="flex-1 sm:flex-initial"
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               variant="destructive"
               onClick={handleLogout}
               className="flex-1 sm:flex-initial"
             >
-              Logout
+              {t('logout')}
             </Button>
           </DialogFooter>
         </DialogContent>

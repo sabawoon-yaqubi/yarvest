@@ -15,12 +15,14 @@ import { ApiVolunteer } from "@/components/volunteers-section"
 import { getImageUrl } from "@/lib/utils"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function CouriersListPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [allCouriers, setAllCouriers] = useState<ApiVolunteer[]>([])
   const router = useRouter()
+  const t = useSafeTranslations("couriersList")
 
   // Filter couriers based on search query
   const filteredCouriers = useMemo(() => {
@@ -45,10 +47,10 @@ export default function CouriersListPage() {
                 <div className="w-12 h-12 bg-[#5a9c3a]/10 rounded-xl flex items-center justify-center">
                   <Truck className="w-6 h-6 text-[#5a9c3a]" />
                 </div>
-                <h1 className="text-4xl font-extrabold text-gray-900">Our Couriers</h1>
+                <h1 className="text-4xl font-extrabold text-gray-900">{t("title")}</h1>
               </div>
               <p className="text-lg text-gray-600 mb-6">
-                Trusted delivery partners ensuring safe and timely product transport
+                {t("subtitle")}
               </p>
 
               {/* Search and Map Button - Search on Right */}
@@ -59,7 +61,7 @@ export default function CouriersListPage() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
                       type="text"
-                      placeholder="Search by name or location..."
+                      placeholder={t("searchPlaceholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10 pr-4 py-2 h-9 text-sm w-64 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#5a9c3a]/20 focus:border-[#5a9c3a] transition-colors"
@@ -70,7 +72,7 @@ export default function CouriersListPage() {
                     className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl px-4 h-9 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
                   >
                     <MapPin className="w-4 h-4" />
-                    <span className="text-sm">View Map</span>
+                    <span className="text-sm">{t("viewMap")}</span>
                   </Button>
                 </div>
               </div>
@@ -146,14 +148,14 @@ export default function CouriersListPage() {
                             ) : (
                               <div className="flex items-center gap-2">
                                 <Star className="w-4 h-4 text-gray-300" />
-                                <span className="text-xs text-gray-500">No reviews yet</span>
+                                <span className="text-xs text-gray-500">{t("noReviewsYet")}</span>
                               </div>
                             )}
                           </div>
                         </div>
                         <div className="mt-auto pt-4 border-t border-gray-200">
                           <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl h-10 transition-all shadow-sm hover:shadow-md">
-                            View Profile
+                            {t("viewProfile")}
                           </Button>
                         </div>
                       </div>
@@ -168,10 +170,10 @@ export default function CouriersListPage() {
                     <Truck className="w-8 h-8 text-gray-400" />
                   </div>
                   <p className="text-lg text-gray-600 font-medium mb-2">
-                    {searchQuery ? "No couriers found matching your search." : "No couriers available at the moment."}
+                    {searchQuery ? t("noCouriersFound") : t("noCouriersAvailable")}
                   </p>
                   {searchQuery && (
-                    <p className="text-sm text-gray-500">Try adjusting your search terms.</p>
+                    <p className="text-sm text-gray-500">{t("tryAdjustingSearch")}</p>
                   )}
                 </div>
               )}

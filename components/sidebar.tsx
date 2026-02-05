@@ -4,37 +4,42 @@ import { Home, Store, Calendar, ShoppingBag, Users, Trophy, ChevronDown, Users2,
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
+import { useSafeTranslations, useSafeLocale } from "@/hooks/use-safe-translations"
+import { getLocalizedPath } from "@/lib/locale-utils"
+import { type Locale } from '@/i18n'
 
 interface SidebarProps {
   open?: boolean
   setOpen?: (open: boolean) => void
 }
 
-const menuItems = [
-  { icon: Home, label: "Home", href: "/" },
-  { icon: ShoppingBag, label: "Products", href: "/products" },
-  { icon: Users, label: "Producers", href: "/producers" },
-  { icon: ShoppingBag, label: "Harvesting Tools", href: "/harvesting-products" },
-  { icon: Handshake, label: "Partners", href: "/partners" },
-  { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
-]
-
-const moreMenuItems = [
-  { icon: Store, label: "Stores", href: "/shops" },
-  { icon: Truck, label: "Couriers", href: "/couriers-list" },
-  { icon: Package, label: "Volunteers", href: "/volunteers-list" },
-  { icon: Leaf, label: "Farms", href: "/farms" },
-  { icon: Users2, label: "Community", href: "/community" },
-  { icon: Calendar, label: "Events", href: "/events" },
-  { icon: Heart, label: "Donations", href: "/donations" },
-  { icon: Users2, label: "Invite Friends", href: "/invite" },
-  { icon: HelpCircle, label: "Help Center", href: "/help" },
-  // { icon: Newspaper, label: "News", href: "/news" },
-]
-
 export function Sidebar({ open = true, setOpen }: SidebarProps) {
+  const t = useSafeTranslations('sidebar')
+  const locale = useSafeLocale()
   const pathname = usePathname()
   const [showMore, setShowMore] = useState(false)
+
+  const menuItems = [
+    { icon: Home, label: t('home'), href: "/" },
+    { icon: ShoppingBag, label: t('products'), href: "/products" },
+    { icon: Users, label: t('producers'), href: "/producers" },
+    { icon: ShoppingBag, label: t('harvestingTools'), href: "/harvesting-products" },
+    { icon: Handshake, label: t('partners'), href: "/partners" },
+    { icon: Trophy, label: t('leaderboard'), href: "/leaderboard" },
+  ]
+
+  const moreMenuItems = [
+    { icon: Store, label: t('stores'), href: "/shops" },
+    { icon: Truck, label: t('couriers'), href: "/couriers-list" },
+    { icon: Package, label: t('volunteers'), href: "/volunteers-list" },
+    { icon: Leaf, label: t('farms'), href: "/farms" },
+    { icon: Users2, label: t('community'), href: "/community" },
+    { icon: Calendar, label: t('events'), href: "/events" },
+    { icon: Heart, label: t('donations'), href: "/donations" },
+    { icon: Users2, label: t('inviteFriends'), href: "/invite" },
+    { icon: HelpCircle, label: t('helpCenter'), href: "/help" },
+    // { icon: Newspaper, label: t('news'), href: "/news" },
+  ]
 
   return (
     <>
@@ -51,8 +56,8 @@ export function Sidebar({ open = true, setOpen }: SidebarProps) {
             <div className="p-8 bg-gradient-to-br from-white via-gray-50/50 to-white">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-1">More Options</h3>
-                  <p className="text-sm text-gray-500">Explore additional features and services</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-1">{t('moreOptions')}</h3>
+                  <p className="text-sm text-gray-500">{t('moreOptionsDescription')}</p>
                 </div>
                 <button
                   onClick={(e) => {
@@ -67,11 +72,12 @@ export function Sidebar({ open = true, setOpen }: SidebarProps) {
               </div>
               <div className="grid grid-cols-4 gap-4">
                 {moreMenuItems.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))
+                  const localizedHref = getLocalizedPath(item.href, locale as Locale)
+                  const isActive = pathname === localizedHref || (item.href !== "/" && pathname?.includes(item.href))
                   return (
                     <Link
                       key={item.label} 
-                      href={item.href}
+                      href={localizedHref}
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowMore(false)
@@ -121,9 +127,10 @@ export function Sidebar({ open = true, setOpen }: SidebarProps) {
           <div className="flex items-center gap-1 relative min-w-max md:mx-auto">
             {/* Main Menu Items */}
             {menuItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))
+              const localizedHref = getLocalizedPath(item.href, locale as Locale)
+              const isActive = pathname === localizedHref || (item.href !== "/" && pathname?.includes(item.href))
               return (
-                <Link key={item.label} href={item.href} className="flex-shrink-0">
+                <Link key={item.label} href={localizedHref} className="flex-shrink-0">
                   <div
                     className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
                       isActive
@@ -141,9 +148,10 @@ export function Sidebar({ open = true, setOpen }: SidebarProps) {
             {/* More Menu Items - Show on Mobile Only */}
             <div className="md:hidden flex items-center gap-1">
               {moreMenuItems.map((item) => {
-                const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))
+                const localizedHref = getLocalizedPath(item.href, locale as Locale)
+                const isActive = pathname === localizedHref || (item.href !== "/" && pathname?.includes(item.href))
                 return (
-                  <Link key={item.label} href={item.href} className="flex-shrink-0">
+                  <Link key={item.label} href={localizedHref} className="flex-shrink-0">
                     <div
                       className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all whitespace-nowrap ${
                         isActive
@@ -173,7 +181,7 @@ export function Sidebar({ open = true, setOpen }: SidebarProps) {
                 }`}
               >
                 <ChevronDown className={`w-5 h-5 transition-transform ${showMore ? "rotate-180" : ""}`} />
-                <span className="text-sm font-medium">Show more</span>
+                <span className="text-sm font-medium">{t('showMore')}</span>
               </button>
             </div>
           </div>

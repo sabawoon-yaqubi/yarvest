@@ -44,6 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSafeTranslations } from "@/hooks/use-safe-translations";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -57,6 +58,7 @@ const COLORS = {
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const t = useSafeTranslations("admin")
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
@@ -142,7 +144,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     },
     {
       icon: BarChart3,
-      label: "Analytics",
+      label: t("analytics.title"),
       href: "/admin/analytics",
       section: "main",
     },
@@ -160,7 +162,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       
       {
         icon: HeartHandshake,
-        label: "Favorites",
+        label: t("favorites.title"),
         href: "/admin/favorites",
         section: "buyer",
       }
@@ -172,26 +174,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     allMenuItems.push(
       {
         icon: Package,
-        label: "Products",
+        label: t("products.title"),
         href: "/admin/products",
         section: "seller",
       },
       {
         icon: ShoppingCart,
-        label: "Orders",
+        label: t("orders.title"),
         href: "/admin/orders",
         section: "seller",
       },
       {
         icon: Leaf,
-        label: "My Harvest Requests",
+        label: t("harvestRequests.title"),
         href: "/admin/harvest-requests",
         section: "seller",
       },
 
       {
         icon: Package,
-        label: "Deliveries Requests",
+        label: t("deliveriesRequests.title"),
         href: "/admin/deliveries-requests",
         section: "seller",
       },
@@ -308,7 +310,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   // Settings - single entry at the end for all users
   allMenuItems.push({
     icon: Settings,
-    label: "Settings",
+    label: t("profile.securitySettings"),
     href: "/settings",
     section: "account",
   });
@@ -444,7 +446,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link href="/settings" className="flex items-center w-full">
                   <Settings className="mr-3 h-4 w-4 text-gray-600" />
                   <span className="text-sm font-medium text-gray-700">
-                    Settings
+                    {t("profile.securitySettings")}
                   </span>
                 </Link>
               </DropdownMenuItem>
@@ -456,7 +458,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link href="/" className="flex items-center w-full">
                   <Home className="mr-3 h-4 w-4 text-gray-600" />
                   <span className="text-sm font-medium text-gray-700">
-                    Home
+                    {t("common.home", { ns: "sidebar" }) || "Home"}
                   </span>
                 </Link>
               </DropdownMenuItem>
@@ -468,7 +470,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="px-3 py-2.5 rounded-lg cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 transition-colors"
               >
                 <LogOut className="mr-3 h-4 w-4" />
-                <span className="text-sm font-medium">Logout</span>
+                <span className="text-sm font-medium">{t("common.logout", { ns: "header" }) || "Logout"}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -531,7 +533,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {user && (hasBuyer || isLoadingRoles) && (
                     <div className="mb-8">
                       <p className="text-xs font-semibold text-gray-400 uppercase mb-3 px-3 tracking-wider">
-                        Buyer
+                        {t("dashboard.buyer")}
                       </p>
                       <div className="space-y-1">
                         {allMenuItems
@@ -577,7 +579,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {user && (hasSeller || isLoadingRoles) && (
                     <div className="mb-8">
                       <p className="text-xs font-semibold text-gray-400 uppercase mb-3 px-3 tracking-wider">
-                        Seller
+                        {t("dashboard.seller")}
                       </p>
                       <div className="space-y-1">
                         {allMenuItems
@@ -623,7 +625,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {hasHelper && (
                     <div className="mb-8">
                       <p className="text-xs font-semibold text-gray-400 uppercase mb-3 px-3 tracking-wider">
-                        Helper
+                        {t("dashboard.helper")}
                       </p>
                       <div className="space-y-1">
                         {allMenuItems
@@ -669,7 +671,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {hasCourier && (
                     <div className="mb-8">
                       <p className="text-xs font-semibold text-gray-400 uppercase mb-3 px-3 tracking-wider">
-                        Courier
+                        {t("dashboard.courier")}
                       </p>
                       <div className="space-y-1">
                         {allMenuItems
@@ -714,7 +716,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {/* Account Section */}
                   <div className="mb-8">
                     <p className="text-xs font-semibold text-gray-400 uppercase mb-3 px-3 tracking-wider">
-                      Account
+                      {t("dashboard.account")}
                     </p>
                     <div className="space-y-1">
                       {allMenuItems

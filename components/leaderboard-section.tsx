@@ -4,8 +4,9 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Trophy, Medal, Award, Star, TrendingUp, ArrowRight } from "lucide-react"
-import Link from "next/link"
 import { useApiFetch } from "@/hooks/use-api-fetch"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 interface LeaderboardEntry {
   rank: number
@@ -114,6 +115,7 @@ const LeaderboardSkeleton = () => {
 
 export function LeaderboardSection() {
   const { data, loading, error } = useApiFetch<LeaderboardEntry[]>('/leaderboard?limit=8&page=1')
+  const t = useSafeTranslations("home")
 
   if (loading) {
     return <LeaderboardSkeleton />
@@ -126,16 +128,16 @@ export function LeaderboardSection() {
   const leaderboardData = data
   const topThree = leaderboardData.slice(0, 3)
   const rest = leaderboardData.slice(3)
-
+  
   return (
     <div className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-10">
         <div>
-          <h3 className="font-bold text-2xl sm:text-4xl text-foreground">Top Contributors</h3>
-          <p className="text-muted-foreground text-sm sm:text-base mt-2">Anyone can be here - buyers and sellers alike</p>
+          <h3 className="font-bold text-2xl sm:text-4xl text-foreground">{t("topContributors")}</h3>
+          <p className="text-muted-foreground text-sm sm:text-base mt-2">{t("contributorsDescription")}</p>
         </div>
         <Link href="/leaderboard" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm transition-colors self-start sm:self-auto flex items-center gap-1">
-          View All
+          {t("viewAll")}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
@@ -223,7 +225,7 @@ export function LeaderboardSection() {
       {rest.length > 0 && (
         <Card className="rounded-2xl sm:rounded-3xl border border-border bg-white overflow-hidden">
           <div className="p-4 sm:p-6 border-b border-border bg-secondary/30">
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground">More Top Contributors</h3>
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground">{t("moreTopContributors")}</h3>
           </div>
           <div className="divide-y divide-border">
             {rest.map((producer) => {
@@ -286,7 +288,7 @@ export function LeaderboardSection() {
       <div className="mt-6 sm:mt-8 text-center">
         <Link href="/leaderboard">
           <Button className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl px-6 py-4 sm:px-8 sm:py-6 text-sm sm:text-base w-full sm:w-auto">
-            View Full Leaderboard
+            {t("viewFullLeaderboard")}
           </Button>
         </Link>
       </div>

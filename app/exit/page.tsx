@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button"
 import { LogOut, AlertCircle, CheckCircle, X } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function ExitPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const t = useSafeTranslations("exit")
 
   const handleLogout = () => {
     setShowConfirm(true)
@@ -32,9 +34,9 @@ export default function ExitPage() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-[#5a9c3a]/10 rounded-full mb-6">
                 <LogOut className="w-10 h-10 text-[#5a9c3a]" />
               </div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-4">Exit Account</h1>
+              <h1 className="text-5xl font-bold text-gray-900 mb-4">{t("title")}</h1>
               <p className="text-xl text-gray-600">
-                Are you sure you want to log out?
+                {t("subtitle")}
               </p>
             </div>
 
@@ -45,15 +47,15 @@ export default function ExitPage() {
                     <AlertCircle className="w-8 h-8 text-yellow-600" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Log Out Confirmation</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("logOutConfirmation")}</h2>
                     <p className="text-gray-600">
-                      You will be signed out of your account. You can sign back in anytime.
+                      {t("logOutMessage")}
                     </p>
                   </div>
                   <div className="flex gap-4 justify-center">
                     <Link href="/">
                       <Button variant="outline" className="px-8">
-                        Cancel
+                        {t("cancel")}
                       </Button>
                     </Link>
                     <Button
@@ -61,7 +63,7 @@ export default function ExitPage() {
                       className="px-8 bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white"
                     >
                       <LogOut className="w-5 h-5 mr-2" />
-                      Log Out
+                      {t("logOut")}
                     </Button>
                   </div>
                 </div>
@@ -73,14 +75,14 @@ export default function ExitPage() {
                     <CheckCircle className="w-8 h-8 text-green-600" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Logged Out Successfully</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("loggedOutSuccessfully")}</h2>
                     <p className="text-gray-600">
-                      You have been logged out of your account. Thank you for using Yarvest!
+                      {t("loggedOutMessage")}
                     </p>
                   </div>
                   <Link href="/">
                     <Button className="px-8 bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
-                      Return to Home
+                      {t("returnToHome")}
                     </Button>
                   </Link>
                 </div>
@@ -89,29 +91,29 @@ export default function ExitPage() {
 
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="p-6 rounded-xl border border-gray-200 text-center">
-                <h3 className="font-semibold text-gray-900 mb-2">Need Help?</h3>
-                <p className="text-sm text-gray-600 mb-4">Contact our support team</p>
+                <h3 className="font-semibold text-gray-900 mb-2">{t("needHelp")}</h3>
+                <p className="text-sm text-gray-600 mb-4">{t("contactSupport")}</p>
                 <Link href="/help">
                   <Button variant="outline" size="sm" className="w-full">
-                    Help Center
+                    {t("helpCenter")}
                   </Button>
                 </Link>
               </Card>
               <Card className="p-6 rounded-xl border border-gray-200 text-center">
-                <h3 className="font-semibold text-gray-900 mb-2">Stay Connected</h3>
-                <p className="text-sm text-gray-600 mb-4">Join our community</p>
+                <h3 className="font-semibold text-gray-900 mb-2">{t("stayConnected")}</h3>
+                <p className="text-sm text-gray-600 mb-4">{t("joinCommunity")}</p>
                 <Link href="/community">
                   <Button variant="outline" size="sm" className="w-full">
-                    Community
+                    {t("community")}
                   </Button>
                 </Link>
               </Card>
               <Card className="p-6 rounded-xl border border-gray-200 text-center">
-                <h3 className="font-semibold text-gray-900 mb-2">Continue Shopping</h3>
-                <p className="text-sm text-gray-600 mb-4">Browse our products</p>
+                <h3 className="font-semibold text-gray-900 mb-2">{t("continueShopping")}</h3>
+                <p className="text-sm text-gray-600 mb-4">{t("browseProducts")}</p>
                 <Link href="/products">
                   <Button variant="outline" size="sm" className="w-full">
-                    Products
+                    {t("products")}
                   </Button>
                 </Link>
               </Card>

@@ -6,9 +6,14 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowRight
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { useSafeTranslations, useSafeLocale } from "@/hooks/use-safe-translations"
+import { getLocalizedPath } from "@/lib/locale-utils"
+import { type Locale } from '@/i18n'
 import { subscribeToNewsletter } from "@/lib/newsletter-api"
 
 export function Footer() {
+  const t = useSafeTranslations('footer')
+  const locale = useSafeLocale()
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
@@ -40,7 +45,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Company Info */}
           <div className="space-y-5">
-            <Link href="/" className="flex items-center group">
+            <Link href={getLocalizedPath('/', locale as Locale)} className="flex items-center group">
               <img
                 src="https://cdn.prod.website-files.com/67c12ad0bddda4257ffc4539/67c15cdb77981e22a226bc86_Navbar%20Brand.svg"
                 alt="Yarvest"
@@ -48,7 +53,7 @@ export function Footer() {
               />
             </Link>
             <p className="text-gray-600 leading-relaxed text-sm">
-              Connecting communities with fresh, locally-grown produce. Supporting farmers and bringing the best to your table.
+              {t('description')}
             </p>
 
             {/* Social Media */}
@@ -71,32 +76,32 @@ export function Footer() {
           {/* Quick Links */}
           <div className="space-y-5">
             <h3 className="text-gray-900 font-bold text-base mb-4">
-              Quick Links
+              {t('quickLinks')}
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/products" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  All Products
+                <Link href={getLocalizedPath('/products', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('allProducts')}
                 </Link>
               </li>
               <li>
-                <Link href="/producers" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Our Producers
+                <Link href={getLocalizedPath('/producers', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('ourProducers')}
                 </Link>
               </li>
               <li>
-                <Link href="/events" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Events
+                <Link href={getLocalizedPath('/events', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('events')}
                 </Link>
               </li>
               <li>
-                <Link href="/shops" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Shops
+                <Link href={getLocalizedPath('/shops', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('shops')}
                 </Link>
               </li>
               <li>
-                <Link href="/leaderboard" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Leaderboard
+                <Link href={getLocalizedPath('/leaderboard', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('leaderboard')}
                 </Link>
               </li>
             </ul>
@@ -105,37 +110,37 @@ export function Footer() {
           {/* Customer Service */}
           <div className="space-y-5">
             <h3 className="text-gray-900 font-bold text-base mb-4">
-              Customer Service
+              {t('customerService')}
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  About Us
+                <Link href={getLocalizedPath('/about', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('aboutUs')}
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Contact Us
+                <Link href={getLocalizedPath('/contact', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('contactUs')}
                 </Link>
               </li>
               <li>
-                <Link href="/help" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Help Center
+                <Link href={getLocalizedPath('/help', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('helpCenter')}
                 </Link>
               </li>
               <li>
-                <Link href="/shipping" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Shipping Info
+                <Link href={getLocalizedPath('/shipping', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('shippingInfo')}
                 </Link>
               </li>
               <li>
-                <Link href="/returns" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
-                  Returns & Refunds
+                <Link href={getLocalizedPath('/returns', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('returnsRefunds')}
                 </Link>
               </li>
               <li>
-                <Link href="/become-partner" className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm flex items-center gap-1">
-                  Become a Partner
+                <Link href={getLocalizedPath('/become-partner', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm flex items-center gap-1">
+                  {t('becomePartner')}
                 </Link>
               </li>
             </ul>
@@ -146,21 +151,21 @@ export function Footer() {
             {/* Newsletter */}
             <div className="space-y-4">
               <h3 className="text-gray-900 font-bold text-base mb-3">
-                Newsletter
+                {t('newsletter')}
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Subscribe to get special offers, fresh recipes, and updates from local farmers.
+                {t('newsletterDescription')}
               </p>
               {subscribed ? (
                 <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
                   <CheckCircle2 className="w-5 h-5 text-[#5a9c3a] flex-shrink-0" />
-                  <p className="text-sm text-[#5a9c3a] font-medium">Successfully subscribed!</p>
+                  <p className="text-sm text-[#5a9c3a] font-medium">{t('successfullySubscribed')}</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-3">
                   <Input
                     type="email"
-                    placeholder="Your email address"
+                    placeholder={t('emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -175,11 +180,11 @@ export function Footer() {
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Subscribing...
+                        {t('subscribing')}
                       </>
                     ) : (
                       <>
-                        Subscribe
+                        {t('subscribe')}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </>
                     )}
@@ -194,7 +199,7 @@ export function Footer() {
                 <div className="p-1.5 bg-[#5a9c3a]/10 rounded-lg">
                   <Smartphone className="w-4 h-4 text-[#5a9c3a]" />
                 </div>
-                <span>Mobile Apps</span>
+                <span>{t('mobileApps')}</span>
               </div>
               <div className="space-y-3">
                 {/* App Store */}
@@ -207,14 +212,14 @@ export function Footer() {
                         </svg>
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
-                        <span className="text-[10px] text-gray-400 uppercase tracking-wide">Download on the</span>
-                        <span className="text-sm font-bold text-gray-400 leading-tight">App Store</span>
+                        <span className="text-[10px] text-gray-400 uppercase tracking-wide">{t('downloadOnAppStore')}</span>
+                        <span className="text-sm font-bold text-gray-400 leading-tight">{t('appStore')}</span>
                       </div>
                     </div>
                   </div>
                   <div className="absolute top-2 right-2">
                     <span className="bg-[#5a9c3a] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                      Coming Soon
+                      {t('comingSoon')}
                     </span>
                   </div>
                 </div>
@@ -229,14 +234,14 @@ export function Footer() {
                         </svg>
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
-                        <span className="text-[10px] text-gray-400 uppercase tracking-wide">Get it on</span>
-                        <span className="text-sm font-bold text-gray-400 leading-tight">Google Play</span>
+                        <span className="text-[10px] text-gray-400 uppercase tracking-wide">{t('getItOn')}</span>
+                        <span className="text-sm font-bold text-gray-400 leading-tight">{t('googlePlay')}</span>
                       </div>
                     </div>
                   </div>
                   <div className="absolute top-2 right-2">
                     <span className="bg-[#5a9c3a] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                      Coming Soon
+                      {t('comingSoon')}
                     </span>
                   </div>
                 </div>
@@ -253,7 +258,7 @@ export function Footer() {
                 <Mail className="w-4 h-4 text-[#5a9c3a]" />
               </div>
               <div>
-                <p className="text-gray-500 text-xs mb-1">Email</p>
+                <p className="text-gray-500 text-xs mb-1">{t('email')}</p>
                 <p className="text-gray-900 font-medium text-sm">hello@yarvest.health</p>
               </div>
             </div>
@@ -262,7 +267,7 @@ export function Footer() {
                 <Phone className="w-4 h-4 text-[#5a9c3a]" />
               </div>
               <div>
-                <p className="text-gray-500 text-xs mb-1">Phone</p>
+                <p className="text-gray-500 text-xs mb-1">{t('phone')}</p>
                 <p className="text-gray-900 font-medium text-sm">+1 (555) 123-4567</p>
               </div>
             </div>
@@ -271,7 +276,7 @@ export function Footer() {
                 <MapPin className="w-4 h-4 text-[#5a9c3a]" />
               </div>
               <div>
-                <p className="text-gray-500 text-xs mb-1">Address</p>
+                <p className="text-gray-500 text-xs mb-1">{t('address')}</p>
                 <p className="text-gray-900 font-medium text-sm">San Francisco, CA</p>
               </div>
             </div>
@@ -281,17 +286,17 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-600 text-xs">
-            © {new Date().getFullYear()} Yarvest. All rights reserved.
+            {t('copyright', { year: new Date().getFullYear() })}
           </p>
           <div className="flex flex-wrap gap-4 text-xs">
-            <Link href="/privacy" className="text-gray-600 hover:text-[#5a9c3a] transition-colors">
-              Privacy Policy
+            <Link href={getLocalizedPath('/privacy', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors">
+              {t('privacyPolicy')}
             </Link>
-            <Link href="/terms" className="text-gray-600 hover:text-[#5a9c3a] transition-colors">
-              Terms of Service
+            <Link href={getLocalizedPath('/terms', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors">
+              {t('termsOfService')}
             </Link>
-            <Link href="/cookies" className="text-gray-600 hover:text-[#5a9c3a] transition-colors">
-              Cookie Policy
+            <Link href={getLocalizedPath('/cookies', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors">
+              {t('cookiePolicy')}
             </Link>
           </div>
         </div>

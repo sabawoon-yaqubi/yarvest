@@ -2,24 +2,27 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Truck, ArrowRight, Star, MapPin } from "lucide-react"
-import Link from "next/link"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { ProducerCardSkeleton } from "./producer-card-skeleton"
 import { getImageUrl } from "@/lib/utils"
 import { ApiVolunteer } from "./volunteers-section"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 export function CouriersSection() {
+  const t = useSafeTranslations("home")
+  
   return (
     <div className="w-full">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-bold text-2xl sm:text-4xl text-foreground">Our Couriers</h3>
+            <h3 className="font-bold text-2xl sm:text-4xl text-foreground">{t("ourCouriers")}</h3>
           </div>
-          <p className="text-muted-foreground text-base mt-2 hidden sm:block">Trusted delivery partners ensuring safe and timely transport</p>
+          <p className="text-muted-foreground text-base mt-2 hidden sm:block">{t("couriersDescription")}</p>
         </div>
         <Link href="/couriers-list" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm transition-colors flex items-center gap-1 self-start md:self-auto">
-          View All
+          {t("viewAll")}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

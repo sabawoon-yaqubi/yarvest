@@ -5,9 +5,11 @@ import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
 import { Users, Mail, Gift, Share2, Copy, Check } from "lucide-react"
 import { useState } from "react"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function InvitePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const t = useSafeTranslations("invite")
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -20,36 +22,35 @@ export default function InvitePage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-[#5a9c3a]/10 rounded-full mb-4">
               <Users className="w-8 h-8 text-[#5a9c3a]" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Thank You for Your Interest!</h2>
-            <p className="text-lg text-gray-600">We appreciate your enthusiasm about our referral program.</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">{t("thankYou")}</h2>
+            <p className="text-lg text-gray-600">{t("thankYouMessage")}</p>
           </div>
 
           {/* Coming Soon Badge */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-6 py-3 bg-[#5a9c3a]/10 border-2 border-[#5a9c3a]/30 rounded-full mb-6">
-              <span className="text-2xl font-bold text-[#5a9c3a]">Coming Soon</span>
+              <span className="text-2xl font-bold text-[#5a9c3a]">{t("comingSoon")}</span>
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We're building an amazing referral program where you can invite friends and earn rewards together. 
-              Share your love for fresh, local produce and get rewarded when your friends join the Yarvest community!
+              {t("subtitle")}
             </p>
           </div>
 
           {/* Preview of How It Will Look */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8 opacity-75 pointer-events-none">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Preview: How It Will Work</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">{t("previewTitle")}</h3>
             
             <div className="space-y-6">
               {/* Invite Form Preview */}
               <div className="bg-gray-50 rounded-xl p-6 border-2 border-dashed border-gray-300">
                 <div className="flex items-center gap-3 mb-4">
                   <Mail className="w-5 h-5 text-gray-400" />
-                  <label className="text-sm font-medium text-gray-500">Invite Friends by Email</label>
+                  <label className="text-sm font-medium text-gray-500">{t("inviteFriendsByEmail")}</label>
                 </div>
                 <div className="space-y-4">
                   <input
                     type="email"
-                    placeholder="Enter friend's email address"
+                    placeholder={t("enterFriendsEmail")}
                     disabled
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-400 cursor-not-allowed"
                   />
@@ -57,7 +58,7 @@ export default function InvitePage() {
                     disabled
                     className="w-full px-6 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed"
                   >
-                    Send Invitation
+                    {t("sendInvitation")}
                   </button>
                 </div>
               </div>
@@ -66,7 +67,7 @@ export default function InvitePage() {
               <div className="bg-gray-50 rounded-xl p-6 border-2 border-dashed border-gray-300">
                 <div className="flex items-center gap-3 mb-4">
                   <Share2 className="w-5 h-5 text-gray-400" />
-                  <label className="text-sm font-medium text-gray-500">Your Referral Link</label>
+                  <label className="text-sm font-medium text-gray-500">{t("yourReferralLink")}</label>
                 </div>
                 <div className="flex gap-2">
                   <input
@@ -88,18 +89,18 @@ export default function InvitePage() {
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-br from-[#5a9c3a]/10 to-[#5a9c3a]/5 rounded-xl p-6 border border-[#5a9c3a]/20">
                   <Gift className="w-8 h-8 text-[#5a9c3a] mb-3" />
-                  <h4 className="font-semibold text-gray-700 mb-1">Friends Joined</h4>
+                  <h4 className="font-semibold text-gray-700 mb-1">{t("friendsJoined")}</h4>
                   <p className="text-2xl font-bold text-gray-400">0</p>
                 </div>
                 <div className="bg-gradient-to-br from-[#5a9c3a]/10 to-[#5a9c3a]/5 rounded-xl p-6 border border-[#5a9c3a]/20">
                   <Gift className="w-8 h-8 text-[#5a9c3a] mb-3" />
-                  <h4 className="font-semibold text-gray-700 mb-1">Rewards Earned</h4>
+                  <h4 className="font-semibold text-gray-700 mb-1">{t("rewardsEarned")}</h4>
                   <p className="text-2xl font-bold text-gray-400">$0</p>
                 </div>
                 <div className="bg-gradient-to-br from-[#5a9c3a]/10 to-[#5a9c3a]/5 rounded-xl p-6 border border-[#5a9c3a]/20">
                   <Check className="w-8 h-8 text-[#5a9c3a] mb-3" />
-                  <h4 className="font-semibold text-gray-700 mb-1">Status</h4>
-                  <p className="text-sm text-gray-500">Coming Soon</p>
+                  <h4 className="font-semibold text-gray-700 mb-1">{t("status")}</h4>
+                  <p className="text-sm text-gray-500">{t("comingSoon")}</p>
                 </div>
               </div>
             </div>
@@ -108,7 +109,7 @@ export default function InvitePage() {
           {/* Disabled Notice */}
           <div className="text-center">
             <p className="text-sm text-gray-500 italic">
-              This is a preview. All features are currently disabled and will be available soon.
+              {t("previewNotice")}
             </p>
           </div>
         </div>

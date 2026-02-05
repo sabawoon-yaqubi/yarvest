@@ -11,7 +11,8 @@ export function MarkerInitializer() {
           project: '693f5d74782a477decfca5df',
         })
       } catch (error) {
-        console.error('Failed to initialize Marker.io:', error)
+        // Silently fail - Marker.io subscription may be inactive
+        // No need to log errors for inactive subscriptions
       }
     }
 

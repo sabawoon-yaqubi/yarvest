@@ -37,9 +37,11 @@ import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/stores/auth-store"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function ProfilePage() {
   const router = useRouter()
+  const t = useSafeTranslations("admin.profile")
   const logout = useAuthStore((state) => state.logout)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -236,7 +238,7 @@ export default function ProfilePage() {
       <div className="p-8 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-[#0A5D31]" />
-          <p className="text-gray-600">Loading profile...</p>
+          <p className="text-gray-600">{t("loadingProfile")}</p>
         </div>
       </div>
     )
@@ -247,8 +249,8 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-          <p className="text-gray-600">Manage your seller profile and account settings</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">{t("title")}</h1>
+          <p className="text-gray-600">{t("subtitle")}</p>
         </div>
         {!isEditing ? (
           <Button 
@@ -256,13 +258,13 @@ export default function ProfilePage() {
             onClick={() => setIsEditing(true)}
           >
             <Edit className="w-4 h-4" />
-            Edit Profile
+            {t("editProfile")}
           </Button>
         ) : (
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} className="gap-2" disabled={isSaving}>
               <X className="w-4 h-4" />
-              Cancel
+              {t("cancel")}
             </Button>
             <Button 
               className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white gap-2 shadow-lg"
@@ -272,12 +274,12 @@ export default function ProfilePage() {
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Saving...
+                  {t("saving")}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Save Changes
+                  {t("saveChanges")}
                 </>
               )}
             </Button>
@@ -289,41 +291,41 @@ export default function ProfilePage() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="border-2 hover:shadow-lg transition-all">
           <CardContent className="p-4 text-center">
-            <p className="text-sm text-gray-500 mb-1">Total Products</p>
+            <p className="text-sm text-gray-500 mb-1">{t("totalProducts")}</p>
             <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
           </CardContent>
         </Card>
         <Card className="border-2 hover:shadow-lg transition-all">
           <CardContent className="p-4 text-center">
-            <p className="text-sm text-gray-500 mb-1">Total Orders</p>
+            <p className="text-sm text-gray-500 mb-1">{t("totalOrders")}</p>
             <p className="text-2xl font-bold text-gray-900">{stats.totalOrders}</p>
           </CardContent>
         </Card>
         <Card className="border-2 hover:shadow-lg transition-all">
           <CardContent className="p-4 text-center">
-            <p className="text-sm text-gray-500 mb-1">Total Revenue</p>
+            <p className="text-sm text-gray-500 mb-1">{t("totalRevenue")}</p>
             <p className="text-2xl font-bold text-[#5a9c3a]">${stats.totalRevenue.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card className="border-2 hover:shadow-lg transition-all">
           <CardContent className="p-4 text-center">
-            <p className="text-sm text-gray-500 mb-1">Rating</p>
+            <p className="text-sm text-gray-500 mb-1">{t("rating")}</p>
             <p className="text-2xl font-bold text-yellow-600">{stats.rating} ⭐</p>
-            <p className="text-xs text-gray-500">{stats.reviews} reviews</p>
+            <p className="text-xs text-gray-500">{stats.reviews} {t("reviews")}</p>
           </CardContent>
         </Card>
         <Card className="border-2 hover:shadow-lg transition-all">
           <CardContent className="p-4 text-center">
-            <p className="text-sm text-gray-500 mb-1">Status</p>
+            <p className="text-sm text-gray-500 mb-1">{t("status")}</p>
             {userData?.roles && userData.roles.length > 0 ? (
               <Badge className="bg-emerald-500 text-white mt-2">
                 <Verified className="w-3 h-3 mr-1" />
-                Verified
+                {t("verified")}
               </Badge>
             ) : (
               <Badge className="bg-yellow-500 text-white mt-2">
                 <AlertCircle className="w-3 h-3 mr-1" />
-                Unverified
+                {t("unverified")}
               </Badge>
             )}
           </CardContent>
@@ -340,8 +342,8 @@ export default function ProfilePage() {
                   <Award className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-gray-900">Get Verified Badge</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">Verify your business to build trust with customers</p>
+                  <CardTitle className="text-xl font-bold text-gray-900">{t("getVerifiedBadge")}</CardTitle>
+                  <p className="text-sm text-gray-600 mt-1">{t("verifyBusinessDescription")}</p>
                 </div>
               </div>
               <Button 
@@ -349,7 +351,7 @@ export default function ProfilePage() {
                 onClick={() => setShowVerificationModal(true)}
               >
                 <Shield className="w-4 h-4" />
-                Apply for Verification
+                {t("applyForVerification")}
               </Button>
             </div>
           </CardHeader>
@@ -358,22 +360,22 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-yellow-200">
                 <CheckCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-gray-900">Increased Trust</p>
-                  <p className="text-sm text-gray-600">Build credibility with verified badge</p>
+                  <p className="font-semibold text-gray-900">{t("increasedTrust")}</p>
+                  <p className="text-sm text-gray-600">{t("buildCredibility")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-yellow-200">
                 <CheckCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-gray-900">More Visibility</p>
-                  <p className="text-sm text-gray-600">Get featured in search results</p>
+                  <p className="font-semibold text-gray-900">{t("moreVisibility")}</p>
+                  <p className="text-sm text-gray-600">{t("getFeaturedInSearch")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-yellow-200">
                 <CheckCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-gray-900">Priority Support</p>
-                  <p className="text-sm text-gray-600">Access to dedicated support team</p>
+                  <p className="font-semibold text-gray-900">{t("prioritySupport")}</p>
+                  <p className="text-sm text-gray-600">{t("accessDedicatedSupport")}</p>
                 </div>
               </div>
             </div>
@@ -381,7 +383,7 @@ export default function ProfilePage() {
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-blue-600" />
-                  <p className="text-sm font-medium text-blue-900">Your verification request is under review. We'll notify you once it's processed.</p>
+                  <p className="text-sm font-medium text-blue-900">{t("verificationUnderReview")}</p>
                 </div>
               </div>
             )}
@@ -397,7 +399,7 @@ export default function ProfilePage() {
             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <CardTitle className="flex items-center gap-2">
                 <UserIcon className="w-5 h-5 text-[#5a9c3a]" />
-                Basic Information
+                {t("basicInformation")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 p-6">
@@ -405,7 +407,7 @@ export default function ProfilePage() {
                 <div>
                   <Label htmlFor="storeName" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <Store className="w-4 h-4" />
-                    Store Name *
+                    {t("storeName")}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -422,7 +424,7 @@ export default function ProfilePage() {
                 <div>
                   <Label htmlFor="first_name" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <UserIcon className="w-4 h-4" />
-                    First Name *
+                    {t("firstName")}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -439,7 +441,7 @@ export default function ProfilePage() {
                 <div>
                   <Label htmlFor="last_name" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <UserIcon className="w-4 h-4" />
-                    Last Name *
+                    {t("lastName")}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -456,7 +458,7 @@ export default function ProfilePage() {
                 <div>
                   <Label htmlFor="email" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <Mail className="w-4 h-4" />
-                    Email *
+                    {t("email")}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -474,7 +476,7 @@ export default function ProfilePage() {
                 <div>
                   <Label htmlFor="phone" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <Phone className="w-4 h-4" />
-                    Phone *
+                    {t("phone")}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -492,7 +494,7 @@ export default function ProfilePage() {
                 <div className="md:col-span-2">
                   <Label htmlFor="address" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <MapPin className="w-4 h-4" />
-                    Address
+                    {t("address")}
                   </Label>
                   {isEditing && selectedAddress ? (
                     <div className="space-y-2">
@@ -503,7 +505,7 @@ export default function ProfilePage() {
                           const updated = { ...selectedAddress, street_address: e.target.value }
                           setSelectedAddress(updated)
                         }}
-                        placeholder="Street Address"
+                        placeholder={t("streetAddress")}
                         className="h-12 border-2"
                       />
                       <div className="grid grid-cols-2 gap-2">
@@ -514,7 +516,7 @@ export default function ProfilePage() {
                             const updated = { ...selectedAddress, city: e.target.value }
                             setSelectedAddress(updated)
                           }}
-                          placeholder="City"
+                          placeholder={t("city")}
                           className="h-12 border-2"
                         />
                         <Input
@@ -524,7 +526,7 @@ export default function ProfilePage() {
                             const updated = { ...selectedAddress, state: e.target.value }
                             setSelectedAddress(updated)
                           }}
-                          placeholder="State"
+                          placeholder={t("state")}
                           className="h-12 border-2"
                         />
                       </div>
@@ -536,7 +538,7 @@ export default function ProfilePage() {
                             const updated = { ...selectedAddress, postal_code: e.target.value }
                             setSelectedAddress(updated)
                           }}
-                          placeholder="Postal Code"
+                          placeholder={t("postalCode")}
                           className="h-12 border-2"
                         />
                         <Input
@@ -546,7 +548,7 @@ export default function ProfilePage() {
                             const updated = { ...selectedAddress, apt: e.target.value }
                             setSelectedAddress(updated)
                           }}
-                          placeholder="Apt/Suite (Optional)"
+                          placeholder={t("aptSuiteOptional")}
                           className="h-12 border-2"
                         />
                       </div>
@@ -556,19 +558,19 @@ export default function ProfilePage() {
                           onClick={() => selectedAddress && handleAddressUpdate(selectedAddress.id, selectedAddress)}
                           className="bg-[#0A5D31] hover:bg-[#0d7a3f] text-white"
                         >
-                          Update Address
+                          {t("updateAddress")}
                         </Button>
                       )}
                     </div>
                   ) : (
-                    <p className="text-gray-900 font-medium text-lg">{profile.address || "No address provided"}</p>
+                    <p className="text-gray-900 font-medium text-lg">{profile.address || t("noAddressProvided")}</p>
                   )}
                 </div>
 
                 <div>
                   <Label htmlFor="website" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <Globe className="w-4 h-4" />
-                    Website
+                    {t("website")}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -591,7 +593,7 @@ export default function ProfilePage() {
             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <CardTitle className="flex items-center gap-2">
                 <Building className="w-5 h-5 text-[#5a9c3a]" />
-                Business Information
+                {t("businessInformation")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 p-6">
@@ -599,7 +601,7 @@ export default function ProfilePage() {
                 <div>
                   <Label htmlFor="businessType" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <Building className="w-4 h-4" />
-                    Business Type *
+                    {t("businessType")}
                   </Label>
                   {isEditing ? (
                     <select
@@ -622,7 +624,7 @@ export default function ProfilePage() {
                 <div>
                   <Label htmlFor="established" className="flex items-center gap-2 mb-2 text-base font-semibold">
                     <Calendar className="w-4 h-4" />
-                    Established Year
+                    {t("establishedYear")}
                   </Label>
                   {isEditing ? (
                     <Input
@@ -638,7 +640,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="taxId">Tax ID / EIN</Label>
+                  <Label htmlFor="taxId">{t("taxIdEin")}</Label>
                   {isEditing ? (
                     <Input
                       id="taxId"
@@ -658,10 +660,10 @@ export default function ProfilePage() {
           {/* Bio */}
           <Card className="border-2 shadow-lg">
             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-              <CardTitle>About Your Business</CardTitle>
+              <CardTitle>{t("aboutYourBusiness")}</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <Label htmlFor="bio" className="text-base font-semibold">Bio / Description</Label>
+              <Label htmlFor="bio" className="text-base font-semibold">{t("bioDescription")}</Label>
               {isEditing ? (
                 <textarea
                   id="bio"
@@ -669,7 +671,7 @@ export default function ProfilePage() {
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   rows={6}
                   className="mt-3 w-full p-4 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a] resize-none"
-                  placeholder="Tell customers about your business..."
+                  placeholder={t("tellCustomersAboutBusiness")}
                 />
               ) : (
                 <p className="text-gray-700 mt-3 text-lg leading-relaxed">{profile.bio}</p>
@@ -683,7 +685,7 @@ export default function ProfilePage() {
           {/* Profile Image */}
           <Card className="border-2 shadow-lg">
             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-              <CardTitle>Profile Image</CardTitle>
+              <CardTitle>{t("profileImage")}</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="flex flex-col items-center gap-4">
@@ -693,7 +695,7 @@ export default function ProfilePage() {
                 {isEditing && (
                   <Button variant="outline" className="gap-2 w-full">
                     <Upload className="w-4 h-4" />
-                    Upload Image
+                    {t("uploadImage")}
                   </Button>
                 )}
               </div>
@@ -705,7 +707,7 @@ export default function ProfilePage() {
             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <CardTitle className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-[#5a9c3a]" />
-                Certifications
+                {t("certifications")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -718,7 +720,7 @@ export default function ProfilePage() {
                 ))}
                 {isEditing && (
                   <Button variant="outline" className="w-full mt-3 border-2">
-                    Add Certification
+                    {t("addCertification")}
                   </Button>
                 )}
               </div>
@@ -730,7 +732,7 @@ export default function ProfilePage() {
             <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <CardTitle className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-[#5a9c3a]" />
-                Security & Settings
+                {t("securitySettings")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-3">
@@ -740,18 +742,18 @@ export default function ProfilePage() {
                 onClick={() => setShowPasswordModal(true)}
               >
                 <Key className="w-4 h-4" />
-                Change Password
+                {t("changePassword")}
               </Button>
               <Button variant="outline" className="w-full justify-start gap-2 border-2 h-12" asChild>
                 <a href="/admin/settings">
                   <CreditCard className="w-4 h-4" />
-                  Payment Settings
+                  {t("paymentSettings")}
                 </a>
               </Button>
               <Button variant="outline" className="w-full justify-start gap-2 border-2 h-12" asChild>
                 <a href="/admin/settings">
                   <Bell className="w-4 h-4" />
-                  Notifications
+                  {t("notifications")}
                 </a>
               </Button>
               <Button 
@@ -763,12 +765,12 @@ export default function ProfilePage() {
                 {isDeletingAccount ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Deleting...
+                    {t("deleting")}
                   </>
                 ) : (
                   <>
                     <X className="w-4 h-4" />
-                    Delete Account
+                    {t("deleteAccount")}
                   </>
                 )}
               </Button>
@@ -783,57 +785,57 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Lock className="w-6 h-6 text-[#5a9c3a]" />
-              Change Password
+              {t("changePasswordTitle")}
             </DialogTitle>
             <DialogDescription>
-              Update your account password for better security
+              {t("changePasswordDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="currentPassword" className="text-base font-semibold">Current Password *</Label>
+              <Label htmlFor="currentPassword" className="text-base font-semibold">{t("currentPassword")}</Label>
               <Input
                 id="currentPassword"
                 type="password"
                 value={passwordData.currentPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                 className="mt-2 h-12 border-2"
-                placeholder="Enter current password"
+                placeholder={t("enterCurrentPassword")}
               />
             </div>
             <div>
-              <Label htmlFor="newPassword" className="text-base font-semibold">New Password *</Label>
+              <Label htmlFor="newPassword" className="text-base font-semibold">{t("newPassword")}</Label>
               <Input
                 id="newPassword"
                 type="password"
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                 className="mt-2 h-12 border-2"
-                placeholder="Enter new password"
+                placeholder={t("enterNewPassword")}
               />
             </div>
             <div>
-              <Label htmlFor="confirmPassword" className="text-base font-semibold">Confirm New Password *</Label>
+              <Label htmlFor="confirmPassword" className="text-base font-semibold">{t("confirmNewPassword")}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
                 value={passwordData.confirmPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                 className="mt-2 h-12 border-2"
-                placeholder="Confirm new password"
+                placeholder={t("confirmNewPasswordPlaceholder")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPasswordModal(false)} className="h-12">
-              Cancel
+              {t("cancel")}
             </Button>
             <Button 
               className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white h-12"
               onClick={handlePasswordChange}
               disabled={!passwordData.newPassword || !passwordData.confirmPassword}
             >
-              Update Password
+              {t("updatePassword")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -845,25 +847,25 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Shield className="w-6 h-6 text-[#5a9c3a]" />
-              Apply for Verification Badge
+              {t("applyForVerificationBadge")}
             </DialogTitle>
             <DialogDescription>
-              Submit your business documents to get verified and build trust with customers
+              {t("submitBusinessDocuments")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 py-4">
             <div>
-              <Label htmlFor="businessLicense" className="text-base font-semibold">Business License Number *</Label>
+              <Label htmlFor="businessLicense" className="text-base font-semibold">{t("businessLicenseNumber")}</Label>
               <Input
                 id="businessLicense"
                 value={verificationData.businessLicense}
                 onChange={(e) => setVerificationData({ ...verificationData, businessLicense: e.target.value })}
                 className="mt-2 h-12 border-2"
-                placeholder="Enter your business license number"
+                placeholder={t("enterBusinessLicense")}
               />
             </div>
             <div>
-              <Label htmlFor="taxId" className="text-base font-semibold">Tax ID / EIN *</Label>
+              <Label htmlFor="taxId" className="text-base font-semibold">{t("taxIdEinLabel")}</Label>
               <Input
                 id="taxId"
                 value={verificationData.taxId}
@@ -873,14 +875,14 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <Label className="text-base font-semibold mb-3 block">Upload Documents *</Label>
+              <Label className="text-base font-semibold mb-3 block">{t("uploadDocuments")}</Label>
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#5a9c3a] transition-colors cursor-pointer">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm font-medium text-gray-600 mb-1">Click to upload or drag and drop</p>
-                <p className="text-xs text-gray-500">Business license, Tax documents, etc. (PDF, JPG, PNG)</p>
+                <p className="text-sm font-medium text-gray-600 mb-1">{t("clickToUpload")}</p>
+                <p className="text-xs text-gray-500">{t("businessLicenseTaxDocuments")}</p>
                 <Button variant="outline" className="mt-4 gap-2">
                   <Upload className="w-4 h-4" />
-                  Choose Files
+                  {t("chooseFiles")}
                 </Button>
               </div>
             </div>
@@ -888,21 +890,21 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-blue-900 mb-1">Verification Process</p>
-                  <p className="text-xs text-blue-700">Your documents will be reviewed within 2-3 business days. You'll receive an email notification once the verification is complete.</p>
+                  <p className="text-sm font-medium text-blue-900 mb-1">{t("verificationProcess")}</p>
+                  <p className="text-xs text-blue-700">{t("documentsReviewed")}</p>
                 </div>
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowVerificationModal(false)} className="h-12">
-              Cancel
+              {t("cancel")}
             </Button>
             <Button 
               className="bg-gradient-to-r from-[#5a9c3a] to-[#0d7a3f] hover:from-[#0d7a3f] hover:to-[#5a9c3a] text-white h-12"
               onClick={handleVerificationSubmit}
             >
-              Submit for Verification
+              {t("submitForVerification")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -917,14 +919,14 @@ export default function ProfilePage() {
                 <AlertTriangle className="w-6 h-6 text-red-600" />
               </div>
               <DialogTitle className="text-xl font-bold text-gray-900">
-                Delete Profile
+                {t("deleteProfile")}
               </DialogTitle>
             </div>
             <DialogDescription className="text-base text-gray-600 pt-2">
-              Are you sure you want to delete <span className="font-semibold text-gray-900">your profile</span>?
+              {t("deleteProfileDescription")}
               <br />
               <br />
-              <span className="text-red-600 font-medium">This action cannot be undone.</span>
+              <span className="text-red-600 font-medium">{t("actionCannotBeUndone")}</span>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-3 mt-4">
@@ -934,14 +936,14 @@ export default function ProfilePage() {
               disabled={isDeletingAccount}
               className="h-10"
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               onClick={handleDeleteAccount}
               disabled={isDeletingAccount}
               className="bg-red-600 hover:bg-red-700 text-white h-10"
             >
-              {isDeletingAccount ? "Deleting..." : "Delete Profile"}
+              {isDeletingAccount ? t("deleting") : t("deleteProfileButton")}
             </Button>
           </DialogFooter>
         </DialogContent>

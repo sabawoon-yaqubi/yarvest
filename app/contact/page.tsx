@@ -10,9 +10,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MapPin, Send, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { submitContactForm } from "@/lib/contact-api"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function ContactPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const t = useSafeTranslations("contact")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -44,9 +46,9 @@ export default function ContactPage() {
         <div className="min-h-screen bg-white">
           <div className="max-w-6xl mx-auto px-6 py-16">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-gray-900 mb-3">Contact Us</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-3">{t("title")}</h1>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Have a question or need help? We're here to assist you. Reach out to us and we'll respond as soon as possible.
+                {t("subtitle")}
               </p>
             </div>
 
@@ -60,9 +62,9 @@ export default function ContactPage() {
                         <Mail className="w-5 h-5 text-[#5a9c3a]" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                        <h3 className="font-semibold text-gray-900 mb-1">{t("email")}</h3>
                         <a href="mailto:hello@yarvest.health" className="text-[#5a9c3a] hover:underline text-sm">
-                          hello@yarvest.health
+                          {t("emailAddress")}
                         </a>
                       </div>
                     </div>
@@ -76,11 +78,11 @@ export default function ContactPage() {
                         <Phone className="w-5 h-5 text-[#5a9c3a]" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
+                        <h3 className="font-semibold text-gray-900 mb-1">{t("phone")}</h3>
                         <a href="tel:+15551234567" className="text-[#5a9c3a] hover:underline text-sm">
-                          +1 (555) 123-4567
+                          {t("phoneNumber")}
                         </a>
-                        <p className="text-gray-500 text-xs mt-1">Mon-Fri, 9am-5pm PST</p>
+                        <p className="text-gray-500 text-xs mt-1">{t("phoneHours")}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -93,10 +95,10 @@ export default function ContactPage() {
                         <MapPin className="w-5 h-5 text-[#5a9c3a]" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
+                        <h3 className="font-semibold text-gray-900 mb-1">{t("address")}</h3>
                         <p className="text-gray-600 text-sm">
-                          San Francisco, CA<br />
-                          United States
+                          {t("addressLine1")}<br />
+                          {t("addressLine2")}
                         </p>
                       </div>
                     </div>
@@ -108,12 +110,12 @@ export default function ContactPage() {
               <div className="lg:col-span-2">
                 <Card className="border-0 shadow-md">
                   <CardContent className="p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">{t("sendMessage")}</h2>
                     <form onSubmit={handleSubmit} className="space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                            Name
+                            {t("name")}
                           </label>
                           <Input
                             id="name"
@@ -122,12 +124,12 @@ export default function ContactPage() {
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
                             className="bg-white border-gray-300"
-                            placeholder="Your name"
+                            placeholder={t("namePlaceholder")}
                           />
                         </div>
                         <div>
                           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                            Email
+                            {t("emailLabel")}
                           </label>
                           <Input
                             id="email"
@@ -136,14 +138,14 @@ export default function ContactPage() {
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             required
                             className="bg-white border-gray-300"
-                            placeholder="your.email@example.com"
+                            placeholder={t("emailPlaceholder")}
                           />
                         </div>
                       </div>
 
                       <div>
                         <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                          Subject
+                          {t("subject")}
                         </label>
                         <Input
                           id="subject"
@@ -152,13 +154,13 @@ export default function ContactPage() {
                           onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                           required
                           className="bg-white border-gray-300"
-                          placeholder="What's this about?"
+                          placeholder={t("subjectPlaceholder")}
                         />
                       </div>
 
                       <div>
                         <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                          Message
+                          {t("message")}
                         </label>
                         <Textarea
                           id="message"
@@ -167,7 +169,7 @@ export default function ContactPage() {
                           required
                           rows={6}
                           className="bg-white border-gray-300"
-                          placeholder="Tell us how we can help..."
+                          placeholder={t("messagePlaceholder")}
                         />
                       </div>
 
@@ -179,12 +181,12 @@ export default function ContactPage() {
                         {isLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Sending...
+                            {t("sending")}
                           </>
                         ) : (
                           <>
                             <Send className="w-4 h-4 mr-2" />
-                            Send Message
+                            {t("sendMessageButton")}
                           </>
                         )}
                       </Button>

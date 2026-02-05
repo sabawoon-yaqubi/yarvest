@@ -4,9 +4,11 @@ import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
 import { useState } from "react"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function CookiePolicyPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const t = useSafeTranslations("cookies")
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -15,27 +17,26 @@ export default function CookiePolicyPage() {
       <main className="flex-1 overflow-auto">
         <div className="min-h-screen bg-white">
           <div className="max-w-4xl mx-auto px-6 py-16">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Cookie Policy</h1>
-            <p className="text-gray-500 text-sm mb-8">Last updated: {new Date().toLocaleDateString()}</p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">{t("title")}</h1>
+            <p className="text-gray-500 text-sm mb-8">{t("lastUpdated", { date: new Date().toLocaleDateString() })}</p>
 
             <div className="prose prose-sm max-w-none space-y-8 text-gray-700">
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. What Are Cookies</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. {t("whatAreCookies")}</h2>
                 <p className="leading-relaxed">
-                  Cookies are small text files that are placed on your device when you visit a website. They are widely 
-                  used to make websites work more efficiently and provide information to website owners.
+                  {t("whatAreCookiesText")}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. How We Use Cookies</h2>
-                <p className="leading-relaxed mb-3">Yarvest uses cookies for various purposes, including:</p>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. {t("howWeUseCookies")}</h2>
+                <p className="leading-relaxed mb-3">{t("howWeUseCookiesText")}</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Essential Cookies:</strong> Required for the platform to function properly</li>
-                  <li><strong>Authentication:</strong> To keep you logged in and maintain your session</li>
-                  <li><strong>Preferences:</strong> To remember your settings and preferences</li>
-                  <li><strong>Analytics:</strong> To understand how users interact with our platform</li>
-                  <li><strong>Marketing:</strong> To deliver relevant advertisements (with your consent)</li>
+                  <li><strong>{t("essentialCookies")}</strong> {t("essentialCookiesText")}</li>
+                  <li><strong>{t("authentication")}</strong> {t("authenticationText")}</li>
+                  <li><strong>{t("preferences")}</strong> {t("preferencesText")}</li>
+                  <li><strong>{t("analytics")}</strong> {t("analyticsText")}</li>
+                  <li><strong>{t("marketing")}</strong> {t("marketingText")}</li>
                 </ul>
               </section>
 

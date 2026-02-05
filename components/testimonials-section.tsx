@@ -6,14 +6,17 @@ import { ApiTestimonial } from "@/types/testimonial"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { TestimonialCardSkeleton } from "./testimonial-card-skeleton"
 import { getImageUrl } from "@/lib/utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export function TestimonialsSection() {
+  const t = useSafeTranslations("home")
+  
   return (
     <div className="w-full">
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-foreground mb-3">What Our Customers Say</h2>
+        <h2 className="text-4xl font-bold text-foreground mb-3">{t("whatCustomersSay")}</h2>
         <p className="text-muted-foreground text-base max-w-2xl mx-auto">
-          Real stories from people who love fresh, local produce
+          {t("customersSayDescription")}
         </p>
       </div>
       

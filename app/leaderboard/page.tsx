@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Trophy, Medal, Award, Star, TrendingUp, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useApiFetch } from "@/hooks/use-api-fetch"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 interface LeaderboardEntry {
   rank: number
@@ -67,6 +68,7 @@ export default function LeaderboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [page, setPage] = useState(1)
   const { data, loading, error, refetch } = useApiFetch<LeaderboardEntry[]>(`/leaderboard?limit=50&page=${page}`)
+  const t = useSafeTranslations("leaderboard")
 
   const leaderboardData = data || []
 
@@ -81,10 +83,10 @@ export default function LeaderboardPage() {
             <div className="mb-10 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Trophy className="w-7 h-7 sm:w-10 sm:h-10 text-primary" />
-                <h1 className="text-3xl sm:text-5xl font-bold text-foreground">Top Contributors</h1>
+                <h1 className="text-3xl sm:text-5xl font-bold text-foreground">{t("title")}</h1>
               </div>
               <p className="text-base sm:text-lg text-muted-foreground">
-                Anyone can be here - buyers and sellers alike
+                {t("subtitle")}
               </p>
             </div>
 
@@ -99,12 +101,12 @@ export default function LeaderboardPage() {
                   onClick={() => refetch()}
                   className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 >
-                  Retry
+                  {t("retry")}
                 </button>
               </Card>
             ) : leaderboardData.length === 0 ? (
               <Card className="p-8 text-center">
-                <p className="text-muted-foreground">No leaderboard data available yet.</p>
+                <p className="text-muted-foreground">{t("noLeaderboardData")}</p>
               </Card>
             ) : (
               <>
@@ -180,7 +182,7 @@ export default function LeaderboardPage() {
                             }`}>
                               {producer.points.toLocaleString()}
                             </p>
-                            <p className="text-sm text-muted-foreground">points</p>
+                            <p className="text-sm text-muted-foreground">{t("points")}</p>
                           </Card>
                         )
                       })}
@@ -191,7 +193,7 @@ export default function LeaderboardPage() {
                 {/* Leaderboard List */}
                 <Card className="rounded-3xl border border-border bg-white overflow-hidden">
                   <div className="p-4 sm:p-6 border-b border-border bg-secondary/30">
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground">All Rankings</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t("allRankings")}</h2>
                   </div>
                   <div>
                     {leaderboardData.map((producer) => {
@@ -235,13 +237,13 @@ export default function LeaderboardPage() {
                                 </span>
                               )}
                               {producer.rating > 0 && <span>·</span>}
-                              <span>{producer.products_count} products</span>
+                              <span>{producer.products_count} {t("products")}</span>
                             </div>
                           </div>
                           {/* Points */}
                           <div className="flex flex-col items-end flex-shrink-0 ml-2">
                             <span className="font-bold text-primary text-base sm:text-lg leading-none">{producer.points.toLocaleString()}</span>
-                            <span className="text-xs text-muted-foreground leading-none">pts</span>
+                            <span className="text-xs text-muted-foreground leading-none">{t("pts")}</span>
                           </div>
                         </div>
                       )
@@ -253,23 +255,22 @@ export default function LeaderboardPage() {
 
             {/* Info Section */}
             <Card className="mt-8 p-6 rounded-3xl border border-border bg-gradient-to-r from-primary/5 to-transparent">
-              <h3 className="font-bold text-lg text-foreground mb-2">How Points Work</h3>
+              <h3 className="font-bold text-lg text-foreground mb-2">{t("howPointsWork")}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Contributors earn points based on sales, customer ratings, product quality, and community engagement.
-                Rankings are updated daily.
+                {t("howPointsWorkDescription")}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="font-semibold text-foreground mb-1">Sales Volume</p>
-                  <p className="text-muted-foreground">Based on total orders</p>
+                  <p className="font-semibold text-foreground mb-1">{t("salesVolume")}</p>
+                  <p className="text-muted-foreground">{t("salesVolumeDescription")}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground mb-1">Customer Ratings</p>
-                  <p className="text-muted-foreground">Average review scores</p>
+                  <p className="font-semibold text-foreground mb-1">{t("customerRatings")}</p>
+                  <p className="text-muted-foreground">{t("customerRatingsDescription")}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground mb-1">Community Impact</p>
-                  <p className="text-muted-foreground">Local engagement & events</p>
+                  <p className="font-semibold text-foreground mb-1">{t("communityImpact")}</p>
+                  <p className="text-muted-foreground">{t("communityImpactDescription")}</p>
                 </div>
               </div>
             </Card>

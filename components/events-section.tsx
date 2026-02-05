@@ -3,22 +3,25 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Users, Clock, ArrowRight } from "lucide-react"
-import Link from "next/link"
 import { ApiEvent, BackendEvent, transformEvent } from "@/types/event"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { EventCardSkeleton } from "./event-card-skeleton"
 import { getImageUrl } from "@/lib/utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 export function EventsSection() {
+  const t = useSafeTranslations("home")
+  
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-10">
         <div>
-          <h3 className="font-bold text-2xl sm:text-4xl text-foreground">Upcoming Events</h3>
-          <p className="text-muted-foreground text-base mt-2 hidden sm:block">Connect with farmers and discover local food culture</p>
+          <h3 className="font-bold text-2xl sm:text-4xl text-foreground">{t("upcomingEvents")}</h3>
+          <p className="text-muted-foreground text-base mt-2 hidden sm:block">{t("eventsDescription")}</p>
         </div>
         <Link href="/events" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm transition-colors flex items-center gap-1">
-          View All
+          {t("viewAll")}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

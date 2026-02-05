@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import api from "@/lib/axios"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 const statusConfig = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -86,6 +87,7 @@ interface UserReview {
 
 export default function DeliveriesRequestsPage() {
   const router = useRouter()
+  const t = useSafeTranslations("admin.deliveriesRequests")
   const [activeTab, setActiveTab] = useState<'pending' | 'requests' | 'reviews'>('pending')
   const [courierRequestsLoaded, setCourierRequestsLoaded] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
@@ -474,7 +476,7 @@ export default function DeliveriesRequestsPage() {
       <div className="p-6 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-[#5a9c3a]" />
-          <p className="text-gray-600">Loading deliveries requests...</p>
+          <p className="text-gray-600">{t("loadingDeliveriesRequests")}</p>
         </div>
       </div>
     )
@@ -485,8 +487,8 @@ export default function DeliveriesRequestsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Delivery Requests</h1>
-          <p className="text-gray-500 mt-1 text-sm">Manage courier requests for your orders</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-1 text-sm">{t("subtitle")}</p>
         </div>
         {selectedOrders.size > 0 && activeTab === 'pending' && (
           <Button
@@ -494,7 +496,7 @@ export default function DeliveriesRequestsPage() {
             className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white gap-2"
           >
             <Plus className="w-4 h-4" />
-            Request Courier ({selectedOrders.size})
+            {t("requestCourier", { count: selectedOrders.size })}
           </Button>
         )}
       </div>
@@ -502,23 +504,23 @@ export default function DeliveriesRequestsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-500 mb-1">Pending Orders</p>
+          <p className="text-sm text-gray-500 mb-1">{t("pendingOrders")}</p>
           <p className="text-2xl font-bold text-gray-900">{stats.pendingOrders}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-500 mb-1">Total Requests</p>
+          <p className="text-sm text-gray-500 mb-1">{t("totalRequests")}</p>
           <p className="text-2xl font-bold text-gray-900">{stats.totalRequests}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-500 mb-1">Pending</p>
+          <p className="text-sm text-gray-500 mb-1">{t("pendingRequests")}</p>
           <p className="text-2xl font-bold text-yellow-600">{stats.pendingRequests}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-500 mb-1">Accepted</p>
+          <p className="text-sm text-gray-500 mb-1">{t("acceptedRequests")}</p>
           <p className="text-2xl font-bold text-green-600">{stats.acceptedRequests}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-500 mb-1">Reviewable</p>
+          <p className="text-sm text-gray-500 mb-1">{t("reviewable")}</p>
           <p className="text-2xl font-bold text-blue-600">{stats.reviewableOrders}</p>
         </div>
       </div>
@@ -526,9 +528,9 @@ export default function DeliveriesRequestsPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="pending">Pending Orders</TabsTrigger>
-          <TabsTrigger value="requests">Courier Requests</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="pending">{t("pendingOrdersTab")}</TabsTrigger>
+          <TabsTrigger value="requests">{t("courierRequestsTab")}</TabsTrigger>
+          <TabsTrigger value="reviews">{t("reviewsTab")}</TabsTrigger>
         </TabsList>
 
         {/* Search */}
@@ -537,7 +539,7 @@ export default function DeliveriesRequestsPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
-                placeholder="Search by order ID, customer, or address..."
+                placeholder={t("searchByOrderId")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 border border-gray-300"

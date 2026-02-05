@@ -12,10 +12,12 @@ import { InfiniteScrollFetcher } from "@/components/infinite-scroll-fetcher"
 import { EventCardSkeleton } from "@/components/event-card-skeleton"
 import Link from "next/link"
 import { getImageUrl } from "@/lib/utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function EventsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const t = useSafeTranslations("events")
 
   const categories = ["Market", "Festival", "Workshop", "Dinner"]
   
@@ -36,9 +38,9 @@ export default function EventsPage() {
           <div className="max-w-7xl mx-auto">
             {/* Header Section */}
             <div className="mb-12 text-center">
-              <h1 className="text-5xl font-extrabold text-gray-900 mb-4">Upcoming Events</h1>
+              <h1 className="text-5xl font-extrabold text-gray-900 mb-4">{t("title")}</h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Join the Yarvest community at farmers markets, festivals, and workshops. Discover fresh produce and connect with local farmers.
+                {t("subtitle")}
               </p>
             </div>
 
@@ -53,7 +55,7 @@ export default function EventsPage() {
                     : "border-2 hover:border-[#5a9c3a] hover:text-[#5a9c3a]"
                 }`}
               >
-                All Events
+                {t("allEvents")}
               </Button>
               {categories.map((category) => (
                 <Button
@@ -114,7 +116,7 @@ export default function EventsPage() {
 
                       <Link href={`/events/${event.unique_id || event.id}`} className="mt-auto">
                         <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold rounded-xl transition-all h-10">
-                          Learn More
+                          {t("learnMore")}
                         </Button>
                       </Link>
                     </div>
@@ -127,8 +129,8 @@ export default function EventsPage() {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
                     <Calendar className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="text-lg text-gray-600 font-medium">No upcoming events available at the moment.</p>
-                  <p className="text-sm text-gray-500 mt-2">Check back soon for new events!</p>
+                  <p className="text-lg text-gray-600 font-medium">{t("noUpcomingEvents")}</p>
+                  <p className="text-sm text-gray-500 mt-2">{t("checkBackSoon")}</p>
                 </div>
               )}
             />

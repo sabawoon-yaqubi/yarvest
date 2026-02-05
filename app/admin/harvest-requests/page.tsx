@@ -30,27 +30,7 @@ import {
   type HarvestRequest,
 } from "@/lib/harvest-requests-api"
 import { toast } from "sonner"
-
-const statusConfig = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-  accepted: { label: "Accepted", color: "bg-blue-100 text-blue-800", icon: CheckCircle },
-  completed: { label: "Completed", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  cancelled: { label: "Cancelled", color: "bg-red-100 text-red-800", icon: XCircle },
-  unknown: { label: "Unknown", color: "bg-gray-100 text-gray-800", icon: AlertTriangle },
-}
-
-// Helper function to safely get status config
-const getStatusConfig = (status: string) => {
-  const normalizedStatus = status?.toLowerCase() || "unknown"
-  // Map old status values to new ones for backward compatibility
-  const statusMap: Record<string, keyof typeof statusConfig> = {
-    'approved': 'accepted',
-    'in_progress': 'pending',
-    'rejected': 'cancelled',
-  }
-  const mappedStatus = statusMap[normalizedStatus] || normalizedStatus
-  return statusConfig[mappedStatus as keyof typeof statusConfig] || statusConfig.unknown
-}
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 // Helper function to safely render a value as string
 const safeString = (value: any): string => {
@@ -68,6 +48,30 @@ const safeString = (value: any): string => {
 
 export default function HarvestRequestsPage() {
   const router = useRouter()
+  const t = useSafeTranslations("admin.harvestRequests")
+  
+  // Helper function to safely get status config
+  const getStatusConfig = (status: string) => {
+    const normalizedStatus = status?.toLowerCase() || "unknown"
+    // Map old status values to new ones for backward compatibility
+    const statusMap: Record<string, string> = {
+      'approved': 'accepted',
+      'in_progress': 'pending',
+      'rejected': 'cancelled',
+    }
+    const mappedStatus = statusMap[normalizedStatus] || normalizedStatus
+    
+    const statusConfig = {
+      pending: { label: t("pending"), color: "bg-yellow-100 text-yellow-800", icon: Clock },
+      accepted: { label: t("accepted"), color: "bg-blue-100 text-blue-800", icon: CheckCircle },
+      completed: { label: t("completed"), color: "bg-green-100 text-green-800", icon: CheckCircle },
+      cancelled: { label: t("cancelled"), color: "bg-red-100 text-red-800", icon: XCircle },
+      unknown: { label: "Unknown", color: "bg-gray-100 text-gray-800", icon: AlertTriangle },
+    }
+    
+    return statusConfig[mappedStatus as keyof typeof statusConfig] || statusConfig.unknown
+  }
+  
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedRequest, setSelectedRequest] = useState<any>(null)
@@ -208,7 +212,7 @@ export default function HarvestRequestsPage() {
       <div className="p-6 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-[#0A5D31]" />
-          <p className="text-gray-600">Loading harvest requests...</p>
+          <p className="text-gray-600">{t("loadingHarvestRequests")}</p>
         </div>
       </div>
     )
@@ -220,38 +224,38 @@ export default function HarvestRequestsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Harvest Requests</h1>
-          <p className="text-gray-500 mt-1 text-sm">{stats.total} total requests</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-1 text-sm">{t("totalRequests", { count: stats.total })}</p>
         </div>
         <Button 
           className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white gap-2"
           onClick={() => router.push('/admin/harvest-requests/new')}
         >
           <Plus className="w-4 h-4" />
-          New Request
+          {t("newRequest")}
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Total</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("total")}</p>
           <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Pending</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("pending")}</p>
           <p className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.pending}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Accepted</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("accepted")}</p>
           <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.accepted}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Completed</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("completed")}</p>
           <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.completed}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Cancelled</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("cancelled")}</p>
           <p className="text-xl sm:text-2xl font-bold text-red-600">{stats.cancelled}</p>
         </div>
       </div>
@@ -262,7 +266,7 @@ export default function HarvestRequestsPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <Input
-              placeholder="Search requests by ID or product..."
+              placeholder={t("searchRequests")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 sm:pl-10 h-9 sm:h-10 border"
@@ -273,11 +277,11 @@ export default function HarvestRequestsPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a] h-9 sm:h-10"
           >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="all">{t("allStatus")}</option>
+            <option value="pending">{t("pending")}</option>
+            <option value="accepted">{t("accepted")}</option>
+            <option value="completed">{t("completed")}</option>
+            <option value="cancelled">{t("cancelled")}</option>
           </select>
         </div>
       </div>
@@ -285,18 +289,18 @@ export default function HarvestRequestsPage() {
       {/* Requests Table */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="p-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-900">Harvest Requests ({filteredRequests.length})</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t("harvestRequestsCount", { count: filteredRequests.length })}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Title</th>
-                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Product</th>
-                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th className="text-right py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">{t("id")}</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">{t("title")}</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">{t("product")}</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">{t("date")}</th>
+                <th className="text-left py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">{t("status")}</th>
+                <th className="text-right py-3 px-6 text-xs font-semibold text-gray-600 uppercase tracking-wider">{t("actions")}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -305,7 +309,7 @@ export default function HarvestRequestsPage() {
                   <td colSpan={6} className="py-12 text-center text-gray-500">
                     <div className="flex flex-col items-center gap-2">
                       <Leaf className="w-8 h-8 text-gray-300" />
-                      <p>No harvest requests found</p>
+                      <p>{t("noHarvestRequestsFound")}</p>
                     </div>
                   </td>
                 </tr>
@@ -353,7 +357,7 @@ export default function HarvestRequestsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleViewDetails(request)}
-                            title="View Details"
+                            title={t("viewDetails")}
                             className="h-8 w-8 p-0"
                           >
                             <Eye className="w-4 h-4" />
@@ -364,7 +368,7 @@ export default function HarvestRequestsPage() {
                               size="sm"
                               onClick={() => handleEdit(request)}
                               className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                              title="Edit Request"
+                              title={t("editRequest")}
                             >
                               <Pencil className="w-4 h-4" />
                             </Button>
@@ -376,7 +380,7 @@ export default function HarvestRequestsPage() {
                               onClick={() => handleStatusUpdate(request.id, "accepted")}
                               className="h-8 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
                             >
-                              Accept
+                              {t("accept")}
                             </Button>
                           )}
                           {(request.status === "pending" || request.status === "accepted") && (
@@ -385,9 +389,9 @@ export default function HarvestRequestsPage() {
                               size="sm"
                               onClick={() => handleStatusUpdate(request.id, "completed")}
                               className="h-8 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                              title="Mark as Completed"
+                              title={t("markAsCompleted")}
                             >
-                              Complete
+                              {t("complete")}
                             </Button>
                           )}
                         </div>
@@ -408,38 +412,38 @@ export default function HarvestRequestsPage() {
             <DialogHeader className="pb-6">
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
                 <Eye className="w-5 h-5" />
-                Harvest Request Details - {selectedRequest.id}
+                {t("harvestRequestDetails", { id: selectedRequest.id })}
               </DialogTitle>
               <DialogDescription className="pt-2">
-                Created on {selectedRequest.createdAt}
+                {t("createdOn", { date: selectedRequest.createdAt })}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6 pt-4">
               <div className="bg-gray-50 rounded-lg p-4">
-                <Label className="text-sm font-semibold text-gray-700 mb-2 block">Title</Label>
+                <Label className="text-sm font-semibold text-gray-700 mb-2 block">{t("title")}</Label>
                 <p className="font-semibold text-gray-900">{safeString(selectedRequest.title)}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">Products</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">{t("products")}</Label>
                   <p className="font-semibold text-gray-900">{safeString(selectedRequest.product)}</p>
                   {selectedRequest.products && selectedRequest.products.length > 0 && (
-                    <p className="text-xs text-gray-500 mt-1">{selectedRequest.products.length} product(s)</p>
+                    <p className="text-xs text-gray-500 mt-1">{t("productsCount", { count: selectedRequest.products.length })}</p>
                   )}
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">Date</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">{t("date")}</Label>
                   <p className="font-semibold text-gray-900">{selectedRequest.requestedDate}</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">Location</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">{t("location")}</Label>
                   <p className="font-semibold text-gray-900">{selectedRequest.location}</p>
                 </div>
                 {selectedRequest.number_of_people && (
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <Label className="text-sm font-semibold text-gray-700 mb-2 block">Number of People</Label>
+                    <Label className="text-sm font-semibold text-gray-700 mb-2 block">{t("numberOfPeople")}</Label>
                     <p className="font-semibold text-gray-900">{selectedRequest.number_of_people}</p>
                   </div>
                 )}
@@ -447,16 +451,16 @@ export default function HarvestRequestsPage() {
 
               {selectedRequest.notes && (
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">Description</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">{t("description")}</Label>
                   <p className="text-gray-700">{selectedRequest.notes}</p>
                 </div>
               )}
 
               {selectedRequest.status === "completed" && selectedRequest.quantity > 0 && (
                 <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
-                  <Label className="text-green-800 text-sm font-semibold mb-2 block">Products Count</Label>
+                  <Label className="text-green-800 text-sm font-semibold mb-2 block">{t("productsCountLabel")}</Label>
                   <p className="text-green-700 font-semibold">
-                    {selectedRequest.quantity} product(s)
+                    {t("productsCount", { count: selectedRequest.quantity })}
                   </p>
                 </div>
               )}
@@ -470,13 +474,13 @@ export default function HarvestRequestsPage() {
                     onClick={() => handleStatusUpdate(selectedRequest.id, "cancelled")}
                     className="text-red-600 hover:text-red-700"
                   >
-                    Cancel Request
+                    {t("cancelRequest")}
                   </Button>
                   <Button
                     onClick={() => handleStatusUpdate(selectedRequest.id, "accepted")}
                     className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white"
                   >
-                    Accept Request
+                    {t("acceptRequest")}
                   </Button>
                 </>
               )}
@@ -485,7 +489,7 @@ export default function HarvestRequestsPage() {
                   onClick={() => handleStatusUpdate(selectedRequest.id, "completed")}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Mark as Completed
+                  {t("markAsCompleted")}
                 </Button>
               )}
             </DialogFooter>

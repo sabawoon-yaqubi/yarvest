@@ -2,41 +2,44 @@
 
 import { Search, ShoppingCart, Truck, Heart } from "lucide-react"
 import { Card } from "@/components/ui/card"
-
-const steps = [
-  {
-    icon: Search,
-    title: "Browse & Discover",
-    description: "Explore fresh produce from local farmers in your area. Filter by category, price, or producer.",
-    step: "01",
-  },
-  {
-    icon: ShoppingCart,
-    title: "Add to Cart",
-    description: "Select your favorite items and add them to your cart. Review your order before checkout.",
-    step: "02",
-  },
-  {
-    icon: Truck,
-    title: "Fast Delivery",
-    description: "Get your fresh produce delivered to your door. Same-day delivery available in select areas.",
-    step: "03",
-  },
-  {
-    icon: Heart,
-    title: "Enjoy & Support",
-    description: "Enjoy fresh, locally-grown food while supporting your community farmers and sustainable agriculture.",
-    step: "04",
-  },
-]
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export function HowItWorks() {
+  const t = useSafeTranslations("home")
+  
+  const steps = [
+    {
+      icon: Search,
+      title: t("browseDiscover"),
+      description: t("browseDiscoverDescription"),
+      step: "01",
+    },
+    {
+      icon: ShoppingCart,
+      title: t("addToCart"),
+      description: t("addToCartDescription"),
+      step: "02",
+    },
+    {
+      icon: Truck,
+      title: t("fastDelivery"),
+      description: t("fastDeliveryDescription"),
+      step: "03",
+    },
+    {
+      icon: Heart,
+      title: t("enjoySupport"),
+      description: t("enjoySupportDescription"),
+      step: "04",
+    },
+  ]
+  
   return (
     <div className="w-full">
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-foreground mb-3">How It Works</h2>
+        <h2 className="text-4xl font-bold text-foreground mb-3">{t("howItWorks")}</h2>
         <p className="text-muted-foreground text-base max-w-2xl mx-auto">
-          Getting fresh produce delivered to your door is simple and easy
+          {t("howItWorksDescription")}
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

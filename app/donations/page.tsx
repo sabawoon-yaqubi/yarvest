@@ -8,9 +8,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Heart, Sprout, Store, ArrowRight, Percent, DollarSign, ToggleLeft, CheckCircle2 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function DonationsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const t = useSafeTranslations("donations")
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -25,11 +27,11 @@ export default function DonationsPage() {
                 <Heart className="w-10 h-10 text-[#5a9c3a]" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
-                Yarvest Donations
+                {t("title")}
               </h1>
-              <p className="text-lg text-gray-500 mb-2">Coming Soon</p>
+              <p className="text-lg text-gray-500 mb-2">{t("comingSoon")}</p>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                We're building something amazing to support seed and plant programs across your neighborhood.
+                {t("subtitle")}
               </p>
             </div>
 
@@ -42,10 +44,10 @@ export default function DonationsPage() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      For Sellers & Producers
+                      {t("forSellersProducers")}
                     </h2>
                     <p className="text-gray-600 mb-6">
-                      Forward proceeds from your sales to support your community
+                      {t("forwardProceeds")}
                     </p>
                   </div>
                 </div>
@@ -55,11 +57,10 @@ export default function DonationsPage() {
                     <Sprout className="w-5 h-5 text-[#5a9c3a] mt-0.5 flex-shrink-0" />
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-2">
-                        Forward Proceeds to Yarvest Donation Box
+                        {t("forwardProceedsTitle")}
                       </h3>
                       <p className="text-gray-700 leading-relaxed">
-                        Sellers can opt to forward proceeds from produce sales to the Yarvest Donation Box 
-                        to support the seed and plant programs across your neighborhood.
+                        {t("forwardProceedsDescription")}
                       </p>
                     </div>
                   </div>
@@ -67,7 +68,7 @@ export default function DonationsPage() {
 
                 {/* Donation Box Preview */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Preview: Donation Box Settings</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{t("previewSettings")}</h3>
                   <Card className="border-2 border-gray-200 bg-white">
                     <CardContent className="p-6">
                       {/* Header */}
@@ -77,40 +78,40 @@ export default function DonationsPage() {
                             <Heart className="w-5 h-5 text-[#5a9c3a]" />
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">Yarvest Donation Box</h4>
-                            <p className="text-sm text-gray-500">Support seed & plant programs</p>
+                            <h4 className="font-semibold text-gray-900">{t("donationBox")}</h4>
+                            <p className="text-sm text-gray-500">{t("supportPrograms")}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full">
                           <div className="w-2 h-2 bg-[#5a9c3a] rounded-full"></div>
-                          <span className="text-sm font-medium text-[#5a9c3a]">Active</span>
+                          <span className="text-sm font-medium text-[#5a9c3a]">{t("active")}</span>
                         </div>
                       </div>
 
                       {/* Donation Type Selection */}
                       <div className="mb-6">
-                        <label className="text-sm font-medium text-gray-700 mb-3 block">Donation Type</label>
+                        <label className="text-sm font-medium text-gray-700 mb-3 block">{t("donationType")}</label>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="p-4 border-2 border-[#5a9c3a] bg-[#5a9c3a]/5 rounded-lg cursor-pointer">
                             <div className="flex items-center gap-2 mb-2">
                               <Percent className="w-4 h-4 text-[#5a9c3a]" />
-                              <span className="font-semibold text-gray-900 text-sm">Percentage</span>
+                              <span className="font-semibold text-gray-900 text-sm">{t("percentage")}</span>
                             </div>
-                            <p className="text-xs text-gray-600">Donate % of each sale</p>
+                            <p className="text-xs text-gray-600">{t("donatePercentage")}</p>
                           </div>
                           <div className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
                             <div className="flex items-center gap-2 mb-2">
                               <DollarSign className="w-4 h-4 text-gray-400" />
-                              <span className="font-semibold text-gray-900 text-sm">Fixed Amount</span>
+                              <span className="font-semibold text-gray-900 text-sm">{t("fixedAmount")}</span>
                             </div>
-                            <p className="text-xs text-gray-600">Donate fixed $ per sale</p>
+                            <p className="text-xs text-gray-600">{t("donateFixed")}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Donation Amount */}
                       <div className="mb-6">
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Donation Amount</label>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">{t("donationAmount")}</label>
                         <div className="flex items-center gap-3">
                           <div className="flex-1 relative">
                             <input
@@ -122,27 +123,27 @@ export default function DonationsPage() {
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
                           </div>
                           <div className="text-sm text-gray-600">
-                            per sale
+                            {t("perSale")}
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2">Example: $100 sale = $5 donation</p>
+                        <p className="text-xs text-gray-500 mt-2">{t("example")}</p>
                       </div>
 
                       {/* Summary */}
                       <div className="bg-gray-50 rounded-lg p-4 mb-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">This month's contribution</span>
+                          <span className="text-sm text-gray-600">{t("thisMonthsContribution")}</span>
                           <span className="text-lg font-bold text-[#5a9c3a]">$0.00</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>Donations are automatically forwarded</span>
+                          <span>{t("donationsAutomaticallyForwarded")}</span>
                         </div>
                       </div>
 
                       {/* Action Button */}
                       <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white" disabled>
-                        Save Settings
+                        {t("saveSettings")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -155,7 +156,7 @@ export default function DonationsPage() {
                   >
                     <Link href="/admin">
                       <Store className="w-4 h-4 mr-2" />
-                      Go to Seller Dashboard
+                      {t("goToSellerDashboard")}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>
                   </Button>
@@ -165,7 +166,7 @@ export default function DonationsPage() {
                     className="border-gray-300"
                   >
                     <Link href="/products">
-                      Browse Products
+                      {t("browseProducts")}
                     </Link>
                   </Button>
                 </div>
@@ -174,7 +175,7 @@ export default function DonationsPage() {
 
             {/* Simple Info */}
             <div className="text-center text-gray-500">
-              <p>We'll notify you when this feature is available.</p>
+              <p>{t("notifyWhenAvailable")}</p>
             </div>
           </div>
         </div>

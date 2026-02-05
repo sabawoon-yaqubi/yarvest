@@ -5,11 +5,13 @@ import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Home, Search, ArrowLeft, Package, Leaf } from "lucide-react"
-import Link from "next/link"
 import { useState } from "react"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 export default function NotFound() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const t = useSafeTranslations("notFound")
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -38,13 +40,13 @@ export default function NotFound() {
             {/* Main Message */}
             <div className="mb-8">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Page Not Found
+                {t("title")}
               </h2>
               <p className="text-lg text-gray-600 mb-2">
-                Oops! The page you're looking for seems to have wandered off.
+                {t("message")}
               </p>
               <p className="text-base text-gray-500">
-                Don't worry, we'll help you find your way back to fresh produce!
+                {t("submessage")}
               </p>
             </div>
 
@@ -56,7 +58,7 @@ export default function NotFound() {
                   className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white font-semibold px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
                 >
                   <Home className="w-5 h-5" />
-                  Go Home
+                  {t("goHome")}
                 </Button>
               </Link>
               <Link href="/products">
@@ -66,7 +68,7 @@ export default function NotFound() {
                   className="border-2 border-[#5a9c3a] text-[#5a9c3a] hover:bg-[#5a9c3a] hover:text-white font-semibold px-8 py-6 rounded-xl transition-all flex items-center gap-2"
                 >
                   <Search className="w-5 h-5" />
-                  Browse Products
+                  {t("browseProducts")}
                 </Button>
               </Link>
             </div>
@@ -82,7 +84,7 @@ export default function NotFound() {
                     <Leaf className="w-6 h-6 text-[#5a9c3a]" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 group-hover:text-[#5a9c3a] transition-colors">
-                    Categories
+                    {t("categories")}
                   </span>
                 </div>
               </Link>
@@ -95,7 +97,7 @@ export default function NotFound() {
                     <Package className="w-6 h-6 text-[#5a9c3a]" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 group-hover:text-[#5a9c3a] transition-colors">
-                    Producers
+                    {t("producers")}
                   </span>
                 </div>
               </Link>
@@ -108,7 +110,7 @@ export default function NotFound() {
                     <Search className="w-6 h-6 text-[#5a9c3a]" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 group-hover:text-[#5a9c3a] transition-colors">
-                    Deals
+                    {t("deals")}
                   </span>
                 </div>
               </Link>
@@ -121,7 +123,7 @@ export default function NotFound() {
                     <Search className="w-6 h-6 text-[#5a9c3a]" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 group-hover:text-[#5a9c3a] transition-colors">
-                    Search
+                    {t("search")}
                   </span>
                 </div>
               </Link>

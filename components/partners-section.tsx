@@ -3,10 +3,11 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ExternalLink, ArrowRight, Handshake } from "lucide-react"
-import Link from "next/link"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { ProducerCardSkeleton } from "./producer-card-skeleton"
 import { getImageUrl } from "@/lib/utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 export interface ApiPartner {
   id: number
@@ -27,22 +28,24 @@ export interface ApiPartner {
 }
 
 export function PartnersSection() {
+  const t = useSafeTranslations("home")
+  
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-10">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-bold text-2xl sm:text-4xl text-foreground">Our Partners</h3>
+            <h3 className="font-bold text-2xl sm:text-4xl text-foreground">{t("ourPartners")}</h3>
           </div>
-          <p className="text-muted-foreground text-base mt-2 hidden sm:block">Trusted organizations supporting our mission</p>
+          <p className="text-muted-foreground text-base mt-2 hidden sm:block">{t("partnersDescription")}</p>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/become-partner" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm transition-colors flex items-center gap-1">
             <Handshake className="w-4 h-4" />
-            Become a Partner
+            {t("becomePartner")}
           </Link>
           <Link href="/partners" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm transition-colors flex items-center gap-1">
-            View All
+            {t("viewAll")}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -96,7 +99,7 @@ export function PartnersSection() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2"
                     >
-                      Visit Website
+                      {t("visitWebsite")}
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </Button>
@@ -108,7 +111,7 @@ export function PartnersSection() {
         renderLoading={() => <ProducerCardSkeleton count={4} />}
         renderEmpty={() => (
           <div className="text-center py-12 col-span-full">
-            <p className="text-muted-foreground">No partners available at the moment.</p>
+            <p className="text-muted-foreground">{t("noPartners")}</p>
           </div>
         )}
       />

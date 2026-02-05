@@ -13,6 +13,7 @@ import { getImageUrl } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { useCartStore } from "@/stores/cart-store"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 interface WishlistItem {
   id: number
@@ -57,6 +58,7 @@ interface WishlistItem {
 }
 
 export default function FavoritesPage() {
+  const t = useSafeTranslations("admin.favorites")
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
@@ -97,9 +99,9 @@ export default function FavoritesPage() {
           console.error("Error fetching wishlist:", error)
           setWishlistItems([])
           if (error.response?.status === 401) {
-            toast.error("Please login to view your favorites")
+            toast.error(t("pleaseLoginToViewFavorites"))
           } else if (error.response?.status !== 404) {
-            toast.error("Failed to load favorites")
+            toast.error(t("failedToLoadFavorites"))
           }
         } finally {
           setLoading(false)
@@ -135,12 +137,12 @@ export default function FavoritesPage() {
       setWishlistItems((prev) =>
         prev.filter((item) => item.id !== itemToDelete.id)
       )
-      toast.success("Removed from favorites")
+      toast.success(t("removedFromFavorites"))
       setDeleteDialogOpen(false)
       setItemToDelete(null)
     } catch (error: any) {
       console.error("Error removing from wishlist:", error)
-      toast.error("Failed to remove from favorites")
+      toast.error(t("failedToRemove"))
     } finally {
       setIsDeleting(false)
     }
@@ -149,10 +151,10 @@ export default function FavoritesPage() {
   const handleAddToCart = async (item: WishlistItem) => {
     try {
       await addItem(item.product_id, 1)
-      toast.success("Added to cart")
+      toast.success(t("addedToCart"))
     } catch (error: any) {
       console.error("Error adding to cart:", error)
-      toast.error(error.message || "Failed to add to cart")
+      toast.error(error.message || t("failedToAddToCart"))
     }
   }
 
@@ -161,9 +163,9 @@ export default function FavoritesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Favorites</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
           <p className="text-gray-500 mt-1">
-            {!loading && wishlistItems.length} {!loading && wishlistItems.length === 1 ? "item" : "items"}
+            {!loading && t("itemsCount", { count: wishlistItems.length })}
           </p>
         </div>
         {/* Search Bar */}
@@ -172,7 +174,7 @@ export default function FavoritesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder="Search..."
+              placeholder={t("search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-4 py-2 border-gray-200 rounded-lg"
@@ -190,12 +192,12 @@ export default function FavoritesPage() {
         <div className="flex flex-col items-center justify-center py-16">
           <Heart className="w-12 h-12 text-gray-300 mb-4" />
           <p className="text-gray-500 text-lg mb-4">
-            {searchQuery ? "No favorites found" : "No favorites yet"}
+            {searchQuery ? t("noFavoritesFound") : t("noFavoritesYet")}
           </p>
           {!searchQuery && (
             <Link href="/products">
               <Button className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
-                Browse Products
+                {t("browseProducts")}
               </Button>
             </Link>
           )}
@@ -262,7 +264,7 @@ export default function FavoritesPage() {
                     </div>
                     {item.stock === 0 && (
                       <Badge variant="outline" className="text-xs text-red-600 border-red-300">
-                        Out of Stock
+                        {t("outOfStock", { ns: "admin.products" })}
                       </Badge>
                     )}
                   </div>
@@ -270,7 +272,7 @@ export default function FavoritesPage() {
                   <div className="flex gap-2">
                     <Link href={`/products/${item.product_unique_id}`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
-                        View
+                        {t("view")}
                       </Button>
                     </Link>
                     <Button
@@ -280,7 +282,7 @@ export default function FavoritesPage() {
                       disabled={item.stock === 0}
                     >
                       <ShoppingCart className="w-4 h-4 mr-1" />
-                      Add
+                      {t("add")}
                     </Button>
                   </div>
                 </CardContent>
@@ -294,9 +296,9 @@ export default function FavoritesPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Remove from Favorites</DialogTitle>
+            <DialogTitle>{t("removeFromFavorites")}</DialogTitle>
             <DialogDescription>
-              Remove <span className="font-semibold">"{itemToDelete?.name}"</span> from your favorites?
+              {t("removeFromFavoritesDescription", { name: itemToDelete?.name || "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
@@ -308,14 +310,14 @@ export default function FavoritesPage() {
               }}
               disabled={isDeleting}
             >
-              Cancel
+              {t("cancel", { ns: "common" })}
             </Button>
             <Button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {isDeleting ? "Removing..." : "Remove"}
+              {isDeleting ? t("removing") : t("remove", { ns: "common" })}
             </Button>
           </DialogFooter>
         </DialogContent>

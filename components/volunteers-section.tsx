@@ -2,10 +2,11 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Users, ArrowRight, Star, MapPin } from "lucide-react"
-import Link from "next/link"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { ProducerCardSkeleton } from "./producer-card-skeleton"
 import { getImageUrl } from "@/lib/utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 export interface ApiVolunteer {
   id: number
@@ -30,6 +31,8 @@ export interface ApiVolunteer {
 }
 
 export function VolunteersSection() {
+  const t = useSafeTranslations("home")
+  
   return (
     <div className="w-full">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
@@ -38,12 +41,12 @@ export function VolunteersSection() {
             <div className="p-2 bg-[#5a9c3a]/10 rounded-lg">
               <Users className="w-5 h-5 text-[#5a9c3a]" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Our Harvesters</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">{t("ourHarvesters")}</h2>
           </div>
-          <p className="text-muted-foreground text-sm md:text-base">Community helpers dedicated to supporting local farmers</p>
+          <p className="text-muted-foreground text-sm md:text-base">{t("harvestersDescription")}</p>
         </div>
         <Link href="/volunteers-list" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm transition-colors flex items-center gap-1 self-start md:self-auto">
-          View All
+          {t("viewAll")}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

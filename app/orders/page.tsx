@@ -32,6 +32,7 @@ import {
 } from "lucide-react"
 import { getImageUrl } from "@/lib/utils"
 import { ProductReviewModal } from "@/components/product-review-modal"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 const COLORS = {
   primary: "#5a9c3a",
@@ -158,6 +159,7 @@ export default function MyOrdersPage() {
   } | null>(null)
   const [productReviews, setProductReviews] = useState<Map<number, { stars: number; message: string | null }>>(new Map()) // key: productId
   const [checkingReviews, setCheckingReviews] = useState(false)
+  const t = useSafeTranslations("orders")
 
   const openAuthModal = useAuthModalStore((state) => state.openModal)
 
@@ -393,7 +395,7 @@ export default function MyOrdersPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin" style={{ color: COLORS.primary }} />
-          <p className="text-sm text-gray-500 font-medium">Loading your orders...</p>
+          <p className="text-sm text-gray-500 font-medium">{t("loadingOrders")}</p>
         </div>
       </div>
     )
@@ -407,8 +409,8 @@ export default function MyOrdersPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
-            <p className="text-gray-500 mt-0.5 text-sm">View and track all your orders</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+            <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
           </div>
           
           {/* Search and Filter */}
@@ -418,7 +420,7 @@ export default function MyOrdersPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="text"
-                  placeholder="Search orders..."
+                  placeholder={t("searchOrders")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 pr-4 h-9 w-48 text-sm border-gray-200 focus:border-[#5a9c3a] focus:ring-1 focus:ring-[#5a9c3a]"
@@ -430,14 +432,14 @@ export default function MyOrdersPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a] h-9"
             >
-              <option value="all">All</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="all">{t("all")}</option>
+              <option value="pending">{t("pending")}</option>
+              <option value="processing">{t("processing")}</option>
+              <option value="confirmed">{t("confirmed")}</option>
+              <option value="shipped">{t("shipped")}</option>
+              <option value="delivered">{t("delivered")}</option>
+              <option value="completed">{t("completed")}</option>
+              <option value="cancelled">{t("cancelled")}</option>
             </select>
           </div>
         </div>
@@ -447,15 +449,15 @@ export default function MyOrdersPage() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-12 text-center">
               <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No orders found</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("noOrdersFound")}</h3>
               <p className="text-gray-500 mb-6">
                 {searchQuery || statusFilter !== "all"
-                  ? "No orders match your search criteria."
-                  : "You haven't placed any orders yet."}
+                  ? t("noOrdersMatch")
+                  : t("noOrdersYet")}
               </p>
               {!searchQuery && statusFilter === "all" && (
                 <Button asChild style={{ backgroundColor: COLORS.primary }} className="text-white hover:opacity-90">
-                  <Link href="/">Start Shopping</Link>
+                  <Link href="/">{t("startShopping")}</Link>
                 </Button>
               )}
             </CardContent>
@@ -493,18 +495,18 @@ export default function MyOrdersPage() {
                           <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
                             <div className="flex items-center gap-1">
                               <Package className="w-3.5 h-3.5" />
-                              <span>{order.items_count} item{order.items_count > 1 ? 's' : ''}</span>
+                              <span>{order.items_count} {order.items_count === 1 ? t("item") : t("items")}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               {isPickup ? (
                                 <>
                                   <Store className="w-3.5 h-3.5" />
-                                  <span>Pickup</span>
+                                  <span>{t("pickup")}</span>
                                 </>
                               ) : (
                                 <>
                                   <Truck className="w-3.5 h-3.5" />
-                                  <span>Delivery</span>
+                                  <span>{t("delivery")}</span>
                                 </>
                               )}
                             </div>
@@ -525,12 +527,12 @@ export default function MyOrdersPage() {
                             {isExpanded ? (
                               <>
                                 <ChevronUp className="w-3.5 h-3.5 mr-1" />
-                                Hide
+                                {t("hide")}
                               </>
                             ) : (
                               <>
                                 <ChevronDown className="w-3.5 h-3.5 mr-1" />
-                                Details
+                                {t("details")}
                               </>
                             )}
                           </Button>
@@ -623,7 +625,7 @@ export default function MyOrdersPage() {
                                                     />
                                                   ))}
                                                   <span className="text-xs font-medium text-gray-700 ml-1">
-                                                    Your Review
+                                                    {t("yourReview")}
                                                   </span>
                                                 </div>
                                                 {review.message && (
@@ -648,7 +650,7 @@ export default function MyOrdersPage() {
                                                 className="h-7 text-xs px-3 border-[#5a9c3a] text-[#5a9c3a] hover:bg-[#5a9c3a] hover:text-white"
                                               >
                                                 <Star className="w-3 h-3 mr-1.5" />
-                                                Write Review
+                                                {t("writeReview")}
                                               </Button>
                                             )}
                                           </div>
@@ -656,7 +658,7 @@ export default function MyOrdersPage() {
                                       </div>
                                       <div className="text-right flex-shrink-0">
                                         <p className="text-xs text-gray-500">
-                                          Qty: {item.quantity}
+                                          {t("qty")} {item.quantity}
                                         </p>
                                         <p className="font-semibold text-gray-900 text-sm mt-0.5">
                                           {formatCurrency(item.total)}
@@ -677,7 +679,7 @@ export default function MyOrdersPage() {
                             <div className="bg-white rounded-lg p-4 border border-gray-100">
                               <h4 className="font-semibold text-gray-900 text-sm mb-3 flex items-center gap-1.5">
                                 <Store className="w-4 h-4" style={{ color: COLORS.primary }} />
-                                Pickup Addresses
+                                {t("pickupAddresses")}
                               </h4>
                               <div className="space-y-3">
                                 {order.sellers.map((sellerGroup, idx) => (
@@ -712,7 +714,7 @@ export default function MyOrdersPage() {
                                           }}
                                         >
                                           <MapPin className="w-4 h-4" fill="white" stroke="white" strokeWidth={2} />
-                                          <span>View Map</span>
+                                          <span>{t("viewMap")}</span>
                                         </button>
                                       </div>
                                       <p className="text-xs text-gray-600 leading-relaxed">
@@ -731,7 +733,7 @@ export default function MyOrdersPage() {
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-semibold text-gray-900 text-sm flex items-center gap-1.5">
                                   <MapPin className="w-4 h-4" style={{ color: COLORS.primary }} />
-                                  Delivery Address
+                                  {t("deliveryAddress")}
                                 </h4>
                                 <button
                                   onClick={(e) => {
@@ -758,7 +760,7 @@ export default function MyOrdersPage() {
                                   }}
                                 >
                                   <MapPin className="w-4 h-4" fill="white" stroke="white" strokeWidth={2} />
-                                  <span>View Map</span>
+                                  <span>{t("viewMap")}</span>
                                 </button>
                               </div>
                               <p className="text-xs text-gray-600 leading-relaxed">
@@ -772,7 +774,7 @@ export default function MyOrdersPage() {
                             <div className="bg-white rounded-lg p-4 border border-gray-100">
                               <h4 className="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-1.5">
                                 <Truck className="w-4 h-4" style={{ color: COLORS.primary }} />
-                                Courier
+                                {t("courier")}
                               </h4>
                               <p className="text-sm font-medium text-gray-900 mb-1">
                                 {order.courier.full_name}
@@ -789,17 +791,17 @@ export default function MyOrdersPage() {
 
                         {/* Price Breakdown */}
                         <div className="bg-white rounded-lg p-4 border border-gray-100">
-                          <h4 className="font-semibold text-gray-900 text-sm mb-3">Price Breakdown</h4>
+                          <h4 className="font-semibold text-gray-900 text-sm mb-3">{t("priceBreakdown")}</h4>
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-xs">
-                              <span className="text-gray-600">Subtotal</span>
+                              <span className="text-gray-600">{t("subtotal")}</span>
                               <span className="font-medium text-gray-900">
                                 {formatCurrency(order.total_price - order.service_fee - order.delivery_fee - order.tax)}
                               </span>
                             </div>
                             {order.service_fee > 0 && (
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600">Service Fee</span>
+                                <span className="text-gray-600">{t("serviceFee")}</span>
                                 <span className="font-medium text-gray-900">
                                   {formatCurrency(order.service_fee)}
                                 </span>
@@ -807,7 +809,7 @@ export default function MyOrdersPage() {
                             )}
                             {order.delivery_fee > 0 && (
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600">Delivery Fee</span>
+                                <span className="text-gray-600">{t("deliveryFee")}</span>
                                 <span className="font-medium text-gray-900">
                                   {formatCurrency(order.delivery_fee)}
                                 </span>
@@ -815,14 +817,14 @@ export default function MyOrdersPage() {
                             )}
                             {order.tax > 0 && (
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-600">Tax</span>
+                                <span className="text-gray-600">{t("tax")}</span>
                                 <span className="font-medium text-gray-900">
                                   {formatCurrency(order.tax)}
                                 </span>
                               </div>
                             )}
                             <div className="flex justify-between text-sm font-bold pt-2 border-t border-gray-200">
-                              <span>Total</span>
+                              <span>{t("total")}</span>
                               <span style={{ color: COLORS.primary }}>
                                 {formatCurrency(order.total_price)}
                               </span>

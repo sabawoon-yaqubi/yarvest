@@ -6,9 +6,12 @@ import {
   Store,
   Leaf,
 } from "lucide-react";
-import Link from "next/link";
+import { useSafeTranslations } from "@/hooks/use-safe-translations";
+import { Link } from "@/routing";
 
 export function HeroSection() {
+  const t = useSafeTranslations('hero')
+
   return (
     <div className="relative overflow-hidden rounded-3xl mx-6 mt-6 shadow-2xl">
       {/* Background with gradient overlay */}
@@ -32,13 +35,13 @@ export function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Leaf className="w-4 h-4" />
-            <span>Supporting Local Farms & Neighbors</span>
+            <span>{t('badge')}</span>
           </div>
 
           {/* Main Heading */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight text-white">
-            Share your produce & tools with your{" "}
-            <span className="text-yellow-300 drop-shadow-lg">neighbors</span>
+            {t('title')}{" "}
+            <span className="text-yellow-300 drop-shadow-lg">{t('neighbors')}</span>
           </h1>
 
           {/* CTA Buttons */}
@@ -49,7 +52,7 @@ export function HeroSection() {
                 className="bg-white text-[#5a9c3a] hover:bg-gray-50 text-base md:text-lg px-8 py-6 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
               >
                 <ShoppingBag className="w-5 h-5 mr-2" />
-                Shop Now
+                {t('shopNow')}
               </Button>
             </Link>
             <Link href="/admin/products/new">
@@ -58,7 +61,7 @@ export function HeroSection() {
                 className="bg-white text-[#5a9c3a] hover:bg-gray-50 text-base md:text-lg px-8 py-6 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
               >
                 <Store className="w-5 h-5 mr-2" />
-                List Produce
+                {t('listProduce')}
               </Button>
             </Link>
           </div>

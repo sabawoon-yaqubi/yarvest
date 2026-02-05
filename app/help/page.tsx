@@ -9,18 +9,20 @@ import { HelpCircle, Search, MessageCircle, Mail, Phone, ChevronDown, ArrowRight
 import { useState, useMemo } from "react"
 import { getAllCategoriesWithFAQs, searchFAQs } from "@/lib/faq-data"
 import type { FAQCategory, FAQ } from "@/types/faq"
-
-const contactOptions = [
-  { icon: MessageCircle, title: "Live Chat", description: "Chat with our support team", action: "Start Chat" },
-  { icon: Mail, title: "Email Support", description: "support@yarvest.health", action: "Send Email" },
-  { icon: Phone, title: "Phone Support", description: "(415) 555-0123", action: "Call Now" },
-]
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function HelpPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [expandedQuestion, setExpandedQuestion] = useState<number | null>(null)
+  const t = useSafeTranslations("help")
+
+  const contactOptions = [
+    { icon: MessageCircle, title: t("liveChat"), description: t("chatWithSupport"), action: t("startChat") },
+    { icon: Mail, title: t("emailSupport"), description: "support@yarvest.health", action: t("sendEmail") },
+    { icon: Phone, title: t("phoneSupport"), description: "(415) 555-0123", action: t("callNow") },
+  ]
 
   // Get all categories with FAQs
   const allCategories = useMemo(() => getAllCategoriesWithFAQs(), [])
@@ -63,8 +65,8 @@ export default function HelpPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-[#5a9c3a]/10 rounded-2xl mb-4">
                 <HelpCircle className="w-8 h-8 text-[#5a9c3a]" />
               </div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-3">How can we help?</h1>
-              <p className="text-lg text-gray-600">Find answers to common questions or get in touch</p>
+              <h1 className="text-5xl font-bold text-gray-900 mb-3">{t("title")}</h1>
+              <p className="text-lg text-gray-600">{t("subtitle")}</p>
             </div>
 
             {/* Search Bar */}
@@ -72,7 +74,7 @@ export default function HelpPage() {
               <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search for help..."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-14 h-14 text-base rounded-2xl border-2 border-gray-200 focus:border-[#5a9c3a] focus:ring-4 focus:ring-[#5a9c3a]/20 bg-white"
@@ -176,10 +178,10 @@ export default function HelpPage() {
           {filteredCategories.length === 0 && (
             <div className="text-center py-16">
               <HelpCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No results found</h3>
-              <p className="text-gray-600 mb-6">Try different search terms or contact our support team</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{t("noResultsFound")}</h3>
+              <p className="text-gray-600 mb-6">{t("tryDifferentSearch")}</p>
               <Button className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
-                Contact Support
+                {t("contactSupport")}
               </Button>
             </div>
           )}

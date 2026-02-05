@@ -27,6 +27,7 @@ import {
   type Farm,
 } from "@/lib/farms-data";
 import dynamic from "next/dynamic";
+import { useSafeTranslations } from "@/hooks/use-safe-translations";
 
 // Dynamically import map to avoid SSR issues
 const FarmsMap = dynamic(
@@ -54,6 +55,7 @@ export default function FarmsPage() {
   const [selectedProduce, setSelectedProduce] = useState<string>("");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [showFilters, setShowFilters] = useState(false);
+  const t = useSafeTranslations("farms");
 
   // Load farms data
   useEffect(() => {
@@ -140,9 +142,9 @@ export default function FarmsPage() {
                 <Leaf className="h-8 w-8 text-[#5a9c3a]" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900">Find Farms</h1>
+                <h1 className="text-4xl font-bold text-gray-900">{t("title")}</h1>
                 <p className="text-gray-600 mt-1">
-                  Discover local farms and U-Pick locations near you
+                  {t("subtitle")}
                 </p>
               </div>
             </div>
@@ -153,19 +155,19 @@ export default function FarmsPage() {
                 <div className="text-2xl font-bold text-[#5a9c3a]">
                   {farms.length}
                 </div>
-                <div className="text-sm text-gray-600">Total Farms</div>
+                <div className="text-sm text-gray-600">{t("totalFarms")}</div>
               </div>
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="text-2xl font-bold text-[#5a9c3a]">
                   {filteredFarms.length}
                 </div>
-                <div className="text-sm text-gray-600">Showing</div>
+                <div className="text-sm text-gray-600">{t("showing")}</div>
               </div>
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="text-2xl font-bold text-[#5a9c3a]">
                   {states.length}
                 </div>
-                <div className="text-sm text-gray-600">States</div>
+                <div className="text-sm text-gray-600">{t("states")}</div>
               </div>
             </div>
           </div>
@@ -177,7 +179,7 @@ export default function FarmsPage() {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search farms by name, location, or produce..."
+                  placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 h-12 text-base"
@@ -192,7 +194,7 @@ export default function FarmsPage() {
                   className="h-12 px-4"
                 >
                   <List className="h-4 w-4 mr-2" />
-                  List
+                  {t("list")}
                 </Button>
                 <Button
                   variant={viewMode === "map" ? "default" : "outline"}
@@ -200,7 +202,7 @@ export default function FarmsPage() {
                   className="h-12 px-4"
                 >
                   <MapIcon className="h-4 w-4 mr-2" />
-                  Map
+                  {t("map")}
                 </Button>
               </div>
             </div>
@@ -213,7 +215,7 @@ export default function FarmsPage() {
                 className="h-10"
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Filters
+                {t("filters")}
               </Button>
 
               {hasActiveFilters && (
@@ -223,7 +225,7 @@ export default function FarmsPage() {
                   className="h-10 text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  {t("clearFilters")}
                 </Button>
               )}
 
@@ -232,7 +234,7 @@ export default function FarmsPage() {
                   variant="secondary"
                   className="h-10 px-4 flex items-center gap-2"
                 >
-                  State: {selectedState}
+                  {t("state", { state: selectedState })}
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() => setSelectedState("")}
@@ -245,7 +247,7 @@ export default function FarmsPage() {
                   variant="secondary"
                   className="h-10 px-4 flex items-center gap-2"
                 >
-                  Produce: {selectedProduce}
+                  {t("produce", { produce: selectedProduce })}
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() => setSelectedProduce("")}
@@ -261,14 +263,14 @@ export default function FarmsPage() {
                   {/* State Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Filter by State
+                      {t("filterByState")}
                     </label>
                     <select
                       value={selectedState}
                       onChange={(e) => setSelectedState(e.target.value)}
                       className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#5a9c3a] focus:border-transparent"
                     >
-                      <option value="">All States</option>
+                      <option value="">{t("allStates")}</option>
                       {states.map((state) => (
                         <option key={state} value={state}>
                           {state}
@@ -280,14 +282,14 @@ export default function FarmsPage() {
                   {/* Produce Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Filter by Produce
+                      {t("filterByProduce")}
                     </label>
                     <select
                       value={selectedProduce}
                       onChange={(e) => setSelectedProduce(e.target.value)}
                       className="w-full h-10 px-3 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#5a9c3a] focus:border-transparent"
                     >
-                      <option value="">All Produce</option>
+                      <option value="">{t("allProduce")}</option>
                       {produceTypes.map((produce) => (
                         <option key={produce} value={produce}>
                           {produce}
@@ -305,7 +307,7 @@ export default function FarmsPage() {
             <div className="flex items-center justify-center h-96">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#5a9c3a] border-t-transparent mx-auto mb-4"></div>
-                <p className="text-gray-600 font-medium">Loading farms...</p>
+                <p className="text-gray-600 font-medium">{t("loadingFarms")}</p>
               </div>
             </div>
           ) : viewMode === "map" ? (
@@ -318,14 +320,14 @@ export default function FarmsPage() {
                 <Card className="p-12 text-center">
                   <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No farms found
+                    {t("noFarmsFound")}
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    Try adjusting your filters or search query
+                    {t("tryAdjustingFilters")}
                   </p>
                   {hasActiveFilters && (
                     <Button onClick={clearFilters} variant="outline">
-                      Clear Filters
+                      {t("clearFilters")}
                     </Button>
                   )}
                 </Card>
@@ -347,6 +349,7 @@ export default function FarmsPage() {
 
 // Farm Card Component
 function FarmCard({ farm }: { farm: Farm }) {
+  const t = useSafeTranslations("farms")
   // Utility function to truncate long text
   const truncateText = (text: string, maxLength: number = 100): string => {
     if (!text) return "";
@@ -452,7 +455,7 @@ function FarmCard({ farm }: { farm: Farm }) {
         {produceList.length > 0 && (
           <div className="shrink-0">
             <p className="text-sm font-medium text-gray-700 mb-2">
-              Available Produce:
+              {t("availableProduce")}
             </p>
             <div className="flex flex-wrap gap-2">
               {produceList.slice(0, 5).map((produce, idx) => {
@@ -491,7 +494,7 @@ function FarmCard({ farm }: { farm: Farm }) {
           >
             <Button className="w-full bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white">
               <Navigation className="h-4 w-4 mr-2" />
-              Get Directions
+              {t("getDirections")}
             </Button>
           </a>
 
@@ -518,7 +521,7 @@ function FarmCard({ farm }: { farm: Farm }) {
                 onClick={(e) => e.stopPropagation()}
               >
                 <Globe className="h-3.5 w-3.5 shrink-0" />
-                <span>Website</span>
+                <span>{t("website")}</span>
               </a>
             )}
           </div>

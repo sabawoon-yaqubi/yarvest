@@ -5,9 +5,11 @@ import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
 import { BecomePartnerSection } from "@/components/become-partner-section"
 import { useState } from "react"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function BecomePartnerPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const t = useSafeTranslations("becomePartner")
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

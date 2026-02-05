@@ -11,11 +11,13 @@ import { ApiProductCard } from "@/components/api-product-card"
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 import { InfiniteScrollFetcher } from "@/components/infinite-scroll-fetcher"
 import { useCartHandler } from "@/hooks/use-cart-handler"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function DealsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [favorites, setFavorites] = useState<number[]>([])
   const { handleAddToCart } = useCartHandler()
+  const t = useSafeTranslations("deals")
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -31,15 +33,15 @@ export default function DealsPage() {
                 className="inline-flex items-center gap-2 text-[#5a9c3a] hover:text-[#0d7a3f] mb-6 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium">Back to Home</span>
+                <span className="text-sm font-medium">{t("backToHome")}</span>
               </Link>
               
               <div className="flex items-center gap-3 mb-2">
                 <Sparkles className="w-8 h-8 text-[#5a9c3a]" />
-                <h1 className="text-5xl font-bold text-foreground">Special Deals</h1>
+                <h1 className="text-5xl font-bold text-foreground">{t("title")}</h1>
               </div>
               <p className="text-muted-foreground text-lg mt-2">
-                Limited time offers - Don't miss out on these amazing discounts!
+                {t("subtitle")}
               </p>
             </div>
 
@@ -67,8 +69,8 @@ export default function DealsPage() {
               renderEmpty={() => (
                 <div className="text-center py-12 col-span-full">
                   <Sparkles className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-xl text-muted-foreground mb-2">No special deals available</p>
-                  <p className="text-sm text-gray-500">Check back later for amazing offers!</p>
+                  <p className="text-xl text-muted-foreground mb-2">{t("noDealsAvailable")}</p>
+                  <p className="text-sm text-gray-500">{t("checkBackLater")}</p>
                 </div>
               )}
             />

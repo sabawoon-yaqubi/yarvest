@@ -29,6 +29,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useAuthStore } from "@/stores/auth-store"
 import api from "@/lib/axios"
 import { type Order } from "@/lib/orders-api"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 import {
   LineChart,
   Line,
@@ -81,6 +82,7 @@ interface AnalyticsData {
 
 export default function AnalyticsPage() {
   const user = useAuthStore((state) => state.user)
+  const t = useSafeTranslations("admin.analytics")
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
@@ -196,7 +198,7 @@ export default function AnalyticsPage() {
       <div className="p-6 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-[#5a9c3a]" />
-          <p className="text-gray-600">Loading analytics...</p>
+          <p className="text-gray-600">{t("loadingAnalytics")}</p>
         </div>
       </div>
     )
@@ -205,7 +207,7 @@ export default function AnalyticsPage() {
   if (!data) {
     return (
       <div className="p-6">
-        <p className="text-gray-500">No data available</p>
+        <p className="text-gray-500">{t("noDataAvailable")}</p>
       </div>
     )
   }
@@ -215,8 +217,8 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics & Insights</h1>
-          <p className="text-gray-500 mt-1">Comprehensive view of your account activity and performance</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -224,14 +226,14 @@ export default function AnalyticsPage() {
             onChange={(e) => setDateRange(e.target.value as any)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a9c3a]"
           >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-            <option value="all">All time</option>
+            <option value="7d">{t("last7Days")}</option>
+            <option value="30d">{t("last30Days")}</option>
+            <option value="90d">{t("last90Days")}</option>
+            <option value="all">{t("allTime")}</option>
           </select>
           <Button variant="outline" onClick={handleExport} className="gap-2">
             <Download className="w-4 h-4" />
-            Export Data
+            {t("exportData")}
           </Button>
         </div>
       </div>
@@ -248,9 +250,9 @@ export default function AnalyticsPage() {
             <h3 className="text-2xl font-bold text-gray-900 mb-1">
               ${data.stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
-            <p className="text-sm text-gray-500">Total Revenue</p>
+            <p className="text-sm text-gray-500">{t("totalRevenue")}</p>
             <p className="text-sm text-green-600 mt-2 font-medium">
-              {data.stats.completedOrders} completed orders
+              {data.stats.completedOrders} {t("completedOrders")}
             </p>
           </CardContent>
         </Card>
@@ -263,9 +265,9 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-1">{data.stats.totalOrders}</h3>
-            <p className="text-sm text-gray-500">Total Orders</p>
+            <p className="text-sm text-gray-500">{t("totalOrders")}</p>
             <p className="text-sm text-gray-600 mt-2 font-medium">
-              {data.stats.pendingOrders} pending • {data.stats.cancelledOrders} cancelled
+              {data.stats.pendingOrders} {t("pending")} • {data.stats.cancelledOrders} {t("cancelled")}
             </p>
           </CardContent>
         </Card>
@@ -278,9 +280,9 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-1">{data.stats.totalProducts}</h3>
-            <p className="text-sm text-gray-500">Total Products</p>
+            <p className="text-sm text-gray-500">{t("totalProducts")}</p>
             <p className="text-sm text-gray-600 mt-2 font-medium">
-              {data.stats.totalProducts > 0 ? 'Active listings' : 'No products'}
+              {data.stats.totalProducts > 0 ? t("activeListings") : t("noProducts")}
             </p>
           </CardContent>
         </Card>
@@ -293,9 +295,9 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-1">{data.stats.totalHarvestRequests}</h3>
-            <p className="text-sm text-gray-500">Harvest Requests</p>
+            <p className="text-sm text-gray-500">{t("harvestRequests")}</p>
             <p className="text-sm text-gray-600 mt-2 font-medium">
-              {data.stats.activeHarvestRequests} active • {data.stats.completedHarvestRequests} completed
+              {data.stats.activeHarvestRequests} {t("active")} • {data.stats.completedHarvestRequests} {t("completed")}
             </p>
           </CardContent>
         </Card>
@@ -308,7 +310,7 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5" />
-              Revenue & Orders Over Time
+              {t("revenueOrdersOverTime")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -340,7 +342,7 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PieChartIcon className="w-5 h-5" />
-              Order Status Distribution
+              {t("orderStatusDistribution")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -374,7 +376,7 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="w-5 h-5" />
-              Monthly Performance
+              {t("monthlyPerformance")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -396,10 +398,10 @@ export default function AnalyticsPage() {
         {productSalesData.length > 0 && (
           <Card className="border-2 border-gray-100">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Top Products by Revenue
-              </CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5" />
+              {t("topProductsByRevenue")}
+            </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -422,13 +424,13 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Leaf className="w-5 h-5" />
-              Harvest Requests Analytics
+              {t("harvestRequestsAnalytics")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-semibold mb-4">Status Distribution</h3>
+                <h3 className="text-lg font-semibold mb-4">{t("statusDistribution")}</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -451,15 +453,15 @@ export default function AnalyticsPage() {
               </div>
               <div className="space-y-3">
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-500">Total Requests</p>
+                  <p className="text-sm text-gray-500">{t("totalRequests")}</p>
                   <p className="text-2xl font-bold text-gray-900">{data.stats.totalHarvestRequests}</p>
                 </div>
                 <div className="p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm text-gray-500">Completed</p>
+                  <p className="text-sm text-gray-500">{t("completed")}</p>
                   <p className="text-2xl font-bold text-green-600">{data.stats.completedHarvestRequests}</p>
                 </div>
                 <div className="p-4 bg-yellow-50 rounded-lg">
-                  <p className="text-sm text-gray-500">Active</p>
+                  <p className="text-sm text-gray-500">{t("active")}</p>
                   <p className="text-2xl font-bold text-yellow-600">{data.stats.activeHarvestRequests}</p>
                 </div>
               </div>
@@ -475,7 +477,7 @@ export default function AnalyticsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
-              Recent Orders ({filteredOrders.length})
+              {t("recentOrders", { count: filteredOrders.length })}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -508,7 +510,7 @@ export default function AnalyticsPage() {
                 </div>
               ))}
               {filteredOrders.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No orders found</p>
+                <p className="text-center text-gray-500 py-8">{t("noOrdersFound")}</p>
               )}
             </div>
           </CardContent>
@@ -518,10 +520,10 @@ export default function AnalyticsPage() {
         {data.stats.totalProducts > 0 && (
           <Card className="border-2 border-gray-100">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Your Products ({data.stats.totalProducts})
-              </CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5" />
+              {t("yourProducts", { count: data.stats.totalProducts })}
+            </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -554,7 +556,7 @@ export default function AnalyticsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5" />
-            Activity Summary
+            {t("activitySummary")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -564,24 +566,24 @@ export default function AnalyticsPage() {
               <p className="text-2xl font-bold text-gray-900">
                 ${data.stats.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-sm text-gray-500">Total Spent</p>
+              <p className="text-sm text-gray-500">{t("totalSpent")}</p>
             </div>
             <div className="p-4 bg-green-50 rounded-lg text-center">
               <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{data.stats.completedOrders}</p>
-              <p className="text-sm text-gray-500">Completed Orders</p>
+              <p className="text-sm text-gray-500">{t("completedOrders")}</p>
             </div>
             <div className="p-4 bg-purple-50 rounded-lg text-center">
               <Star className="w-8 h-8 text-purple-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">
                 {data.stats.averageRating > 0 ? data.stats.averageRating.toFixed(1) : 'N/A'}
               </p>
-              <p className="text-sm text-gray-500">Average Rating</p>
+              <p className="text-sm text-gray-500">{t("averageRating")}</p>
             </div>
             <div className="p-4 bg-orange-50 rounded-lg text-center">
               <FileText className="w-8 h-8 text-orange-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{data.stats.totalReviews}</p>
-              <p className="text-sm text-gray-500">Reviews Given</p>
+              <p className="text-sm text-gray-500">{t("reviewsGiven")}</p>
             </div>
           </div>
         </CardContent>

@@ -2,49 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Users, Package, Leaf, Heart } from "lucide-react"
-
-const stats = [
-  {
-    icon: Users,
-    number: "500+",
-    value: 500,
-    label: "Community Members",
-    description: "Growing together",
-    iconColor: "text-blue-600",
-    gradient: "from-blue-500 to-blue-600",
-    bgGradient: "from-blue-50 to-blue-100/50",
-  },
-  {
-    icon: Package,
-    number: "1,000+",
-    value: 1000,
-    label: "Products Available",
-    description: "Fresh & local",
-    iconColor: "text-primary",
-    gradient: "from-primary to-[#4d8236]",
-    bgGradient: "from-primary/10 to-[#4d8236]/10",
-  },
-  {
-    icon: Leaf,
-    number: "50+",
-    value: 50,
-    label: "Local Partners",
-    description: "Supporting farmers",
-    iconColor: "text-primary",
-    gradient: "from-primary to-[#7ab856]",
-    bgGradient: "from-primary/15 to-[#7ab856]/15",
-  },
-  {
-    icon: Heart,
-    number: "100%",
-    value: 100,
-    label: "Sustainable",
-    description: "Eco-friendly practices",
-    iconColor: "text-red-500",
-    gradient: "from-red-500 to-pink-500",
-    bgGradient: "from-red-50 to-pink-50",
-  },
-]
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 function AnimatedNumber({ value, suffix = "", decimals = 0 }: { value: number; suffix?: string; decimals?: number }) {
   const [displayValue, setDisplayValue] = useState(0)
@@ -101,6 +59,51 @@ function AnimatedNumber({ value, suffix = "", decimals = 0 }: { value: number; s
 }
 
 export function StatsSection() {
+  const t = useSafeTranslations("home")
+  
+  const stats = [
+    {
+      icon: Users,
+      number: "500+",
+      value: 500,
+      label: t("communityMembers"),
+      description: t("growingTogether"),
+      iconColor: "text-blue-600",
+      gradient: "from-blue-500 to-blue-600",
+      bgGradient: "from-blue-50 to-blue-100/50",
+    },
+    {
+      icon: Package,
+      number: "1,000+",
+      value: 1000,
+      label: t("productsAvailable"),
+      description: t("freshLocal"),
+      iconColor: "text-primary",
+      gradient: "from-primary to-[#4d8236]",
+      bgGradient: "from-primary/10 to-[#4d8236]/10",
+    },
+    {
+      icon: Leaf,
+      number: "50+",
+      value: 50,
+      label: t("localPartners"),
+      description: t("supportingFarmers"),
+      iconColor: "text-primary",
+      gradient: "from-primary to-[#7ab856]",
+      bgGradient: "from-primary/15 to-[#7ab856]/15",
+    },
+    {
+      icon: Heart,
+      number: "100%",
+      value: 100,
+      label: t("sustainable"),
+      description: t("ecoFriendly"),
+      iconColor: "text-red-500",
+      gradient: "from-red-500 to-pink-500",
+      bgGradient: "from-red-50 to-pink-50",
+    },
+  ]
+  
   return (
     <section className="w-full relative overflow-hidden">
       {/* Background with subtle pattern */}
@@ -110,10 +113,10 @@ export function StatsSection() {
         {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-            Our Community
+            {t("ourCommunity")}
           </h2>
           <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
-            Building a stronger community through local agriculture
+            {t("communityDescription")}
           </p>
         </div>
 

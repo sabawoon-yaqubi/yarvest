@@ -1,13 +1,15 @@
 "use client"
 
-import Link from "next/link"
 import { useRef, useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { ApiCategoryCard, ApiCategory } from "./api-category-card"
 import { CategoryCardSkeleton } from "./category-card-skeleton"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 export function FreshFoodCategories({ title = true }: { title?: boolean }) {
+  const t = useSafeTranslations("home")
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
@@ -80,13 +82,13 @@ export function FreshFoodCategories({ title = true }: { title?: boolean }) {
 
   const renderEmpty = () => (
     <div className="text-center py-8 text-gray-500 w-full">
-      <p>No categories available at the moment.</p>
+      <p>{t("noCategories")}</p>
     </div>
   )
 
   const renderError = (error: string) => (
     <div className="text-center py-8 text-gray-500 w-full">
-      <p>Unable to load categories. Please try again later.</p>
+      <p>{t("categoriesError")}</p>
     </div>
   )
 
@@ -95,11 +97,11 @@ export function FreshFoodCategories({ title = true }: { title?: boolean }) {
       {title && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-10 gap-4">
           <div>
-            <h3 className="text-base md:text-4xl font-bold text-foreground">Shop by Category</h3>
-            <p className="hidden md:block text-muted-foreground text-sm md:text-base mt-1 md:mt-2">Explore fresh, local, and organic produce</p>
+            <h3 className="text-base md:text-4xl font-bold text-foreground">{t("shopByCategory")}</h3>
+            <p className="hidden md:block text-muted-foreground text-sm md:text-base mt-1 md:mt-2">{t("categoryDescription")}</p>
           </div>
           <Link href="/categories" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm md:text-base transition-colors self-end sm:self-auto flex items-center gap-1">
-            View All
+            {t("viewAll")}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

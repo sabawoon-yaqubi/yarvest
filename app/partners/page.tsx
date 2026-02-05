@@ -11,9 +11,11 @@ import { InfiniteScrollFetcher } from "@/components/infinite-scroll-fetcher"
 import { ProducerCardSkeleton } from "@/components/producer-card-skeleton"
 import { ApiPartner } from "@/components/partners-section"
 import { getImageUrl } from "@/lib/utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function PartnersPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const t = useSafeTranslations("partners")
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -25,10 +27,10 @@ export default function PartnersPage() {
             <div className="mb-10">
               <div className="flex items-center gap-3 mb-3">
                 <Building2 className="w-8 h-8 text-[#5a9c3a]" />
-                <h1 className="text-5xl font-bold text-foreground">Our Partners</h1>
+                <h1 className="text-5xl font-bold text-foreground">{t("title")}</h1>
               </div>
               <p className="text-lg text-muted-foreground">
-                Trusted organizations and businesses supporting our mission to connect communities with fresh, local produce
+                {t("subtitle")}
               </p>
             </div>
 
@@ -80,13 +82,13 @@ export default function PartnersPage() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2"
                           >
-                            Visit Website
+                            {t("visitWebsite")}
                             <ExternalLink className="w-4 h-4" />
                           </a>
                         </Button>
                       ) : (
                         <div className="mt-auto pt-4 text-sm text-muted-foreground text-center">
-                          No website available
+                          {t("noWebsiteAvailable")}
                         </div>
                       )}
                     </div>
@@ -96,7 +98,7 @@ export default function PartnersPage() {
               renderLoading={() => <ProducerCardSkeleton count={12} />}
               renderEmpty={() => (
                 <div className="text-center py-12 col-span-full">
-                  <p className="text-muted-foreground">No partners available at the moment.</p>
+                  <p className="text-muted-foreground">{t("noPartnersAvailable")}</p>
                 </div>
               )}
             />

@@ -26,20 +26,22 @@ import { fetchOrders, updateOrderStatus, transformOrder, acceptOrder, rejectOrde
 import { useRouter } from "next/navigation"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
-
-const statusConfig = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-  confirmed: { label: "Confirmed", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  processing: { label: "Processing", color: "bg-blue-100 text-blue-800", icon: Package },
-  shipped: { label: "Shipped", color: "bg-purple-100 text-purple-800", icon: Truck },
-  delivered: { label: "Delivered", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  completed: { label: "Completed", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  cancelled: { label: "Cancelled", color: "bg-red-100 text-red-800", icon: XCircle },
-}
 
 export default function OrdersPage() {
   const router = useRouter()
+  const t = useSafeTranslations("admin.orders")
+  
+  const statusConfig = {
+    pending: { label: t("pending"), color: "bg-yellow-100 text-yellow-800", icon: Clock },
+    confirmed: { label: t("confirmed"), color: "bg-green-100 text-green-800", icon: CheckCircle },
+    processing: { label: t("processing"), color: "bg-blue-100 text-blue-800", icon: Package },
+    shipped: { label: t("shipped"), color: "bg-purple-100 text-purple-800", icon: Truck },
+    delivered: { label: t("delivered"), color: "bg-green-100 text-green-800", icon: CheckCircle },
+    completed: { label: t("completed"), color: "bg-green-100 text-green-800", icon: CheckCircle },
+    cancelled: { label: t("cancelled"), color: "bg-red-100 text-red-800", icon: XCircle },
+  }
   const [orders, setOrders] = useState<Order[]>([])
   const [transformedOrders, setTransformedOrders] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -267,7 +269,7 @@ export default function OrdersPage() {
       <div className="p-6 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-[#0A5D31]" />
-          <p className="text-gray-600">Loading orders...</p>
+          <p className="text-gray-600">{t("loadingOrders")}</p>
         </div>
       </div>
     )
@@ -279,35 +281,35 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-500 mt-1 text-sm">{stats.total} total orders</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-1 text-sm">{t("totalOrders", { count: stats.total })}</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Pending</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("pending")}</p>
           <p className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.pending}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Confirmed</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("confirmed")}</p>
           <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.confirmed}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Completed</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("completed")}</p>
           <p className="text-xl sm:text-2xl font-bold text-[#5a9c3a]">{stats.completed}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Processing</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("processing")}</p>
           <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.processing}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Shipped</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("shipped")}</p>
           <p className="text-xl sm:text-2xl font-bold text-purple-600">{stats.shipped}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Revenue</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">{t("revenue")}</p>
           <p className="text-xl sm:text-2xl font-bold text-[#5a9c3a]">${stats.revenue.toFixed(2)}</p>
         </div>
       </div>
@@ -318,7 +320,7 @@ export default function OrdersPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <Input
-              placeholder="Search orders..."
+              placeholder={t("searchOrders")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 sm:pl-10 h-9 sm:h-10 border"
@@ -329,14 +331,14 @@ export default function OrdersPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a] h-9 sm:h-10"
           >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="all">{t("allStatus")}</option>
+            <option value="pending">{t("pending")}</option>
+            <option value="confirmed">{t("confirmed")}</option>
+            <option value="processing">{t("processing")}</option>
+            <option value="shipped">{t("shipped")}</option>
+            <option value="delivered">{t("delivered")}</option>
+            <option value="completed">{t("completed")}</option>
+            <option value="cancelled">{t("cancelled")}</option>
           </select>
         </div>
       </div>
@@ -344,26 +346,26 @@ export default function OrdersPage() {
       {/* Orders Table */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Orders ({filteredOrders.length})</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t("ordersCount", { count: filteredOrders.length })}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Order ID</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Customer</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Items</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Total</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Date</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Actions</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">{t("orderId")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">{t("customer")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">{t("items")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">{t("total")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">{t("status")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">{t("date")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-gray-500">
-                      No orders found
+                      {t("noOrdersFound")}
                     </td>
                   </tr>
                 ) : (
@@ -382,7 +384,7 @@ export default function OrdersPage() {
                         </td>
                         <td className="py-4 px-4">
                           <div className="text-sm text-gray-600">
-                            {order.items?.length || 0} item(s)
+                            {order.items?.length || 0} {order.items?.length === 1 ? t("item") : t("items")}
                           </div>
                         </td>
                       <td className="py-4 px-4">
@@ -404,7 +406,7 @@ export default function OrdersPage() {
                               size="sm"
                               onClick={() => handleViewDetails(order)}
                               disabled={isUpdating}
-                              title="View Details"
+                              title={t("viewDetails")}
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -412,7 +414,7 @@ export default function OrdersPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handlePrint(order)}
-                              title="Print Order"
+                              title={t("printOrder")}
                             >
                               <Printer className="w-4 h-4" />
                             </Button>
@@ -425,7 +427,7 @@ export default function OrdersPage() {
                                   className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                   disabled={isUpdating}
                                 >
-                                  Accept
+                                  {t("accept")}
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -434,7 +436,7 @@ export default function OrdersPage() {
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                   disabled={isUpdating}
                                 >
-                                  Reject
+                                  {t("reject")}
                                 </Button>
                               </>
                             )}
@@ -446,7 +448,7 @@ export default function OrdersPage() {
                                 className="text-green-600 hover:text-green-700 hover:bg-green-50"
                                 disabled={isUpdating}
                               >
-                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Mark Completed"}
+                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : t("markCompleted")}
                               </Button>
                             )}
                           </div>
@@ -463,17 +465,17 @@ export default function OrdersPage() {
       <Dialog open={showAcceptModal} onOpenChange={setShowAcceptModal}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader className="pb-4">
-            <DialogTitle>Accept Order</DialogTitle>
+            <DialogTitle>{t("acceptOrder")}</DialogTitle>
             <DialogDescription>
-              Accept order {selectedOrder?.id} and send confirmation to the buyer
+              {t("acceptOrderDescription", { id: selectedOrder?.id })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="note">Note (Optional)</Label>
+              <Label htmlFor="note">{t("noteOptional")}</Label>
               <Textarea
                 id="note"
-                placeholder="Add a note for the buyer..."
+                placeholder={t("addNoteForBuyer")}
                 value={acceptNote}
                 onChange={(e) => setAcceptNote(e.target.value)}
                 rows={4}
@@ -481,7 +483,7 @@ export default function OrdersPage() {
               />
             </div>
             <div className="space-y-3">
-              <Label>Share Contact Information</Label>
+              <Label>{t("shareContactInformation")}</Label>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="share-address"
@@ -489,7 +491,7 @@ export default function OrdersPage() {
                   onChange={(e) => setShareAddress(e.target.checked)}
                 />
                 <Label htmlFor="share-address" className="font-normal cursor-pointer">
-                  Share my address with buyer
+                  {t("shareAddress")}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -499,7 +501,7 @@ export default function OrdersPage() {
                   onChange={(e) => setSharePhone(e.target.checked)}
                 />
                 <Label htmlFor="share-phone" className="font-normal cursor-pointer">
-                  Share my phone number with buyer
+                  {t("sharePhone")}
                 </Label>
               </div>
             </div>
@@ -510,7 +512,7 @@ export default function OrdersPage() {
               onClick={() => setShowAcceptModal(false)}
               disabled={isUpdating}
             >
-              Cancel
+              {t("cancel", { ns: "common" })}
             </Button>
             <Button
               onClick={handleAcceptOrder}
@@ -520,10 +522,10 @@ export default function OrdersPage() {
               {isUpdating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Accepting...
+                  {t("accepting")}
                 </>
               ) : (
-                "Accept Order"
+                t("acceptOrder")
               )}
             </Button>
           </DialogFooter>
@@ -534,17 +536,17 @@ export default function OrdersPage() {
       <Dialog open={showRejectModal} onOpenChange={setShowRejectModal}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader className="pb-4">
-            <DialogTitle>Reject Order</DialogTitle>
+            <DialogTitle>{t("rejectOrder")}</DialogTitle>
             <DialogDescription>
-              Reject order {selectedOrder?.id}. The buyer will be notified via email.
+              {t("rejectOrderDescription", { id: selectedOrder?.id })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason (Optional)</Label>
+              <Label htmlFor="reason">{t("reasonOptional")}</Label>
               <Textarea
                 id="reason"
-                placeholder="Provide a reason for rejection..."
+                placeholder={t("provideReason")}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 rows={4}
@@ -558,7 +560,7 @@ export default function OrdersPage() {
               onClick={() => setShowRejectModal(false)}
               disabled={isUpdating}
             >
-              Cancel
+              {t("cancel", { ns: "common" })}
             </Button>
             <Button
               onClick={handleRejectOrder}
@@ -568,10 +570,10 @@ export default function OrdersPage() {
               {isUpdating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Rejecting...
+                  {t("rejecting")}
                 </>
               ) : (
-                "Reject Order"
+                t("rejectOrder")
               )}
             </Button>
           </DialogFooter>
@@ -586,10 +588,10 @@ export default function OrdersPage() {
             <DialogHeader className="px-6 pt-5 pb-4 bg-gradient-to-r from-[#0A5D31] to-[#0d7a3f] text-white">
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
                 <Eye className="w-5 h-5" />
-                Order Details - {selectedOrder.id}
+                {t("orderDetails")} - {selectedOrder.id}
               </DialogTitle>
               <DialogDescription className="text-gray-100 text-sm">
-                Order placed on {selectedOrder.date}
+                {t("orderPlacedOn", { date: selectedOrder.date })}
               </DialogDescription>
             </DialogHeader>
 
@@ -598,7 +600,7 @@ export default function OrdersPage() {
               <div>
                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
                   <User className="w-4 h-4" />
-                  Customer Information
+                  {t("customerInformation")}
                 </Label>
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2 border border-gray-200">
                   <div className="flex items-center gap-2">
@@ -622,7 +624,7 @@ export default function OrdersPage() {
               <div>
                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
                   <ShoppingCart className="w-4 h-4" />
-                  Order Items
+                  {t("orderItems")}
                 </Label>
                 <div className="space-y-2">
                   {selectedOrder.items && selectedOrder.items.length > 0 ? (
@@ -637,7 +639,7 @@ export default function OrdersPage() {
                     ))
                   ) : (
                     <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center text-gray-500">
-                      No items found
+                      {t("noItemsFound")}
                     </div>
                   )}
                   <div className="flex items-center justify-between p-4 bg-[#0A5D31]/10 rounded-lg border-2 border-[#0A5D31] mt-3">
@@ -652,7 +654,7 @@ export default function OrdersPage() {
                 <div>
                   <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4" />
-                    Shipping Address
+                    {t("shippingAddress")}
                   </Label>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <p className="text-gray-700">{selectedOrder.shippingAddress}</p>
@@ -665,7 +667,7 @@ export default function OrdersPage() {
                 <div>
                   <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
                     <Truck className="w-4 h-4" />
-                    Tracking Information
+                    {t("trackingInformation")}
                   </Label>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <p className="font-mono text-gray-900">{selectedOrder.trackingNumber}</p>
@@ -685,10 +687,10 @@ export default function OrdersPage() {
                   {isUpdating ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Updating...
+                      {t("updating")}
                     </>
                   ) : (
-                    "Mark Completed"
+                    t("markCompleted")
                   )}
                 </Button>
               )}

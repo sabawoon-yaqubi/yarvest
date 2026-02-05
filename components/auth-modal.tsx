@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X, Eye, EyeOff, Mail, ArrowLeft, Lock, User, CheckCircle2, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useSafeTranslations, useSafeLocale } from "@/hooks/use-safe-translations"
+import { getLocalizedPath } from "@/lib/locale-utils"
+import { type Locale } from '@/i18n'
 import { useAuthStore } from "@/stores/auth-store"
 import { useAddressStore } from "@/stores/address-store"
 import { handleLogin, migrateLocalAddressesToBackend, transformBackendUser, mapBackendRoles } from "@/lib/auth-utils"
@@ -18,6 +21,9 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthModalProps) {
+  const t = useSafeTranslations('auth')
+  const tCommon = useSafeTranslations('common')
+  const locale = useSafeLocale()
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode)
 
   // Update mode when modal opens or initialMode changes
@@ -57,7 +63,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
     setError("")
     
     if (!email || !password) {
-      setError("Please enter both email and password")
+      setError(t('emailRequired') + ' ' + t('passwordRequired'))
       return
     }
     
@@ -102,17 +108,17 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
     setError("")
 
     if (!firstName.trim() || !lastName.trim()) {
-      setError("Please enter your full name")
+      setError(t('nameRequired'))
       return
     }
 
     if (!email.trim()) {
-      setError("Please enter your email address")
+      setError(t('emailRequired'))
       return
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters")
+      setError(t('passwordTooShort'))
       return
   }
 
@@ -182,7 +188,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
     setError("")
     
     if (!forgotEmail) {
-      setError("Please enter your email address")
+      setError(t('emailRequired'))
       return
     }
     
@@ -251,7 +257,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
         setTimeout(() => {
           onOpenChange(false)
           resetForm()
-          router.push("/")
+          router.push(getLocalizedPath('/', locale as Locale))
         }, 1500)
       } else {
         setVerificationError(response.data.message || "Failed to verify email")
@@ -372,17 +378,17 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                     className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    <span className="text-sm font-medium">Back to login</span>
+                    <span className="text-sm font-medium">{t('backToLogin')}</span>
                   </button>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h2>
-                  <p className="text-gray-600">No worries! Enter your email and we'll send you reset instructions.</p>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('forgotPasswordTitle')}</h2>
+                  <p className="text-gray-600">{t('forgotPasswordMessage')}</p>
                 </div>
 
                 {forgotSuccess ? (
                   <div className="p-6 bg-green-50 border border-green-200 rounded-xl">
-                    <p className="text-sm text-green-700 font-medium mb-2">✓ Reset link sent!</p>
+                    <p className="text-sm text-green-700 font-medium mb-2">✓ {t('resetLinkSent')}</p>
                     <p className="text-sm text-green-600">
-                      If an account exists with <strong>{forgotEmail}</strong>, you will receive password reset instructions.
+                      {t('resetLinkMessage', { email: forgotEmail })}
                     </p>
                   </div>
                 ) : (
@@ -396,13 +402,13 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                     <form onSubmit={handleForgotPassword} className="space-y-6">
                       <div>
                         <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-2">
-                          Email address
+                          {t('email')}
                         </label>
                         <div className="relative">
                           <Input
                             id="forgot-email"
                             type="email"
-                            placeholder="Enter your email address"
+                            placeholder={t('emailPlaceholder')}
                             value={forgotEmail}
                             onChange={(e) => setForgotEmail(e.target.value)}
                             className="w-full pl-12 pr-4 py-4 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0A8542]/20 focus:border-[#0A8542] focus:outline-none bg-white hover:border-gray-400 transition-colors"
@@ -424,10 +430,10 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Sending...
+                            {t('sending')}
                           </span>
                         ) : (
-                          "Send Reset Link"
+                          t('sendResetLink')
                         )}
                       </Button>
                     </form>
@@ -438,8 +444,8 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
               /* Login View */
               <>
                 <div className="mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Log in</h2>
-                  <p className="text-gray-600">Welcome back! Please enter your details.</p>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('login')}</h2>
+                  <p className="text-gray-600">{t('loginWelcome')}</p>
                 </div>
 
                 {error && (
@@ -452,13 +458,13 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                   {/* Email Field */}
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email address
+                      {t('email')}
                     </label>
                     <div className="relative">
                   <Input
                         id="email"
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder={t('emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                         className="w-full pl-12 pr-4 py-4 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0A8542]/20 focus:border-[#0A8542] focus:outline-none bg-white hover:border-gray-400 transition-colors"
@@ -472,13 +478,13 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                   {/* Password Field */}
                   <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                      Password
+                      {t('password')}
                     </label>
                     <div className="relative">
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
+                        placeholder={t('passwordPlaceholder')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full pl-12 pr-12 py-4 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0A8542]/20 focus:border-[#0A8542] focus:outline-none bg-white hover:border-gray-400 transition-colors"
@@ -508,7 +514,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                         onChange={(e) => setRememberMe(e.target.checked)}
                         className="w-4 h-4 text-[#0A8542] border-gray-300 rounded focus:ring-[#0A8542] focus:ring-2 cursor-pointer"
                       />
-                      <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">Remember me</span>
+                      <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">{t('rememberMe')}</span>
                     </label>
                     <button
                       type="button"
@@ -518,7 +524,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                       }}
                       className="text-sm text-[#0A8542] hover:text-[#097038] font-medium transition-colors"
                     >
-                      Forgot password?
+                      {t('forgotPassword')}
                     </button>
                   </div>
 
@@ -534,10 +540,10 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Logging in...
+                        {t('loggingIn')}
                       </span>
                     ) : (
-                      "Log in"
+                      t('login')
                     )}
                   </Button>
                 </form>
@@ -545,7 +551,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                 {/* Sign Up Link */}
                 <div className="mt-6 text-center pt-6 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    Don't have an account?{" "}
+                    {t('dontHaveAccount')}{" "}
                   <button
                       onClick={() => {
                         setMode('signup')
@@ -553,7 +559,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                       }}
                       className="text-[#0A8542] hover:text-[#097038] font-semibold hover:underline transition-colors"
                     >
-                      Sign up
+                      {t('signUpLink')}
                   </button>
                   </p>
                 </div>
@@ -563,12 +569,12 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
               <>
                 <div className="mb-8">
                   <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
-                    {isVerified ? "Email Verified!" : "Verify Your Email"}
+                    {isVerified ? t('emailVerified') : t('verifyEmail')}
                   </h2>
                   <p className="text-gray-600 text-center">
                     {isVerified 
-                      ? "Your email has been verified successfully!"
-                      : `We've sent a verification link to ${registeredEmail}`
+                      ? t('emailVerifiedMessage')
+                      : t('verificationSent', { email: registeredEmail })
                     }
                   </p>
                 </div>
@@ -580,8 +586,8 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                         <CheckCircle2 className="w-16 h-16 text-green-600" />
                       </div>
                     </div>
-                    <p className="text-green-600 font-medium text-lg">Email verified successfully!</p>
-                    <p className="text-sm text-gray-500">Redirecting you to your dashboard...</p>
+                    <p className="text-green-600 font-medium text-lg">{t('emailVerifiedMessage')}</p>
+                    <p className="text-sm text-gray-500">{t('redirecting')}</p>
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -606,7 +612,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                     {isVerifying && (
                       <div className="flex items-center justify-center gap-2 text-primary">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <p className="text-sm">Verifying your email...</p>
+                        <p className="text-sm">{t('verifying')}</p>
                       </div>
                     )}
 
@@ -618,18 +624,18 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                       {isSendingVerification ? (
                         <span className="flex items-center justify-center gap-2">
                           <Loader2 className="w-5 h-5 animate-spin" />
-                          Sending...
+                          {t('sending')}
                         </span>
                       ) : (
                         <>
                           <Mail className="w-5 h-5 mr-2 inline" />
-                          Resend Verification Email
+                          {t('resendVerification')}
                         </>
                       )}
                 </Button>
 
                     <p className="text-xs text-center text-gray-500">
-                      Didn't receive the email? Check your spam folder or click resend above.
+                      {t('verificationCheckSpam')}
                     </p>
                 </div>
                 )}
@@ -638,8 +644,8 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
               /* Signup View */
               <>
                 <div className="mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
-                  <p className="text-gray-600">Join Yarvest in seconds</p>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('signup')}</h2>
+                  <p className="text-gray-600">{t('signupSubtitle')}</p>
                 </div>
 
                 {error && (
@@ -652,13 +658,13 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                   {/* Full Name */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name
+                      {t('fullName')}
                     </label>
                 <div className="grid grid-cols-2 gap-3">
                       <div className="relative">
                   <Input
                     type="text"
-                          placeholder="First"
+                          placeholder={t('firstName')}
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
                           className="w-full pl-4 pr-4 py-4 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0A8542]/20 focus:border-[#0A8542] focus:outline-none bg-white hover:border-gray-400 transition-colors"
@@ -669,7 +675,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                       <div className="relative">
                   <Input
                     type="text"
-                          placeholder="Last"
+                          placeholder={t('lastName')}
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
                           className="w-full pl-4 pr-4 py-4 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0A8542]/20 focus:border-[#0A8542] focus:outline-none bg-white hover:border-gray-400 transition-colors"
@@ -682,13 +688,13 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                   {/* Email */}
                   <div>
                     <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email address
+                      {t('email')}
                     </label>
                     <div className="relative">
                 <Input
                         id="signup-email"
                         type="email"
-                        placeholder="Enter your email address"
+                        placeholder={t('emailPlaceholder')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full pl-12 pr-4 py-4 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0A8542]/20 focus:border-[#0A8542] focus:outline-none bg-white hover:border-gray-400 transition-colors"
@@ -701,13 +707,13 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                   {/* Password */}
                   <div>
                     <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-2">
-                      Password
+                      {t('password')}
                     </label>
                     <div className="relative">
                 <Input
                         id="signup-password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="At least 8 characters"
+                        placeholder={t('passwordPlaceholderSignup')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                         className="w-full pl-12 pr-12 py-4 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0A8542]/20 focus:border-[#0A8542] focus:outline-none bg-white hover:border-gray-400 transition-colors"
@@ -724,7 +730,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                       </button>
                 </div>
                     {password && password.length < 8 && (
-                      <p className="mt-1.5 text-xs text-amber-600">At least 8 characters required</p>
+                      <p className="mt-1.5 text-xs text-amber-600">{t('passwordMinLength')}</p>
                     )}
                 </div>
 
@@ -740,10 +746,10 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Creating account...
+                        {t('creatingAccount')}
                       </span>
                     ) : (
-                      "Create Account"
+                      t('signup')
                     )}
                 </Button>
                 </form>
@@ -751,7 +757,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                 {/* Login Link */}
                 <div className="mt-6 text-center pt-6 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    Already have an account?{" "}
+                    {t('alreadyHaveAccount')}{" "}
                     <button
                       onClick={() => {
                         setMode('login')
@@ -759,7 +765,7 @@ export function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthMod
                       }}
                       className="text-[#0A8542] hover:text-[#097038] font-semibold hover:underline transition-colors"
                     >
-                      Sign in
+                      {t('signInLink')}
                     </button>
                 </p>
                 </div>

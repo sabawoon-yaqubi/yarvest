@@ -2,28 +2,30 @@
 
 import { TrendingUp, ArrowRight } from "lucide-react"
 import { useState } from "react"
-import Link from "next/link"
 import { ApiProduct } from "@/types/product"
 import { ApiProductCard } from "./api-product-card"
 import { ProductCardSkeleton } from "./product-card-skeleton"
 import { ApiDataFetcher } from "./api-data-fetcher"
 import { useCartHandler } from "@/hooks/use-cart-handler"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
+import { Link } from "@/routing"
 
 export function TrendingProducts() {
   const [favorites, setFavorites] = useState<number[]>([])
   const { handleAddToCart } = useCartHandler()
+  const t = useSafeTranslations("home")
 
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-10">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-bold text-2xl sm:text-4xl text-foreground">Trending Now</h3>
+            <h3 className="font-bold text-2xl sm:text-4xl text-foreground">{t("trendingNow")}</h3>
           </div>
-          <p className="text-muted-foreground text-base mt-2 hidden sm:block">What everyone's buying this week</p>
+          <p className="text-muted-foreground text-base mt-2 hidden sm:block">{t("trendingDescription")}</p>
         </div>
         <Link href="/trending" className="text-[#5a9c3a] font-semibold hover:text-[#0d7a3f] text-sm transition-colors flex items-center gap-1">
-          View All
+          {t("viewAll")}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

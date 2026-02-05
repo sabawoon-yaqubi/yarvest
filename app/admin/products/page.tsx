@@ -19,9 +19,11 @@ import { toast } from "sonner"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { getImageUrl } from "@/lib/utils"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 export default function ProductsPage() {
   const router = useRouter()
+  const t = useSafeTranslations("admin.products")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<any>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -39,7 +41,7 @@ export default function ProductsPage() {
         setProducts(productsData)
       } catch (error) {
         console.error('Error loading products:', error)
-        toast.error("Failed to load products", { duration: 3000 })
+        toast.error(t("failedToLoad"), { duration: 3000 })
       } finally {
         setLoadingProducts(false)
       }
@@ -62,7 +64,7 @@ export default function ProductsPage() {
 
     const uniqueId = productToDelete.unique_id || productToDelete.uniqueId || productToDelete.id?.toString()
     if (!uniqueId) {
-      toast.error("Product unique identifier is missing", { duration: 3000 })
+      toast.error(t("productUniqueIdMissing"), { duration: 3000 })
       setDeleteDialogOpen(false)
       setProductToDelete(null)
       return
@@ -73,12 +75,12 @@ export default function ProductsPage() {
       await deleteProduct(uniqueId)
       const productsData = await fetchUserProducts()
       setProducts(productsData)
-      toast.success("Product deleted successfully", { duration: 3000 })
+      toast.success(t("productDeleted"), { duration: 3000 })
       setDeleteDialogOpen(false)
       setProductToDelete(null)
     } catch (error) {
       console.error('Error deleting product:', error)
-      toast.error("Failed to delete product", { duration: 3000 })
+      toast.error(t("failedToDelete"), { duration: 3000 })
     } finally {
       setIsDeleting(false)
     }
@@ -105,10 +107,10 @@ export default function ProductsPage() {
 
     try {
       await updateProduct(uniqueId, { status: newStatus })
-      toast.success(`Product ${newStatus ? 'activated' : 'deactivated'} successfully`, { duration: 3000 })
+      toast.success(newStatus ? t("productActivated") : t("productDeactivated"), { duration: 3000 })
     } catch (error) {
       console.error('Error updating product status:', error)
-      toast.error("Failed to update product status", { duration: 3000 })
+      toast.error(t("failedToUpdateStatus"), { duration: 3000 })
       // Revert optimistic update
       setProducts(products.map(p => {
         const pId = p.unique_id || (p as any).uniqueId || p.id?.toString()
@@ -136,9 +138,9 @@ export default function ProductsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
           <p className="text-gray-500 mt-1">
-            {products.length} {products.length === 1 ? "product" : "products"} total
+            {t("productsTotal", { count: products.length })}
           </p>
         </div>
         <Button 
@@ -146,7 +148,7 @@ export default function ProductsPage() {
           onClick={() => router.push('/admin/products/new')}
         >
           <Plus className="w-4 h-4" />
-          Add Product
+          {t("addProduct")}
         </Button>
       </div>
 
@@ -156,7 +158,7 @@ export default function ProductsPage() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             type="text"
-            placeholder="Search products..."
+            placeholder={t("searchProducts")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-4 py-2 border-gray-200 rounded-lg"
@@ -169,7 +171,7 @@ export default function ProductsPage() {
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-[#5a9c3a]" />
-            <p className="text-gray-500">Loading products...</p>
+            <p className="text-gray-500">{t("loadingProducts")}</p>
           </div>
         </div>
       ) : filteredProducts.length === 0 ? (
@@ -178,12 +180,12 @@ export default function ProductsPage() {
             <Package className="w-12 h-12 text-gray-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {searchQuery ? "No products found" : "No products yet"}
+            {searchQuery ? t("noProductsFound") : t("noProductsYet")}
           </h3>
           <p className="text-gray-500 mb-6 text-center max-w-md">
             {searchQuery 
-              ? "Try adjusting your search terms" 
-              : "Start by adding your first product to showcase your offerings"}
+              ? t("tryAdjustingSearch") 
+              : t("startAddingFirstProduct")}
           </p>
           {!searchQuery && (
             <Button 
@@ -191,7 +193,7 @@ export default function ProductsPage() {
               onClick={() => router.push('/admin/products/new')}
             >
               <Plus className="w-4 h-4" />
-              Add Your First Product
+              {t("addYourFirstProduct")}
             </Button>
           )}
         </div>
@@ -213,19 +215,19 @@ export default function ProductsPage() {
                   {product.status ? (
                     <Badge className="bg-emerald-500 text-white text-xs font-medium">
                       <Eye className="w-3 h-3 mr-1" />
-                      Active
+                      {t("active")}
                     </Badge>
                   ) : (
                     <Badge className="bg-gray-500 text-white text-xs font-medium">
                       <EyeOff className="w-3 h-3 mr-1" />
-                      Inactive
+                      {t("inactive")}
                     </Badge>
                   )}
                 </div>
                 {product.stock === 0 && (
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded">
-                      Out of Stock
+                      {t("outOfStock")}
                     </span>
                   </div>
                 )}
@@ -264,7 +266,7 @@ export default function ProductsPage() {
                     })()}
                   </span>
                   <span className={`text-sm font-medium ${product.stock > 0 ? "text-emerald-600" : "text-red-600"}`}>
-                    Stock: {product.stock}
+                    {t("stock", { count: product.stock })}
                   </span>
                 </div>
 
@@ -277,7 +279,7 @@ export default function ProductsPage() {
                     onClick={() => handleEdit(product)}
                   >
                     <Edit className="w-4 h-4 mr-1.5" />
-                    Edit
+                    {t("edit")}
                   </Button>
                   <Button
                     variant="outline"
@@ -298,9 +300,9 @@ export default function ProductsPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Product</DialogTitle>
+            <DialogTitle>{t("deleteProduct")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete <span className="font-semibold">"{productToDelete?.name}"</span>? This action cannot be undone.
+              {t("deleteProductDescription", { name: productToDelete?.name })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
@@ -312,7 +314,7 @@ export default function ProductsPage() {
               }}
               disabled={isDeleting}
             >
-              Cancel
+              {t("cancel", { ns: "common" })}
             </Button>
             <Button
               onClick={handleDeleteConfirm}
@@ -322,10 +324,10 @@ export default function ProductsPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Deleting...
+                  {t("deleting")}
                 </>
               ) : (
-                "Delete"
+                t("delete", { ns: "common" })
               )}
             </Button>
           </DialogFooter>

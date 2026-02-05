@@ -1,18 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { Toaster } from "sonner"
+import { NextIntlClientProvider } from 'next-intl';
+import { defaultLocale } from '@/i18n';
 import { AuthInitializer } from "@/components/auth-initializer"
-import { FirstTimeAddressPrompt } from "@/components/first-time-address-prompt"
-import { EmailVerificationBlocker } from "@/components/email-verification-blocker"
-import { MarkerInitializer } from "@/components/marker-initializer"
 import { AuthModalProvider } from "@/components/auth-modal-provider"
-import { ShareBanner } from "@/components/share-banner"
 import "./globals.css"
-
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.yarvest.health'
 
@@ -105,11 +97,32 @@ export const metadata: Metadata = {
   category: "Food & Agriculture",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Get locale from cookie, fallback to default
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get('NEXT_LOCALE')?.value;
+  const currentLocale = (localeCookie === 'en' || localeCookie === 'es') ? localeCookie : defaultLocale;
+  
+  // Get locale messages for pages outside [locale] folder
+  // This ensures components work even if they're not under [locale] route
+  let localeMessages = {};
+  try {
+    localeMessages = (await import(`@/messages/${currentLocale}.json`)).default;
+  } catch (error) {
+    console.error('Failed to load locale messages:', error);
+    // Fallback to default locale messages
+    try {
+      localeMessages = (await import(`@/messages/${defaultLocale}.json`)).default;
+    } catch (fallbackError) {
+      console.error('Failed to load default messages:', fallbackError);
+    }
+  }
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "OnlineStore",
@@ -132,31 +145,19 @@ export default function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body >
-        <AuthInitializer />
-        <EmailVerificationBlocker />
-        <FirstTimeAddressPrompt />
-        <MarkerInitializer />
-        <AuthModalProvider />
-        <ShareBanner />
-        {children}
-        <Toaster 
-          position="top-right" 
-          richColors 
-          duration={3000}
-          closeButton
-          toastOptions={{
-            duration: 3000,
-          }}
-        />
-        <Analytics />
+      <body>
+        <NextIntlClientProvider messages={localeMessages} locale={currentLocale}>
+          <AuthInitializer />
+          <AuthModalProvider />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   )
