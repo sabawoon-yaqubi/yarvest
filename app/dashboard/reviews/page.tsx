@@ -8,6 +8,7 @@ import api from "@/lib/axios"
 import { toast } from "sonner"
 import { getImageUrl } from "@/lib/utils"
 import { useAuthStore } from "@/stores/auth-store"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -21,6 +22,7 @@ const COLORS = {
 
 export default function ReviewsPage() {
   const { user, isLoading: authLoading } = useAuthStore()
+  const t = useSafeTranslations("reviews")
   const [activeTab, setActiveTab] = useState<'user' | 'product'>('user')
   const [userReviews, setUserReviews] = useState<any[]>([])
   const [productReviewsReceived, setProductReviewsReceived] = useState<any[]>([])
@@ -70,9 +72,9 @@ export default function ReviewsPage() {
     } catch (error: any) {
       console.error('Error fetching reviews:', error)
       if (error.response?.status === 401) {
-        toast.error('Please log in to view reviews')
+        toast.error(t("pleaseLogin"))
       } else if (error.response?.status !== 404) {
-        toast.error(error.response?.data?.message || 'Failed to load reviews')
+        toast.error(error.response?.data?.message || t("failedToLoad"))
       }
     } finally {
       setLoading(false)
@@ -202,10 +204,10 @@ export default function ReviewsPage() {
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
-      toast.success('Reviews exported successfully')
+      toast.success(t("reviewsExported"))
     } catch (error: any) {
       console.error('Error exporting reviews:', error)
-      toast.error('Failed to export reviews')
+      toast.error(t("failedToExport"))
     }
   }
 
@@ -249,11 +251,11 @@ export default function ReviewsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reviews</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
             <p className="text-gray-500 mt-1 text-sm">
               {activeTab === 'user' 
-                ? 'User reviews you have given and received' 
-                : 'Product reviews for your products and reviews you gave'}
+                ? t("userReviewsSubtitle")
+                : t("productReviewsSubtitle")}
             </p>
           </div>
           {currentReviews.length > 0 && (
@@ -266,7 +268,7 @@ export default function ReviewsPage() {
                   className="gap-2"
                 >
                   <List className="w-4 h-4" />
-                  Cards
+                  {t("cards")}
                 </Button>
                 <Button
                   variant={viewMode === 'table' ? 'default' : 'ghost'}
@@ -275,7 +277,7 @@ export default function ReviewsPage() {
                   className="gap-2"
                 >
                   <Table2 className="w-4 h-4" />
-                  Table
+                  {t("table")}
                 </Button>
               </div>
               <Button
@@ -284,7 +286,7 @@ export default function ReviewsPage() {
                 className="gap-2"
               >
                 <Download className="w-4 h-4" />
-                Export
+                {t("export")}
               </Button>
             </div>
           )}
@@ -295,11 +297,11 @@ export default function ReviewsPage() {
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="user" className="gap-2">
               <Users className="w-4 h-4" />
-              User Reviews
+              {t("userReviews")}
             </TabsTrigger>
             <TabsTrigger value="product" className="gap-2">
               <Package className="w-4 h-4" />
-              Product Reviews
+              {t("productReviews")}
             </TabsTrigger>
           </TabsList>
 
@@ -309,8 +311,8 @@ export default function ReviewsPage() {
               <Card className="border-0 shadow-md">
                 <CardContent className="p-12 text-center">
                   <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No user reviews yet</h3>
-                  <p className="text-gray-500">You haven't received or given any user reviews yet</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("noUserReviews")}</h3>
+                  <p className="text-gray-500">{t("noUserReviewsMessage")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -319,49 +321,49 @@ export default function ReviewsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-8 gap-4 mb-6">
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">Total Reviews</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("totalReviews")}</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.totalReviews}</p>
                 </CardContent>
               </Card>
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">Received</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("received")}</p>
                   <p className="text-2xl font-bold text-green-600">{stats.reviewsReceived}</p>
                 </CardContent>
               </Card>
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">Given</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("given")}</p>
                   <p className="text-2xl font-bold text-blue-600">{stats.reviewsGiven}</p>
                 </CardContent>
               </Card>
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">Avg Rating</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("avgRating")}</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.averageRating}</p>
                 </CardContent>
               </Card>
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">5 Stars</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("fiveStars")}</p>
                   <p className="text-2xl font-bold text-yellow-600">{stats.fiveStar}</p>
                 </CardContent>
               </Card>
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">4 Stars</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("fourStars")}</p>
                   <p className="text-2xl font-bold text-yellow-600">{stats.fourStar}</p>
                 </CardContent>
               </Card>
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">3 Stars</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("threeStars")}</p>
                   <p className="text-2xl font-bold text-yellow-600">{stats.threeStar}</p>
                 </CardContent>
               </Card>
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">
-                  <p className="text-sm text-gray-500 mb-1">2-1 Stars</p>
+                  <p className="text-sm text-gray-500 mb-1">{t("twoOneStars")}</p>
                   <p className="text-2xl font-bold text-gray-600">{stats.twoStar + stats.oneStar}</p>
                 </CardContent>
               </Card>
@@ -371,7 +373,7 @@ export default function ReviewsPage() {
             {(reviewsReceived.length > 0 || reviewsGiven.length > 0) && (
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>Showing:</strong> {reviewsReceived.length} review{reviewsReceived.length !== 1 ? 's' : ''} received • {reviewsGiven.length} review{reviewsGiven.length !== 1 ? 's' : ''} given
+                  <strong>{t("showing")}:</strong> {reviewsReceived.length} {reviewsReceived.length !== 1 ? t("reviews") : t("review")} {t("received")} • {reviewsGiven.length} {reviewsGiven.length !== 1 ? t("reviews") : t("review")} {t("given")}
                 </p>
               </div>
             )}
@@ -380,7 +382,7 @@ export default function ReviewsPage() {
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="flex-1">
                 <Input
-                  placeholder="Search by reviewer name, review text, or type..."
+                  placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full"
@@ -388,12 +390,12 @@ export default function ReviewsPage() {
               </div>
               <Tabs value={ratingFilter} onValueChange={setRatingFilter}>
                 <TabsList>
-                  <TabsTrigger value="all">All Ratings</TabsTrigger>
-                  <TabsTrigger value="5">5 Stars</TabsTrigger>
-                  <TabsTrigger value="4">4 Stars</TabsTrigger>
-                  <TabsTrigger value="3">3 Stars</TabsTrigger>
-                  <TabsTrigger value="2">2 Stars</TabsTrigger>
-                  <TabsTrigger value="1">1 Star</TabsTrigger>
+                  <TabsTrigger value="all">{t("allRatings")}</TabsTrigger>
+                  <TabsTrigger value="5">{t("fiveStars")}</TabsTrigger>
+                  <TabsTrigger value="4">{t("fourStars")}</TabsTrigger>
+                  <TabsTrigger value="3">{t("threeStars")}</TabsTrigger>
+                  <TabsTrigger value="2">{t("twoStars")}</TabsTrigger>
+                  <TabsTrigger value="1">{t("oneStar")}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -418,7 +420,7 @@ export default function ReviewsPage() {
                                     : (review.from_user?.name || review.from_user?.email || 'Anonymous')}
                                 </h4>
                                 <Badge className={review.review_type === 'given' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}>
-                                  {review.review_type === 'given' ? 'Given' : 'Received'}
+                                  {review.review_type === 'given' ? t("given") : t("received")}
                                 </Badge>
                                 {review.type && (
                                   <Badge className={getTypeBadgeColor(review.type)}>
@@ -453,19 +455,19 @@ export default function ReviewsPage() {
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Reviewer
+                            {t("reviewer")}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Rating
+                            {t("rating")}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Type
+                            {t("type")}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Review
+                            {t("review")}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date
+                            {t("date")}
                           </th>
                         </tr>
                       </thead>
@@ -473,7 +475,7 @@ export default function ReviewsPage() {
                         {filteredReviews.length === 0 ? (
                           <tr>
                             <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                              No reviews found matching your search criteria
+                              {t("noReviewsMessage")}
                             </td>
                           </tr>
                         ) : (
@@ -492,7 +494,7 @@ export default function ReviewsPage() {
                                           : (review.from_user?.name || review.from_user?.email || 'Anonymous')}
                                       </div>
                                       <Badge className={review.review_type === 'given' ? 'bg-blue-100 text-blue-800 text-xs' : 'bg-green-100 text-green-800 text-xs'}>
-                                        {review.review_type === 'given' ? 'Given' : 'Received'}
+                                        {review.review_type === 'given' ? t("given") : t("received")}
                                       </Badge>
                                     </div>
                                     {(review.review_type === 'given' ? review.to_user?.email : review.from_user?.email) && (
@@ -522,7 +524,7 @@ export default function ReviewsPage() {
                               </td>
                               <td className="px-6 py-4">
                                 <p className="text-sm text-gray-900 max-w-md line-clamp-2">
-                                  {getReviewText(review) || 'No review text'}
+                                  {getReviewText(review) || t("noReviewText")}
                                 </p>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -551,8 +553,8 @@ export default function ReviewsPage() {
               <Card className="border-0 shadow-md">
                 <CardContent className="p-12 text-center">
                   <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No product reviews yet</h3>
-                  <p className="text-gray-500">You haven't received or given any product reviews yet</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("noProductReviews")}</h3>
+                  <p className="text-gray-500">{t("noProductReviewsMessage")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -612,8 +614,8 @@ export default function ReviewsPage() {
                 {/* Summary Info */}
                 {(reviewsReceived.length > 0 || reviewsGiven.length > 0) && (
                   <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <strong>Showing:</strong> {reviewsReceived.length} review{reviewsReceived.length !== 1 ? 's' : ''} received for your products • {reviewsGiven.length} review{reviewsGiven.length !== 1 ? 's' : ''} you gave
+                      <p className="text-sm text-blue-800">
+                      <strong>{t("showing")}:</strong> {reviewsReceived.length} {reviewsReceived.length !== 1 ? t("reviews") : t("review")} {t("receivedForYourProducts")} • {reviewsGiven.length} {reviewsGiven.length !== 1 ? t("reviews") : t("review")} {t("youGave")}
                     </p>
                   </div>
                 )}
@@ -622,7 +624,7 @@ export default function ReviewsPage() {
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <Input
-                      placeholder="Search by product name, reviewer name, or review text..."
+                      placeholder={t("searchProductPlaceholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full"
@@ -630,12 +632,12 @@ export default function ReviewsPage() {
                   </div>
                   <Tabs value={ratingFilter} onValueChange={setRatingFilter}>
                     <TabsList>
-                      <TabsTrigger value="all">All Ratings</TabsTrigger>
-                      <TabsTrigger value="5">5 Stars</TabsTrigger>
-                      <TabsTrigger value="4">4 Stars</TabsTrigger>
-                      <TabsTrigger value="3">3 Stars</TabsTrigger>
-                      <TabsTrigger value="2">2 Stars</TabsTrigger>
-                      <TabsTrigger value="1">1 Star</TabsTrigger>
+                      <TabsTrigger value="all">{t("allRatings")}</TabsTrigger>
+                      <TabsTrigger value="5">{t("fiveStars")}</TabsTrigger>
+                      <TabsTrigger value="4">{t("fourStars")}</TabsTrigger>
+                      <TabsTrigger value="3">{t("threeStars")}</TabsTrigger>
+                      <TabsTrigger value="2">{t("twoStars")}</TabsTrigger>
+                      <TabsTrigger value="1">{t("oneStar")}</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
@@ -666,11 +668,11 @@ export default function ReviewsPage() {
                                       {review.product?.name || 'Product'}
                                     </h4>
                                     <Badge className={review.review_type === 'given' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}>
-                                      {review.review_type === 'given' ? 'Given' : 'Received'}
+                                      {review.review_type === 'given' ? t("given") : t("received")}
                                     </Badge>
                                     {review.review_type === 'received' && review.buyer && (
                                       <span className="text-sm text-gray-600">
-                                        by {review.buyer.name || review.buyer.email || 'Anonymous'}
+                                        {t("by")} {review.buyer.name || review.buyer.email || t("anonymous")}
                                       </span>
                                     )}
                                   </div>
@@ -701,19 +703,19 @@ export default function ReviewsPage() {
                           <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Product
+                                {t("product")}
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Reviewer
+                                {t("reviewer")}
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Rating
+                                {t("rating")}
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Review
+                                {t("review")}
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Date
+                                {t("date")}
                               </th>
                             </tr>
                           </thead>
@@ -721,7 +723,7 @@ export default function ReviewsPage() {
                             {filteredReviews.length === 0 ? (
                               <tr>
                                 <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                  No reviews found matching your search criteria
+                                  {t("noReviewsMessage")}
                                 </td>
                               </tr>
                             ) : (
@@ -742,10 +744,10 @@ export default function ReviewsPage() {
                                       )}
                                       <div>
                                         <div className="text-sm font-medium text-gray-900">
-                                          {review.product?.name || 'Product'}
+                                          {review.product?.name || t("product")}
                                         </div>
                                         <Badge className={review.review_type === 'given' ? 'bg-blue-100 text-blue-800 text-xs mt-1' : 'bg-green-100 text-green-800 text-xs mt-1'}>
-                                          {review.review_type === 'given' ? 'Given' : 'Received'}
+                                          {review.review_type === 'given' ? t("given") : t("received")}
                                         </Badge>
                                       </div>
                                     </div>
@@ -753,8 +755,8 @@ export default function ReviewsPage() {
                                   <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-gray-900">
                                       {review.review_type === 'received' 
-                                        ? (review.buyer?.name || review.buyer?.email || 'Anonymous')
-                                        : 'You'}
+                                        ? (review.buyer?.name || review.buyer?.email || t("anonymous"))
+                                        : t("you")}
                                     </div>
                                     {review.review_type === 'received' && review.buyer?.email && (
                                       <div className="text-sm text-gray-500">
@@ -772,7 +774,7 @@ export default function ReviewsPage() {
                                   </td>
                                   <td className="px-6 py-4">
                                     <p className="text-sm text-gray-900 max-w-md line-clamp-2">
-                                      {getReviewText(review) || 'No review text'}
+                                      {getReviewText(review) || t("noReviewText")}
                                     </p>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

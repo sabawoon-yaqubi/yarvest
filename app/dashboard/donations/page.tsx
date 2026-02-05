@@ -6,6 +6,7 @@ import { HeartHandshake, Loader2, Calendar, DollarSign } from "lucide-react"
 import api from "@/lib/axios"
 import { toast } from "sonner"
 import { useAuthStore } from "@/stores/auth-store"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 const COLORS = {
   primary: "#5a9c3a",
@@ -16,6 +17,7 @@ const COLORS = {
 
 export default function DonationsPage() {
   const { user, isLoading: authLoading } = useAuthStore()
+  const t = useSafeTranslations("donations")
   const [donations, setDonations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -36,9 +38,9 @@ export default function DonationsPage() {
     } catch (error: any) {
       console.error('Error fetching donations:', error)
       if (error.response?.status === 401) {
-        toast.error('Please log in to view donations')
+        toast.error(t("pleaseLogin"))
       } else if (error.response?.status !== 404) {
-        toast.error(error.response?.data?.message || 'Failed to load donations')
+        toast.error(error.response?.data?.message || t("failedToLoad"))
       }
       setDonations([])
     } finally {
@@ -66,16 +68,16 @@ export default function DonationsPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-8xl mx-auto px-10 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Donations</h1>
-          <p className="text-gray-500 mt-1 text-sm">Your donation history</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-1 text-sm">{t("subtitle")}</p>
         </div>
 
         {donations.length === 0 ? (
           <Card className="border-0 shadow-md">
             <CardContent className="p-12 text-center">
               <HeartHandshake className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No donations yet</h3>
-              <p className="text-gray-500">You haven't made any donations yet</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("noDonationsYet")}</h3>
+              <p className="text-gray-500">{t("noDonationsMessage")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -90,10 +92,10 @@ export default function DonationsPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">
-                          {donation.donation?.title || 'Donation'}
+                          {donation.donation?.title || t("donation")}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {donation.donation?.description || 'Supporting community initiatives'}
+                          {donation.donation?.description || t("supportingCommunity")}
                         </p>
                       </div>
                     </div>

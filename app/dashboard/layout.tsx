@@ -59,6 +59,8 @@ const COLORS = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const t = useSafeTranslations("admin")
+  const tSidebar = useSafeTranslations("sidebar")
+  const tHeader = useSafeTranslations("header")
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
@@ -138,7 +140,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const allMenuItems: MenuItem[] = [
     {
       icon: LayoutDashboard,
-      label: "Dashboard",
+      label: t("dashboard.dashboard"),
       href: "/dashboard",
       section: "main",
     },
@@ -155,7 +157,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     allMenuItems.push(
       {
         icon: ShoppingCart,
-        label: "My Orders",
+        label: t("dashboard.myOrders"),
         href: "/orders",
         section: "buyer",
       },
@@ -206,27 +208,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     allMenuItems.push(
       {
         icon: Leaf,
-        label: "Harvesting",
+        label: t("dashboard.harvesting"),
         href: "/volunteers/harvesting",
         section: "helper",
       },
       {
         icon: Calendar,
-        label: "Schedule",
+        label: t("dashboard.schedule"),
         href: "/volunteers/schedule",
         section: "helper",
       },
     
       {
         icon: DollarSign,
-        label: "Earnings",
+        label: t("dashboard.earnings"),
         href: "/volunteers/earnings",
         section: "helper",
       },
      
       {
         icon: Wrench,
-        label: "Equipment",
+        label: t("dashboard.equipment"),
         href: "/dashboard/equipment",
         section: "helper",
       }
@@ -240,20 +242,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {
         icon: Truck,
-        label: "Deliveries",
+        label: t("dashboard.deliveries"),
         href: "/volunteers/deliveries",
         section: "courier",
       },
      
       {
         icon: DollarSign,
-        label: "Pricing",
+        label: t("dashboard.pricing"),
         href: "/dashboard/pricing",
         section: "courier",
       },
       {
         icon: Car,
-        label: "Vehicles",
+        label: t("dashboard.vehicles"),
         href: "/dashboard/vehicles",
         section: "courier",
       },
@@ -265,43 +267,43 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   allMenuItems.push(
     {
       icon: CreditCard,
-      label: "Bank Accounts",
+      label: t("dashboard.bankAccounts"),
       href: "/dashboard/bank-accounts",
       section: "account",
     },
     {
       icon: FileCheck,
-      label: "Verifications",
+      label: t("dashboard.verifications"),
       href: "/dashboard/verifications",
       section: "account",
     },
     {
       icon: Star,
-      label: "Reviews",
+      label: t("dashboard.reviews"),
       href: "/dashboard/reviews",
       section: "account",
     },
     {
       icon: Wrench,
-      label: "Harvesting Tools",
+      label: t("dashboard.harvestingTools"),
       href: "/dashboard/harvesting-tools",
       section: "account",
     },
     {
       icon: HeartHandshake,
-      label: "Donations",
+      label: t("dashboard.donations"),
       href: "/dashboard/donations",
       section: "account",
     },
     {
       icon: Award,
-      label: "Impact",
+      label: t("dashboard.impact"),
       href: "/volunteers/impact",
       section: "account",
     },
     {
       icon: Users,
-      label: "Referrals",
+      label: t("dashboard.referrals"),
       href: "/dashboard/referrals",
       section: "account",
     }
@@ -458,7 +460,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link href="/" className="flex items-center w-full">
                   <Home className="mr-3 h-4 w-4 text-gray-600" />
                   <span className="text-sm font-medium text-gray-700">
-                    {t("common.home", { ns: "sidebar" }) || "Home"}
+                    {tSidebar("home")}
                   </span>
                 </Link>
               </DropdownMenuItem>
@@ -470,7 +472,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="px-3 py-2.5 rounded-lg cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 transition-colors"
               >
                 <LogOut className="mr-3 h-4 w-4" />
-                <span className="text-sm font-medium">{t("common.logout", { ns: "header" }) || "Logout"}</span>
+                <span className="text-sm font-medium">{tHeader("logout")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

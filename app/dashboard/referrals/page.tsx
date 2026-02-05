@@ -8,6 +8,7 @@ import { Users, Loader2, UserPlus, Gift } from "lucide-react"
 import api from "@/lib/axios"
 import { toast } from "sonner"
 import { useAuthStore } from "@/stores/auth-store"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 
 const COLORS = {
   primary: "#5a9c3a",
@@ -18,6 +19,7 @@ const COLORS = {
 
 export default function ReferralsPage() {
   const { user, isLoading: authLoading } = useAuthStore()
+  const t = useSafeTranslations("referrals")
   const [referrals, setReferrals] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [referralCode, setReferralCode] = useState<string>('')
@@ -40,9 +42,9 @@ export default function ReferralsPage() {
     } catch (error: any) {
       console.error('Error fetching referrals:', error)
       if (error.response?.status === 401) {
-        toast.error('Please log in to view referrals')
+        toast.error(t("pleaseLogin"))
       } else if (error.response?.status !== 404) {
-        toast.error(error.response?.data?.message || 'Failed to load referrals')
+        toast.error(error.response?.data?.message || t("failedToLoad"))
       }
       setReferrals([])
     } finally {
@@ -64,7 +66,7 @@ export default function ReferralsPage() {
   const copyReferralCode = () => {
     if (referralCode) {
       navigator.clipboard.writeText(referralCode)
-      toast.success('Referral code copied to clipboard!')
+      toast.success(t("referralCodeCopied"))
     }
   }
 
@@ -80,8 +82,8 @@ export default function ReferralsPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Referrals</h1>
-          <p className="text-gray-500 mt-1 text-sm">Invite friends and earn rewards</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-1 text-sm">{t("subtitle")}</p>
         </div>
 
         {/* Referral Code Card */}
@@ -90,7 +92,7 @@ export default function ReferralsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Your Referral Code</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("yourReferralCode")}</h3>
                   <div className="flex items-center gap-3">
                     <code className="px-4 py-2 bg-white rounded-lg text-lg font-mono font-bold text-gray-900 border-2" style={{ borderColor: COLORS.primary }}>
                       {referralCode}
@@ -100,11 +102,11 @@ export default function ReferralsPage() {
                       variant="outline"
                       className="gap-2"
                     >
-                      Copy Code
+                      {t("copyCode")}
                     </Button>
                   </div>
                   <p className="text-sm text-gray-600 mt-3">
-                    Share this code with friends to earn rewards when they sign up!
+                    {t("shareCodeMessage")}
                   </p>
                 </div>
                 <div className="p-4 bg-white rounded-full">
@@ -120,8 +122,8 @@ export default function ReferralsPage() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-12 text-center">
               <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No referrals yet</h3>
-              <p className="text-gray-500">Start referring friends to see them here</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("noReferralsYet")}</h3>
+              <p className="text-gray-500">{t("noReferralsMessage")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -144,11 +146,11 @@ export default function ReferralsPage() {
                       </div>
                     </div>
                     <Badge className="bg-green-100 text-green-800">
-                      Active
+                      {t("active")}
                     </Badge>
                   </div>
                   <div className="text-sm text-gray-600">
-                    <p>Referred on {new Date(referral.created_at).toLocaleDateString()}</p>
+                    <p>{t("referredOn")} {new Date(referral.created_at).toLocaleDateString()}</p>
                   </div>
                 </CardContent>
               </Card>

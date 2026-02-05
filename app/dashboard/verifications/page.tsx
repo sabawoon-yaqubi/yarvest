@@ -11,6 +11,7 @@ import { FileCheck, Loader2, CheckCircle2, Clock, Plus, Shield, Upload, File, X 
 import api from "@/lib/axios"
 import { toast } from "sonner"
 import { useAuthStore } from "@/stores/auth-store"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 import { getImageUrl } from "@/lib/utils"
 
 const COLORS = {
@@ -36,6 +37,7 @@ interface Verification {
 
 export default function VerificationsPage() {
   const { user, isLoading: authLoading } = useAuthStore()
+  const t = useSafeTranslations("verifications")
   const [verifications, setVerifications] = useState<Verification[]>([])
   const [verificationTypes, setVerificationTypes] = useState<VerificationType[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,9 +70,9 @@ export default function VerificationsPage() {
     } catch (error: any) {
       console.error('Error fetching data:', error)
       if (error.response?.status === 401) {
-        toast.error('Please log in to view verifications')
+        toast.error(t("pleaseLogin"))
       } else if (error.response?.status !== 404) {
-        toast.error(error.response?.data?.message || 'Failed to load verifications')
+        toast.error(error.response?.data?.message || t("failedToLoad"))
       }
       setVerifications([])
       setVerificationTypes([])
@@ -81,7 +83,7 @@ export default function VerificationsPage() {
 
   const handleSubmitVerification = async () => {
     if (!selectedTypeId) {
-      toast.error('Please select a verification type')
+      toast.error(t("verificationTypeRequired"))
       return
     }
 
@@ -101,18 +103,18 @@ export default function VerificationsPage() {
       })
 
       if (response.data?.success) {
-        toast.success('Verification request submitted successfully!')
+        toast.success(t("verificationRequestSubmitted"))
         setShowSubmitModal(false)
         setSelectedTypeId("")
         setSelectedFile(null)
         // Refresh verifications
         await fetchData()
       } else {
-        toast.error(response.data?.message || 'Failed to submit verification')
+        toast.error(response.data?.message || t("failedToSubmit"))
       }
     } catch (error: any) {
       console.error('Error submitting verification:', error)
-      const errorMessage = error.response?.data?.message || error.response?.data?.errors?.document?.[0] || 'Failed to submit verification request'
+      const errorMessage = error.response?.data?.message || error.response?.data?.errors?.document?.[0] || t("failedToSubmit")
       toast.error(errorMessage)
     } finally {
       setSubmitting(false)
@@ -124,13 +126,13 @@ export default function VerificationsPage() {
     if (file) {
       // Validate file size (10MB max)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size must be less than 10MB')
+        toast.error(t("fileSizeError"))
         return
       }
       // Validate file type
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
       if (!allowedTypes.includes(file.type)) {
-        toast.error('File type not supported. Please upload PDF, JPG, PNG, or DOC files')
+        toast.error(t("fileTypeError"))
         return
       }
       setSelectedFile(file)
@@ -165,8 +167,8 @@ export default function VerificationsPage() {
       <div className="max-w-8xl mx-auto px-10 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Verifications</h1>
-            <p className="text-gray-500 mt-1 text-sm">Your verification status and documents</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+            <p className="text-gray-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
           {availableTypes.length > 0 && (
             <Button
@@ -174,7 +176,7 @@ export default function VerificationsPage() {
               className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white gap-2"
             >
               <Plus className="w-4 h-4" />
-              Request Verification
+              {t("requestVerification")}
             </Button>
           )}
         </div>
@@ -183,19 +185,19 @@ export default function VerificationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
-              <p className="text-sm text-gray-500 mb-1">Total Verifications</p>
+              <p className="text-sm text-gray-500 mb-1">{t("totalVerifications")}</p>
               <p className="text-2xl font-bold text-gray-900">{verifications.length}</p>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
-              <p className="text-sm text-gray-500 mb-1">Available Types</p>
+              <p className="text-sm text-gray-500 mb-1">{t("availableTypes")}</p>
               <p className="text-2xl font-bold text-blue-600">{availableTypes.length}</p>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
-              <p className="text-sm text-gray-500 mb-1">Submitted</p>
+              <p className="text-sm text-gray-500 mb-1">{t("submitted")}</p>
               <p className="text-2xl font-bold text-green-600">{verifications.length}</p>
             </CardContent>
           </Card>
@@ -205,15 +207,15 @@ export default function VerificationsPage() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-12 text-center">
               <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No verifications</h3>
-              <p className="text-gray-500 mb-4">You haven't submitted any verification requests yet</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("noVerifications")}</h3>
+              <p className="text-gray-500 mb-4">{t("noVerificationsMessage")}</p>
               {availableTypes.length > 0 && (
                 <Button
                   onClick={() => setShowSubmitModal(true)}
                   className="bg-[#5a9c3a] hover:bg-[#0d7a3f] text-white gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  Request Your First Verification
+                  {t("requestYourFirstVerification")}
                 </Button>
               )}
             </CardContent>
@@ -230,10 +232,10 @@ export default function VerificationsPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">
-                          {verification.verification_type?.name || 'Verification'}
+                          {verification.verification_type?.name || t("verification")}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Submitted {new Date(verification.created_at).toLocaleDateString('en-US', {
+                          {t("submittedOn")} {new Date(verification.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric'
@@ -241,11 +243,11 @@ export default function VerificationsPage() {
                         </p>
                       </div>
                     </div>
-                    <Badge className="bg-green-100 text-green-800">Submitted</Badge>
+                    <Badge className="bg-green-100 text-green-800">{t("submitted")}</Badge>
                   </div>
                   <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
                     <p className="text-xs text-gray-500">
-                      Status: <span className="font-medium text-gray-700">Under Review</span>
+                      {t("status")}: <span className="font-medium text-gray-700">{t("underReview")}</span>
                     </p>
                     {verification.document && (
                       <div className="flex items-center gap-2 mt-2">
@@ -256,12 +258,12 @@ export default function VerificationsPage() {
                           rel="noopener noreferrer"
                           className="text-xs text-blue-600 hover:text-blue-800 hover:underline truncate"
                         >
-                          View Document
+                          {t("viewDocument")}
                         </a>
                       </div>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      Your verification request is being processed by our team.
+                      {t("verificationRequestProcessing")}
                     </p>
                   </div>
                 </CardContent>
@@ -280,15 +282,15 @@ export default function VerificationsPage() {
         }}>
           <DialogContent className="max-w-lg">
             <DialogHeader className="space-y-3">
-              <DialogTitle className="text-xl">Request New Verification</DialogTitle>
+              <DialogTitle className="text-xl">{t("requestNewVerification")}</DialogTitle>
               <DialogDescription className="text-sm">
-                Select a verification type and upload supporting documents. Your request will be reviewed by our team.
+                {t("requestNewVerificationDescription")}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6 p-4">
               <div className="space-y-2">
                 <Label htmlFor="verification-type" className="text-sm font-medium">
-                  Verification Type <span className="text-red-500">*</span>
+                  {t("verificationType")} <span className="text-red-500">*</span>
                 </Label>
                 <select
                   id="verification-type"
@@ -296,7 +298,7 @@ export default function VerificationsPage() {
                   onChange={(e) => setSelectedTypeId(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:ring-2 focus:ring-[#5a9c3a] focus:border-[#5a9c3a]"
                 >
-                  <option value="">Select a verification type</option>
+                  <option value="">{t("selectVerificationType")}</option>
                   {availableTypes.map((type) => (
                     <option key={type.id} value={type.id.toString()}>
                       {type.name}
@@ -307,7 +309,7 @@ export default function VerificationsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="document" className="text-sm font-medium">
-                  Supporting Document <span className="text-gray-500 text-xs">(Optional)</span>
+                  {t("supportingDocument")} <span className="text-gray-500 text-xs">({t("optional")})</span>
                 </Label>
                 <div className="space-y-2">
                   {!selectedFile ? (
@@ -318,9 +320,9 @@ export default function VerificationsPage() {
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Upload className="w-8 h-8 mb-2 text-gray-400" />
                         <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
+                          <span className="font-semibold">{t("clickToUpload")}</span> {t("orDragAndDrop")}
                         </p>
-                        <p className="text-xs text-gray-500">PDF, JPG, PNG, DOC (MAX. 10MB)</p>
+                        <p className="text-xs text-gray-500">{t("fileFormats")}</p>
                       </div>
                       <input
                         id="document"
@@ -373,10 +375,10 @@ export default function VerificationsPage() {
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting...
+                    {t("submitting")}
                   </>
                 ) : (
-                  'Submit Request'
+                  t("submitRequest")
                 )}
               </Button>
             </DialogFooter>

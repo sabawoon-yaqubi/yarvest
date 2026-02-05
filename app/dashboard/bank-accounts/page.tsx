@@ -10,6 +10,7 @@ import { CreditCard, Plus, Edit, Trash2, Loader2, Save, X } from "lucide-react"
 import api from "@/lib/axios"
 import { toast } from "sonner"
 import { useAuthStore } from "@/stores/auth-store"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ const COLORS = {
 
 export default function BankAccountsPage() {
   const { user, isLoading: authLoading } = useAuthStore()
+  const t = useSafeTranslations("bankAccounts")
   const [bankAccounts, setBankAccounts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -71,9 +73,9 @@ export default function BankAccountsPage() {
     } catch (error: any) {
       console.error('Error fetching bank accounts:', error)
       if (error.response?.status === 401) {
-        toast.error('Please log in to view bank accounts')
+        toast.error(t("pleaseLogin"))
       } else if (error.response?.status !== 404) {
-        toast.error(error.response?.data?.message || 'Failed to load bank accounts')
+        toast.error(error.response?.data?.message || t("failedToLoad"))
       }
       setBankAccounts([])
     } finally {
@@ -114,18 +116,18 @@ export default function BankAccountsPage() {
     // Validate form
     const newErrors: Record<string, string> = {}
     if (!formData.account_name.trim()) {
-      newErrors.account_name = 'Account name is required'
+      newErrors.account_name = t("accountNameRequired")
     }
     if (!formData.bank_name.trim()) {
-      newErrors.bank_name = 'Bank name is required'
+      newErrors.bank_name = t("bankNameRequired")
     }
     if (!formData.account_number.trim()) {
-      newErrors.account_number = 'Account number is required'
+      newErrors.account_number = t("accountNumberRequired")
     } else if (formData.account_number.length < 4) {
-      newErrors.account_number = 'Account number must be at least 4 digits'
+      newErrors.account_number = t("accountNumberMinLength")
     }
     if (formData.routing_number && formData.routing_number.length < 9) {
-      newErrors.routing_number = 'Routing number must be 9 digits'
+      newErrors.routing_number = t("routingNumberLength")
     }
     
     if (Object.keys(newErrors).length > 0) {
@@ -137,10 +139,10 @@ export default function BankAccountsPage() {
       setSaving(true)
       if (editingAccount) {
         await api.put(`/user/bank-accounts/${editingAccount.id}`, formData)
-        toast.success('Bank account updated successfully')
+        toast.success(t("bankAccountUpdated"))
       } else {
         await api.post('/user/bank-accounts', formData)
-        toast.success('Bank account added successfully')
+        toast.success(t("bankAccountAdded"))
       }
       setDialogOpen(false)
       setErrors({})
@@ -150,7 +152,7 @@ export default function BankAccountsPage() {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors)
       } else {
-        toast.error(error.response?.data?.message || 'Failed to save bank account')
+        toast.error(error.response?.data?.message || t("failedToSave"))
       }
     } finally {
       setSaving(false)
@@ -161,12 +163,12 @@ export default function BankAccountsPage() {
     if (!deleteDialog.id) return
     try {
       await api.delete(`/user/bank-accounts/${deleteDialog.id}`)
-      toast.success('Bank account deleted successfully')
+      toast.success(t("bankAccountDeleted"))
       setDeleteDialog({ open: false, id: null })
       await fetchBankAccounts()
     } catch (error: any) {
       console.error('Error deleting bank account:', error)
-      toast.error(error.response?.data?.message || 'Failed to delete bank account')
+      toast.error(error.response?.data?.message || t("failedToDelete"))
     }
   }
 
@@ -183,8 +185,8 @@ export default function BankAccountsPage() {
       <div className="max-w-8xl mx-auto px-10 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Bank Accounts</h1>
-            <p className="text-gray-500 mt-1 text-sm">Manage your bank accounts for payments</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+            <p className="text-gray-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
           <Button
             onClick={() => handleOpenDialog()}
@@ -192,7 +194,7 @@ export default function BankAccountsPage() {
             className="text-white hover:opacity-90"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add Account
+            {t("addAccount")}
           </Button>
         </div>
 
@@ -200,15 +202,15 @@ export default function BankAccountsPage() {
           <Card className="border-0 shadow-md">
             <CardContent className="p-12 text-center">
               <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No bank accounts</h3>
-              <p className="text-gray-500 mb-6">Add your first bank account to receive payments</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("noBankAccounts")}</h3>
+              <p className="text-gray-500 mb-6">{t("noBankAccountsMessage")}</p>
               <Button
                 onClick={() => handleOpenDialog()}
                 style={{ backgroundColor: COLORS.primary }}
                 className="text-white hover:opacity-90"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Your First Account
+                {t("addYourFirstAccount")}
               </Button>
             </CardContent>
           </Card>
@@ -223,31 +225,31 @@ export default function BankAccountsPage() {
                       {account.account_name}
                     </CardTitle>
                     <Badge className={account.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                      {account.status ? 'Active' : 'Inactive'}
+                      {account.status ? t("active") : t("inactive")}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Bank Name</p>
+                      <p className="text-xs text-gray-500 mb-1">{t("bankName")}</p>
                       <p className="text-sm font-medium text-gray-900">{account.bank_name}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Account Number</p>
+                      <p className="text-xs text-gray-500 mb-1">{t("accountNumber")}</p>
                       <p className="text-sm font-medium text-gray-900">
                         {account.account_number?.replace(/\d(?=\d{4})/g, '*') || '****'}
                       </p>
                     </div>
                     {account.routing_number && (
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Routing Number</p>
+                        <p className="text-xs text-gray-500 mb-1">{t("routingNumber")}</p>
                         <p className="text-sm font-medium text-gray-900">{account.routing_number}</p>
                       </div>
                     )}
                     {account.account_type && (
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Account Type</p>
+                        <p className="text-xs text-gray-500 mb-1">{t("accountType")}</p>
                         <p className="text-sm font-medium text-gray-900">{account.account_type}</p>
                       </div>
                     )}
@@ -260,7 +262,7 @@ export default function BankAccountsPage() {
                       className="flex-1"
                     >
                       <Edit className="w-4 h-4 mr-2" />
-                      Edit
+                      {t("edit")}
                     </Button>
                     <Button
                       variant="outline"
@@ -269,7 +271,7 @@ export default function BankAccountsPage() {
                       className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
+                      {t("delete")}
                     </Button>
                   </div>
                 </CardContent>
@@ -283,14 +285,14 @@ export default function BankAccountsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[500px] p-6">
           <DialogHeader className="pb-4">
-            <DialogTitle>{editingAccount ? 'Edit Bank Account' : 'Add Bank Account'}</DialogTitle>
+            <DialogTitle>{editingAccount ? t("editBankAccount") : t("addBankAccount")}</DialogTitle>
             <DialogDescription>
-              {editingAccount ? 'Update your bank account information' : 'Add a new bank account to receive payments'}
+              {editingAccount ? t("updateBankAccountInfo") : t("addNewBankAccount")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="account_name">Account Name</Label>
+              <Label htmlFor="account_name">{t("accountName")}</Label>
               <Input
                 id="account_name"
                 value={formData.account_name}
@@ -298,7 +300,7 @@ export default function BankAccountsPage() {
                   setFormData({ ...formData, account_name: e.target.value })
                   if (errors.account_name) setErrors({ ...errors, account_name: '' })
                 }}
-                placeholder="e.g., Main Checking Account"
+                placeholder={t("accountNamePlaceholder")}
                 className={`mt-1 ${errors.account_name ? 'border-red-500' : ''}`}
               />
               {errors.account_name && (
@@ -306,7 +308,7 @@ export default function BankAccountsPage() {
               )}
             </div>
             <div>
-              <Label htmlFor="bank_name">Bank Name</Label>
+              <Label htmlFor="bank_name">{t("bankName")}</Label>
               <Input
                 id="bank_name"
                 value={formData.bank_name}
@@ -314,7 +316,7 @@ export default function BankAccountsPage() {
                   setFormData({ ...formData, bank_name: e.target.value })
                   if (errors.bank_name) setErrors({ ...errors, bank_name: '' })
                 }}
-                placeholder="e.g., Chase Bank"
+                placeholder={t("bankNamePlaceholder")}
                 className={`mt-1 ${errors.bank_name ? 'border-red-500' : ''}`}
               />
               {errors.bank_name && (
@@ -323,7 +325,7 @@ export default function BankAccountsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="account_number">Account Number</Label>
+                <Label htmlFor="account_number">{t("accountNumber")}</Label>
                 <Input
                   id="account_number"
                   type="text"
@@ -335,7 +337,7 @@ export default function BankAccountsPage() {
                     setFormData({ ...formData, account_number: value })
                     if (errors.account_number) setErrors({ ...errors, account_number: '' })
                   }}
-                  placeholder="Account number"
+                  placeholder={t("accountNumberPlaceholder")}
                   className={`mt-1 ${errors.account_number ? 'border-red-500' : ''}`}
                 />
                 {errors.account_number && (
@@ -343,7 +345,7 @@ export default function BankAccountsPage() {
                 )}
               </div>
               <div>
-                <Label htmlFor="routing_number">Routing Number</Label>
+                <Label htmlFor="routing_number">{t("routingNumber")}</Label>
                 <Input
                   id="routing_number"
                   type="text"
@@ -355,7 +357,7 @@ export default function BankAccountsPage() {
                     setFormData({ ...formData, routing_number: value })
                     if (errors.routing_number) setErrors({ ...errors, routing_number: '' })
                   }}
-                  placeholder="Routing number"
+                  placeholder={t("routingNumberPlaceholder")}
                   className={`mt-1 ${errors.routing_number ? 'border-red-500' : ''}`}
                 />
                 {errors.routing_number && (
@@ -364,7 +366,7 @@ export default function BankAccountsPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="account_type">Account Type</Label>
+              <Label htmlFor="account_type">{t("accountType")}</Label>
               <Input
                 id="account_type"
                 value={formData.account_type}
@@ -372,7 +374,7 @@ export default function BankAccountsPage() {
                   setFormData({ ...formData, account_type: e.target.value })
                   if (errors.account_type) setErrors({ ...errors, account_type: '' })
                 }}
-                placeholder="e.g., Checking, Savings"
+                placeholder={t("selectAccountType")}
                 className={`mt-1 ${errors.account_type ? 'border-red-500' : ''}`}
               />
               {errors.account_type && (
@@ -383,7 +385,7 @@ export default function BankAccountsPage() {
           <DialogFooter className="pt-4 gap-3">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               <X className="w-4 h-4 mr-2" />
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               onClick={handleSave}
@@ -394,12 +396,12 @@ export default function BankAccountsPage() {
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
+                  {t("saving")}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Save
+                  {t("save")}
                 </>
               )}
             </Button>
@@ -411,18 +413,18 @@ export default function BankAccountsPage() {
       <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open, id: null })}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Bank Account</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteBankAccount")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this bank account? This action cannot be undone.
+              {t("deleteBankAccountWarning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

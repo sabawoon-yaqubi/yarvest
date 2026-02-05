@@ -17,6 +17,7 @@ import {
   Clock
 } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 import { getUserRanking, getUserPoints, getUserPointsBreakdown, type UserRanking, type PointsBreakdown, type PointHistory } from "@/lib/leaderboard-api"
 import { fetchCourierRequests } from "@/lib/courier-requests-api"
 import { fetchMyHarvestOffers } from "@/lib/harvest-requests-api"
@@ -33,6 +34,7 @@ interface Achievement {
 }
 
 export default function ImpactPage() {
+  const t = useSafeTranslations("impact")
   const [ranking, setRanking] = useState<UserRanking | null>(null)
   const [pointsData, setPointsData] = useState<{ total_points: number; breakdown: PointsBreakdown[]; history: PointHistory[] } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -188,8 +190,8 @@ export default function ImpactPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Impact</h1>
-          <p className="text-gray-500 mt-1 text-sm">Track your volunteer contributions and earned rewards</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-1 text-sm">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -205,17 +207,17 @@ export default function ImpactPage() {
               <div className="flex items-center justify-center gap-4 mb-6">
                 <Heart className="w-12 h-12 sm:w-16 sm:h-16" />
                 <div>
-                  <p className="text-2xl sm:text-3xl font-bold mb-2">Your Impact Score</p>
-                  <p className="text-green-100 text-base sm:text-lg">Making a real difference!</p>
+                  <p className="text-2xl sm:text-3xl font-bold mb-2">{t("yourImpactScore")}</p>
+                  <p className="text-green-100 text-base sm:text-lg">{t("makingDifference")}</p>
                 </div>
               </div>
               <p className="text-6xl sm:text-8xl font-bold mb-4">{impactStats.totalImpact.toLocaleString()}</p>
-              <p className="text-green-100 text-lg sm:text-xl">points earned through your volunteer work</p>
+              <p className="text-green-100 text-lg sm:text-xl">{t("pointsEarned")}</p>
               {ranking && (
                 <div className="mt-6 flex items-center justify-center gap-4">
                   <Badge className="bg-white/20 text-white border-white/30 px-4 py-2 text-base">
                     <Trophy className="w-4 h-4 mr-2" />
-                    Rank #{ranking.rank}
+                    {t("rank")} #{ranking.rank}
                   </Badge>
                   {ranking.badge && (
                     <Badge className={`${
@@ -237,35 +239,35 @@ export default function ImpactPage() {
             <Card className="border border-gray-200 hover:shadow-lg transition-all bg-white">
               <CardContent className="p-4 text-center">
                 <Truck className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 mb-1">Deliveries</p>
+                <p className="text-sm text-gray-500 mb-1">{t("deliveries")}</p>
                 <p className="text-2xl font-bold text-gray-900">{impactStats.deliveriesCompleted}</p>
                 {impactStats.deliverPoints > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">+{impactStats.deliverPoints} pts</p>
+                  <p className="text-xs text-gray-500 mt-1">+{impactStats.deliverPoints} {t("points")}</p>
                 )}
               </CardContent>
             </Card>
             <Card className="border border-gray-200 hover:shadow-lg transition-all bg-white">
               <CardContent className="p-4 text-center">
                 <Leaf className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 mb-1">Harvests</p>
+                <p className="text-sm text-gray-500 mb-1">{t("harvests")}</p>
                 <p className="text-2xl font-bold text-green-600">{impactStats.harvestsCompleted}</p>
                 {impactStats.harvestPoints > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">+{impactStats.harvestPoints} pts</p>
+                  <p className="text-xs text-gray-500 mt-1">+{impactStats.harvestPoints} {t("points")}</p>
                 )}
               </CardContent>
             </Card>
             <Card className="border border-gray-200 hover:shadow-lg transition-all bg-white">
               <CardContent className="p-4 text-center">
                 <Award className="w-8 h-8 text-[#5a9c3a] mx-auto mb-2" />
-                <p className="text-sm text-gray-500 mb-1">Achievements</p>
+                <p className="text-sm text-gray-500 mb-1">{t("achievements")}</p>
                 <p className="text-2xl font-bold text-[#5a9c3a]">{earnedAchievements.length}</p>
-                <p className="text-xs text-gray-500 mt-1">of {achievements.length}</p>
+                <p className="text-xs text-gray-500 mt-1">{t("of")} {achievements.length}</p>
               </CardContent>
             </Card>
             <Card className="border border-gray-200 hover:shadow-lg transition-all bg-white">
               <CardContent className="p-4 text-center">
                 <Star className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 mb-1">Total Points</p>
+                <p className="text-sm text-gray-500 mb-1">{t("totalPoints")}</p>
                 <p className="text-2xl font-bold text-yellow-600">{impactStats.totalPoints.toLocaleString()}</p>
               </CardContent>
             </Card>
@@ -277,7 +279,7 @@ export default function ImpactPage() {
               <CardHeader className="border-b border-gray-200 bg-gray-50">
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-[#5a9c3a]" />
-                  Points Breakdown
+                  {t("pointsBreakdown")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
@@ -286,7 +288,7 @@ export default function ImpactPage() {
                     <div key={item.action} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <p className="text-sm font-semibold text-gray-900 mb-1">{item.action_name}</p>
                       <p className="text-2xl font-bold text-[#5a9c3a] mb-1">{item.total_points}</p>
-                      <p className="text-xs text-gray-500">{item.count} {item.count === 1 ? 'activity' : 'activities'}</p>
+                      <p className="text-xs text-gray-500">{item.count} {item.count === 1 ? t("activity") : t("activities")}</p>
                     </div>
                   ))}
                 </div>
@@ -299,14 +301,14 @@ export default function ImpactPage() {
             <CardHeader className="border-b border-gray-200 bg-gray-50">
               <CardTitle className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-[#5a9c3a]" />
-                Achievements & Rewards
+                {t("achievementsRewards")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               {/* Earned Achievements */}
               {earnedAchievements.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Earned ({earnedAchievements.length})</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{t("earned")} ({earnedAchievements.length})</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {earnedAchievements.map((achievement) => (
                       <div
@@ -319,7 +321,7 @@ export default function ImpactPage() {
                         <h3 className="font-bold text-gray-900 mb-2 text-lg">{achievement.title}</h3>
                         <p className="text-sm text-gray-600 mb-3">{achievement.description}</p>
                         <Badge className="bg-emerald-500 text-white w-full justify-center">
-                          Earned
+                          {t("earned")}
                         </Badge>
                       </div>
                     ))}
@@ -330,7 +332,7 @@ export default function ImpactPage() {
               {/* Unearned Achievements */}
               {unearnedAchievements.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Available ({unearnedAchievements.length})</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{t("available")} ({unearnedAchievements.length})</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {unearnedAchievements.map((achievement) => (
                       <div
@@ -354,7 +356,7 @@ export default function ImpactPage() {
                           </p>
                         </div>
                         <Badge className="bg-gray-400 text-white w-full justify-center mt-2">
-                          Not earned yet
+                          {t("notEarnedYet")}
                         </Badge>
                       </div>
                     ))}
@@ -370,7 +372,7 @@ export default function ImpactPage() {
               <CardHeader className="border-b border-gray-200 bg-gray-50">
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-[#5a9c3a]" />
-                  Recent Points History
+                  {t("recentPointsHistory")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
@@ -389,7 +391,7 @@ export default function ImpactPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-xl font-bold text-[#5a9c3a]">+{point.points}</p>
-                        <p className="text-xs text-gray-500">points</p>
+                        <p className="text-xs text-gray-500">{t("points")}</p>
                       </div>
                     </div>
                   ))}
@@ -403,15 +405,18 @@ export default function ImpactPage() {
             <CardContent className="p-8">
               <div className="text-center">
                 <Heart className="w-16 h-16 text-[#5a9c3a] mx-auto mb-4" />
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Thank You for Making a Difference!</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{t("thankYou")}</h2>
                 <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto mb-6">
-                  Through your {impactStats.deliveriesCompleted} {impactStats.deliveriesCompleted === 1 ? 'delivery' : 'deliveries'} and {impactStats.harvestsCompleted} {impactStats.harvestsCompleted === 1 ? 'harvest' : 'harvests'}, 
-                  you've earned {impactStats.totalPoints.toLocaleString()} points and unlocked {earnedAchievements.length} {earnedAchievements.length === 1 ? 'achievement' : 'achievements'}. 
-                  Your dedication to your community is truly inspiring!
+                  {t("impactStory", {
+                    deliveries: impactStats.deliveriesCompleted,
+                    harvests: impactStats.harvestsCompleted,
+                    points: impactStats.totalPoints.toLocaleString(),
+                    achievements: earnedAchievements.length
+                  })}
                 </p>
                 <div className="flex items-center justify-center gap-2">
                   <TrendingUp className="w-6 h-6 text-[#5a9c3a]" />
-                  <span className="text-xl font-bold text-[#5a9c3a]">Keep up the amazing work!</span>
+                  <span className="text-xl font-bold text-[#5a9c3a]">{t("keepUpWork")}</span>
                 </div>
               </div>
             </CardContent>

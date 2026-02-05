@@ -17,6 +17,7 @@ import { useState, useEffect } from "react"
 import { useAuthStore } from "@/stores/auth-store"
 import { useAuthModalStore } from "@/stores/auth-modal-store"
 import { useRouter } from "next/navigation"
+import { useSafeTranslations } from "@/hooks/use-safe-translations"
 import { RoleManagement } from "@/components/role-management"
 import { AddressList } from "@/components/address-list"
 import api from "@/lib/axios"
@@ -46,6 +47,7 @@ export default function SettingsPage() {
   const refreshUser = useAuthStore((state) => state.refreshUser)
   const openAuthModal = useAuthModalStore((state) => state.openModal)
   const router = useRouter()
+  const t = useSafeTranslations("settings")
   const [isEditing, setIsEditing] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
@@ -143,7 +145,7 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Error fetching user data:', error)
-      toast.error('Failed to load settings data')
+      toast.error(t("failedToLoad"))
     } finally {
       setLoading(false)
     }
@@ -172,10 +174,10 @@ export default function SettingsPage() {
       await refreshUser()
       await fetchUserData()
       setIsEditing(false)
-      toast.success('Profile updated successfully')
+      toast.success(t("profileUpdated"))
     } catch (error: any) {
       console.error('Error saving profile:', error)
-      toast.error(error.response?.data?.message || 'Failed to update profile')
+      toast.error(error.response?.data?.message || t("failedToUpdate"))
     } finally {
       setSaving(false)
     }
@@ -189,12 +191,12 @@ export default function SettingsPage() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file')
+      toast.error(t("pleaseSelectValidImage"))
       return
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image size must be less than 2MB')
+      toast.error(t("imageSizeError"))
       return
     }
 
@@ -230,10 +232,10 @@ export default function SettingsPage() {
         setImagePreview(null)
       }, 500)
       
-      toast.success('Profile picture updated successfully')
+      toast.success(t("imageUploaded"))
     } catch (error: any) {
       console.error('Error uploading image:', error)
-      toast.error(error.response?.data?.message || 'Failed to upload image')
+      toast.error(error.response?.data?.message || t("failedToUploadImage"))
       setImagePreview(null)
     } finally {
       setUploadingImage(false)
@@ -385,7 +387,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin" style={{ color: COLORS.primary }} />
-          <p className="text-sm text-gray-500 font-medium">Loading settings...</p>
+          <p className="text-sm text-gray-500 font-medium">{t("loadingSettings")}</p>
         </div>
       </div>
     )
@@ -408,8 +410,8 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-500 mt-1 text-sm">Manage your account settings and preferences</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+            <p className="text-gray-500 mt-1 text-sm">{t("subtitle")}</p>
           </div>
         </div>
 
@@ -419,7 +421,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" style={{ color: COLORS.primary }} />
-                Profile Information
+                {t("profileInformation")}
               </CardTitle>
               {!isEditing && (
                 <Button
@@ -429,7 +431,7 @@ export default function SettingsPage() {
                   className="text-white hover:opacity-90"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  {t("editProfile")}
                 </Button>
               )}
             </div>
@@ -474,7 +476,7 @@ export default function SettingsPage() {
                 <p className="text-gray-600 mb-2">{profile.email || user?.email || 'No email'}</p>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Calendar className="w-4 h-4" />
-                  <span>Member since {memberSince}</span>
+                  <span>{t("memberSince")} {memberSince}</span>
                 </div>
               </div>
             </div>
@@ -483,7 +485,7 @@ export default function SettingsPage() {
               <div>
                 <Label htmlFor="first_name" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  First Name
+                  {t("firstName")}
                 </Label>
                 {isEditing ? (
                   <Input
@@ -491,17 +493,17 @@ export default function SettingsPage() {
                     value={profile.first_name}
                     onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
                     className="rounded-lg border-gray-300 focus:border-[#5a9c3a] focus:ring-[#5a9c3a]"
-                    placeholder="Enter first name"
+                    placeholder={t("enterFirstName")}
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium py-2">{profile.first_name || 'Not set'}</p>
+                  <p className="text-gray-900 font-medium py-2">{profile.first_name || t("notSet")}</p>
                 )}
               </div>
 
               <div>
                 <Label htmlFor="last_name" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  Last Name
+                  {t("lastName")}
                 </Label>
                 {isEditing ? (
                   <Input
@@ -509,26 +511,26 @@ export default function SettingsPage() {
                     value={profile.last_name}
                     onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
                     className="rounded-lg border-gray-300 focus:border-[#5a9c3a] focus:ring-[#5a9c3a]"
-                    placeholder="Enter last name"
+                    placeholder={t("enterLastName")}
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium py-2">{profile.last_name || 'Not set'}</p>
+                  <p className="text-gray-900 font-medium py-2">{profile.last_name || t("notSet")}</p>
                 )}
               </div>
 
               <div>
                 <Label htmlFor="email" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  Email Address
+                  {t("emailAddress")}
                 </Label>
                 <p className="text-gray-900 font-medium py-2">{profile.email}</p>
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">{t("emailCannotBeChanged")}</p>
               </div>
 
               <div>
                 <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  Phone Number
+                  {t("phoneNumber")}
                 </Label>
                 {isEditing ? (
                   <Input
@@ -537,10 +539,10 @@ export default function SettingsPage() {
                     value={profile.phone}
                     onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                     className="rounded-lg border-gray-300 focus:border-[#5a9c3a] focus:ring-[#5a9c3a]"
-                    placeholder="Enter phone number"
+                    placeholder={t("enterPhoneNumber")}
                   />
                 ) : (
-                  <p className="text-gray-900 font-medium py-2">{profile.phone || 'Not set'}</p>
+                  <p className="text-gray-900 font-medium py-2">{profile.phone || t("notSet")}</p>
                 )}
               </div>
             </div>
@@ -553,7 +555,7 @@ export default function SettingsPage() {
                   disabled={saving}
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Cancel
+                  {t("cancel")}
                 </Button>
                 <Button
                   onClick={handleSave}
@@ -564,12 +566,12 @@ export default function SettingsPage() {
                   {saving ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {t("saving")}
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4 mr-2" />
-                      Save Changes
+                      {t("saveChanges")}
                     </>
                   )}
                 </Button>
@@ -881,7 +883,7 @@ export default function SettingsPage() {
                 className="w-full flex items-center justify-center gap-2 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-400"
               >
                 <Trash2 className="w-4 h-4" />
-                {isDeletingAccount ? "Deleting..." : "Delete Account"}
+                {isDeletingAccount ? t("deleting") : t("deleteAccount")}
               </Button>
             </div>
           </CardContent>
@@ -892,19 +894,19 @@ export default function SettingsPage() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteAccount")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.
+              {t("deleteAccountWarning")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAccount}
               className="bg-red-600 hover:bg-red-700"
               disabled={isDeletingAccount}
             >
-              {isDeletingAccount ? "Deleting..." : "Delete Account"}
+              {isDeletingAccount ? t("deleting") : t("deleteAccount")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
