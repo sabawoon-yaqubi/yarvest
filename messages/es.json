@@ -844,7 +844,15 @@
     "saveSettings": "Guardar Configuración",
     "goToSellerDashboard": "Ir al Panel del Vendedor",
     "browseProducts": "Explorar Productos",
-    "notifyWhenAvailable": "Te notificaremos cuando esta función esté disponible."
+    "notifyWhenAvailable": "Te notificaremos cuando esta función esté disponible.",
+    "noDonationsYet": "Aún no hay donaciones",
+    "noDonationsMessage": "Aún no has hecho ninguna donación",
+    "donation": "Donación",
+    "supportingCommunity": "Apoyando iniciativas comunitarias",
+    "amount": "Cantidad",
+    "date": "Fecha",
+    "pleaseLogin": "Por favor inicia sesión para ver las donaciones",
+    "failedToLoad": "Error al cargar las donaciones"
   },
   "events": {
     "title": "Próximos Eventos",
@@ -1261,18 +1269,6 @@
     "searchProductPlaceholder": "Buscar por nombre de producto, nombre del reseñador o texto de reseña...",
     "by": "por",
     "you": "Tú"
-  },
-  "donations": {
-    "title": "Donaciones",
-    "subtitle": "Tu historial de donaciones",
-    "noDonationsYet": "Aún no hay donaciones",
-    "noDonationsMessage": "Aún no has hecho ninguna donación",
-    "donation": "Donación",
-    "supportingCommunity": "Apoyando iniciativas comunitarias",
-    "amount": "Cantidad",
-    "date": "Fecha",
-    "pleaseLogin": "Por favor inicia sesión para ver las donaciones",
-    "failedToLoad": "Error al cargar las donaciones"
   },
   "referrals": {
     "title": "Referidos",
