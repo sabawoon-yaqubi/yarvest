@@ -46,6 +46,7 @@
     "allProducts": "All Products",
     "ourProducers": "Our Producers",
     "events": "Events",
+    "guides": "Guides",
     "shops": "Shops",
     "leaderboard": "Leaderboard",
     "customerService": "Customer Service",
@@ -198,6 +199,7 @@
     "inviteFriends": "Invite Friends",
     "helpCenter": "Help Center",
     "news": "News",
+    "guides": "Guides",
     "showMore": "Show more",
     "moreOptions": "More Options",
     "moreOptionsDescription": "Explore additional features and services"
@@ -351,6 +353,14 @@
       "productDeleted": "Product deleted successfully",
       "productUniqueIdMissing": "Product unique identifier is missing",
       "failedToUpdateStatus": "Failed to update product status"
+    },
+    "seedArticles": {
+      "title": "Seed & Growing Guides",
+      "subtitle": "Articles and guides visible on the public Guides page. Add or edit them in the backend admin.",
+      "manageInBackend": "Manage in backend admin",
+      "viewOnSite": "View on site",
+      "noArticles": "No published articles yet.",
+      "failedToLoad": "Failed to load articles"
     },
     "analytics": {
       "title": "Analytics & Insights",
@@ -855,6 +865,14 @@
     "learnMore": "Learn More",
     "noUpcomingEvents": "No upcoming events available at the moment.",
     "checkBackSoon": "Check back soon for new events!"
+  },
+  "guides": {
+    "title": "Seed & Growing Guides",
+    "subtitle": "Learn how to grow, care for seeds, and harvest. Tips, how-to guides, and instructions from the Yarvest community.",
+    "allTopics": "All Topics",
+    "readMore": "Read more",
+    "noArticles": "No articles yet in this topic.",
+    "checkBackSoon": "Check back soon for new guides!"
   },
   "exit": {
     "title": "Exit Account",

@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Store, Calendar, ShoppingBag, Users, Trophy, ChevronDown, Users2, Truck, Package, Heart, Gift, HelpCircle, Newspaper, X, Leaf, Handshake } from "lucide-react"
+import { Home, Store, Calendar, ShoppingBag, Users, Trophy, ChevronDown, Users2, Truck, Package, Heart, Gift, HelpCircle, Newspaper, X, Leaf, Handshake, BookOpen } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -35,6 +35,7 @@ export function Sidebar({ open = true, setOpen }: SidebarProps) {
     { icon: Leaf, label: t('farms'), href: "/farms" },
     { icon: Users2, label: t('community'), href: "/community" },
     { icon: Calendar, label: t('events'), href: "/events" },
+    { icon: BookOpen, label: t('guides'), href: "/guides" },
     { icon: Heart, label: t('donations'), href: "/donations" },
     { icon: Users2, label: t('inviteFriends'), href: "/invite" },
     { icon: HelpCircle, label: t('helpCenter'), href: "/help" },

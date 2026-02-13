@@ -46,6 +46,7 @@
     "allProducts": "Todos los Productos",
     "ourProducers": "Nuestros Productores",
     "events": "Eventos",
+    "guides": "Guías",
     "shops": "Tiendas",
     "leaderboard": "Clasificación",
     "customerService": "Atención al Cliente",
@@ -198,6 +199,7 @@
     "inviteFriends": "Invitar Amigos",
     "helpCenter": "Centro de Ayuda",
     "news": "Noticias",
+    "guides": "Guías",
     "showMore": "Mostrar más",
     "moreOptions": "Más Opciones",
     "moreOptionsDescription": "Explora funciones y servicios adicionales"
@@ -351,6 +353,14 @@
       "productDeleted": "Producto eliminado exitosamente",
       "productUniqueIdMissing": "Falta el identificador único del producto",
       "failedToUpdateStatus": "Error al actualizar el estado del producto"
+    },
+    "seedArticles": {
+      "title": "Guías de Semillas y Cultivo",
+      "subtitle": "Artículos y guías visibles en la página pública de Guías. Añade o edita en el panel de administración.",
+      "manageInBackend": "Gestionar en panel de administración",
+      "viewOnSite": "Ver en el sitio",
+      "noArticles": "Aún no hay artículos publicados.",
+      "failedToLoad": "Error al cargar los artículos"
     },
     "analytics": {
       "title": "Analíticas e Información",
@@ -861,6 +871,14 @@
     "learnMore": "Saber Más",
     "noUpcomingEvents": "No hay eventos próximos disponibles en este momento.",
     "checkBackSoon": "¡Vuelve pronto para nuevos eventos!"
+  },
+  "guides": {
+    "title": "Guías de Semillas y Cultivo",
+    "subtitle": "Aprende a cultivar, cuidar semillas y cosechar. Consejos, guías prácticas e instrucciones de la comunidad Yarvest.",
+    "allTopics": "Todos los Temas",
+    "readMore": "Leer más",
+    "noArticles": "Aún no hay artículos en este tema.",
+    "checkBackSoon": "¡Vuelve pronto para nuevas guías!"
   },
   "exit": {
     "title": "Salir de la Cuenta",

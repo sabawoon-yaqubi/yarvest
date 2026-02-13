@@ -31,6 +31,7 @@ import {
   Car,
   Wrench,
   Users,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -148,6 +149,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: BarChart3,
       label: t("analytics.title"),
       href: "/admin/analytics",
+      section: "main",
+    },
+    {
+      icon: BookOpen,
+      label: t("seedArticles.title"),
+      href: "/admin/seed-articles",
       section: "main",
     },
   ];

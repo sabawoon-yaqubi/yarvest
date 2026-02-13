@@ -95,6 +95,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href={getLocalizedPath('/guides', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
+                  {t('guides')}
+                </Link>
+              </li>
+              <li>
                 <Link href={getLocalizedPath('/shops', locale as Locale)} className="text-gray-600 hover:text-[#5a9c3a] transition-colors text-sm">
                   {t('shops')}
                 </Link>
