@@ -483,7 +483,12 @@ export default function ProduceWishlistPage() {
                                         <Users className="w-4 h-4 text-gray-400" />
                                       </div>
                                       <div>
-                                        <p className="font-medium text-sm text-gray-900">{inquiry.name}</p>
+                                        <div className="flex items-center gap-2">
+                                          <p className="font-medium text-sm text-gray-900">{inquiry.name}</p>
+                                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
+                                            {inquiry.type === "want" ? "I want" : inquiry.type === "question" ? "Question" : "Can supply"}
+                                          </span>
+                                        </div>
                                         <p className="text-xs text-gray-500">{item.item_name}</p>
                                         <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{inquiry.message}</p>
                                         <a href={`mailto:${inquiry.email}`} className="text-xs font-medium mt-0.5 inline-block" style={{ color: COLORS.primary }}>{inquiry.email}</a>

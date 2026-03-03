@@ -1,5 +1,7 @@
 import api from './axios'
 
+export type ProduceWishlistInquiryType = 'can_supply' | 'want' | 'question'
+
 export interface ProduceWishlistOffer {
   id: number
   message: string | null
@@ -18,6 +20,7 @@ export interface ProduceWishlistInquiry {
   id: number
   name: string
   email: string
+  type?: ProduceWishlistInquiryType
   message: string
   status: string
   created_at: string
@@ -189,7 +192,7 @@ export async function createProduceWishlistOffer(
  */
 export async function sendProduceWishlistInquiry(
   itemId: number,
-  data: { name: string; email: string; message: string }
+  data: { name: string; email: string; message: string; type?: ProduceWishlistInquiryType }
 ): Promise<void> {
   await api.post(`/produce-wishlist-items/${itemId}/inquiries`, data)
 }

@@ -17,6 +17,9 @@ import {
   Apple,
   MessageSquare,
   Check,
+  Package,
+  Heart,
+  HelpCircle,
 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
@@ -24,6 +27,7 @@ import {
   getPublicProduceWishlist,
   sendProduceWishlistInquiry,
   type PublicProduceWishlist,
+  type ProduceWishlistInquiryType,
 } from "@/lib/produce-wishlist-api"
 import { getImageUrl } from "@/lib/utils"
 
@@ -40,6 +44,7 @@ export default function ProduceWishlistDetailPage() {
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedItemId, setExpandedItemId] = useState<number | null>(null)
+  const [inquiryType, setInquiryType] = useState<ProduceWishlistInquiryType>("can_supply")
   const [inquiryName, setInquiryName] = useState("")
   const [inquiryEmail, setInquiryEmail] = useState("")
   const [inquiryMessage, setInquiryMessage] = useState("")
@@ -75,9 +80,11 @@ export default function ProduceWishlistDetailPage() {
         name: inquiryName.trim(),
         email: inquiryEmail.trim(),
         message: inquiryMessage.trim(),
+        type: inquiryType,
       })
       toast.success("Inquiry sent! The wishlist owner will contact you.")
       setExpandedItemId(null)
+      setInquiryType("can_supply")
       setInquiryName("")
       setInquiryEmail("")
       setInquiryMessage("")
@@ -88,8 +95,9 @@ export default function ProduceWishlistDetailPage() {
     }
   }
 
-  const openInquiry = (itemId: number) => {
+  const openInquiry = (itemId: number, type: ProduceWishlistInquiryType = "can_supply") => {
     setExpandedItemId(itemId)
+    setInquiryType(type)
     setInquiryName("")
     setInquiryEmail("")
     setInquiryMessage("")
@@ -235,15 +243,35 @@ export default function ProduceWishlistDetailPage() {
                             )}
                           </div>
                         </div>
-                        <Button
-                          size="lg"
-                          onClick={() => openInquiry(item.id)}
-                          style={{ backgroundColor: COLORS.primary }}
-                          className="text-white hover:opacity-95 rounded-xl shadow-sm flex-shrink-0 w-full sm:w-auto"
-                        >
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          I can supply this
-                        </Button>
+                        <div className="flex flex-wrap gap-2 flex-shrink-0 w-full sm:w-auto sm:justify-end">
+                          <Button
+                            size="sm"
+                            onClick={() => openInquiry(item.id, "can_supply")}
+                            style={{ backgroundColor: COLORS.primary }}
+                            className="text-white hover:opacity-95 rounded-xl"
+                          >
+                            <Package className="w-3.5 h-3.5 mr-1.5" />
+                            I can supply
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openInquiry(item.id, "want")}
+                            className="rounded-xl border-gray-300"
+                          >
+                            <Heart className="w-3.5 h-3.5 mr-1.5" />
+                            I want this
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openInquiry(item.id, "question")}
+                            className="rounded-xl border-gray-300"
+                          >
+                            <HelpCircle className="w-3.5 h-3.5 mr-1.5" />
+                            Question
+                          </Button>
+                        </div>
                       </div>
 
                       {/* Inline inquiry form */}
@@ -251,7 +279,9 @@ export default function ProduceWishlistDetailPage() {
                         <div className="border-t border-gray-100 bg-[#f8faf6] p-6">
                           <div className="max-w-md space-y-4">
                             <p className="text-sm text-gray-600">
-                              Share your contact info. The wishlist owner will reach out if interested.
+                              {inquiryType === "can_supply" && "Share your contact info. The wishlist owner will reach out if interested."}
+                              {inquiryType === "want" && "You're also looking for this produce. Share your details to connect."}
+                              {inquiryType === "question" && "Ask a question. The wishlist owner will get back to you."}
                             </p>
                             <div className="grid gap-4 sm:grid-cols-2">
                               <div>
@@ -282,7 +312,13 @@ export default function ProduceWishlistDetailPage() {
                                 id="msg"
                                 value={inquiryMessage}
                                 onChange={(e) => setInquiryMessage(e.target.value)}
-                                placeholder="I can supply fresh organic apples from my orchard..."
+                                placeholder={
+                                  inquiryType === "can_supply"
+                                    ? "I can supply fresh organic apples from my orchard..."
+                                    : inquiryType === "want"
+                                    ? "I'm also looking for this. Would love to connect..."
+                                    : "Your question here..."
+                                }
                                 className="mt-1.5 bg-white"
                                 rows={3}
                               />
