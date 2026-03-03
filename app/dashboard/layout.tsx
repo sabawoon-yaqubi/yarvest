@@ -188,6 +188,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         section: "seller",
       },
       {
+        icon: HeartHandshake,
+        label: t("dashboard.communityWishlists"),
+        href: "/dashboard/produce-wishlists-community",
+        section: "seller",
+      },
+      {
         icon: ShoppingCart,
         label: t("orders.title"),
         href: "/admin/orders",
@@ -272,6 +278,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // Profile/Account section - available for all users
   allMenuItems.push(
+    {
+      icon: Leaf,
+      label: t("dashboard.produceWishlist"),
+      href: "/dashboard/produce-wishlist",
+      section: "account",
+    },
     {
       icon: CreditCard,
       label: t("dashboard.bankAccounts"),

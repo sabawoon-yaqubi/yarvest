@@ -88,9 +88,14 @@ export const useAuthStore = create<AuthState>()(
               set({ user: transformedUser, isLoggedIn: true })
               localStorage.setItem("yarvest_current_user", JSON.stringify(transformedUser))
             }
-          } catch (error) {
-            // If fetch fails, use cached user
-            set({ user: currentUser, isLoggedIn: true })
+          } catch (error: any) {
+            if (error?.response?.status === 401) {
+              logoutUserUtil()
+              set({ user: null, isLoggedIn: false })
+            } else {
+              // Only use cached user for network errors, not auth errors
+              set({ user: currentUser, isLoggedIn: true })
+            }
           }
         } else {
           set({ user: currentUser, isLoggedIn: currentUser !== null })
